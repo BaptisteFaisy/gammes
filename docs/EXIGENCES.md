@@ -11,12 +11,12 @@ Lot : voir [`CONTRATS.md`](CONTRATS.md). État mis à jour par l'intégrateur à
 | GA-04 | Détecter les étapes à risque par motifs et leur affecter un verrou | M | A | ✅ faite | `src/core/risk/risk-motifs.ts`, recette 4 testée |
 | GA-05 | Versionnage immuable ; exécution épinglée à sa version | M | F | ✅ faite | `src/core/version/versioning.ts`, `test/cycle-de-vie/versioning.test.ts` |
 | GA-06 | Cycle de vie avec approbation humaine datée et date de révision | M | F | ✅ faite | `approveVersion` (acte humain daté + `reviewDueAt`), `deprecateGamme`, `canTransition` |
-| GA-07 | Exécution pas à pas : étape courante, preuve exigée, acquittement, déviation, reprise | M | B | ⬜ à faire | — |
-| GA-08 | Refus d'acquittement par un agent sur une étape réservée à un humain, tentative enregistrée | M | B | ⬜ à faire | — |
-| GA-09 | Trace complète par exécution, consultable et citable | M | B | ⬜ à faire | — |
+| GA-07 | Exécution pas à pas : étape courante, preuve exigée, acquittement, déviation, reprise | M | B | ✅ faite | `src/core/run/{runs,record,run-state}.ts`, recettes 7/10/11 testées |
+| GA-08 | Refus d'acquittement par un agent sur une étape réservée à un humain, tentative enregistrée | M | B | ✅ faite | `src/core/locks/locks.ts` + refus tracé en déviation, recette 8 testée |
+| GA-09 | Trace complète par exécution, consultable et citable | M | B | ✅ faite | `src/core/trace/trace.ts` (trace citable fr/en), recette 13 testée |
 | GA-10 | Désynchronisation détectée par empreinte de contenu, diff de recompilation proposé | M | F | ✅ faite | `src/core/binding/binding.ts`, `src/core/compile/recompile.ts`, recette 12 testée |
 | GA-11 | Verrou de secret avant publication, avec proposition d'emplacement de remplacement | M | A | ✅ faite | `src/core/secrets/detectors.ts`, recette 5 testée (empreinte + aperçu masqué) |
-| GA-12 | Verrou de permis : une étape à risque par agent exige un permis valide | M | B | ⬜ à faire | — |
+| GA-12 | Verrou de permis : une étape à risque par agent exige un permis valide | M | B | ✅ faite | verrou de permis via le port `PermitRegistry`, recette 9 testée |
 | GA-13 | Export `SKILL.md` par gamme approuvée, et skill générique côté Forge | M | G | ⬜ à faire | — |
 | GA-14 | Outils MCP du § 18 | M | G | ⬜ à faire | — |
 | GA-15 | Agent Rovo « Le compagnon » | M | H | ⬜ à faire | — |
@@ -33,7 +33,7 @@ Lot : voir [`CONTRATS.md`](CONTRATS.md). État mis à jour par l'intégrateur à
 | GA-26 | Point d'entrée externe signé (`webtrigger`) pour les hooks d'agents et le CI | S | G | ⬜ à faire | — |
 | GA-27 | Lecture du graphe pour le périmètre et le propriétaire (`document`, `software-service`, `project`) | S | E | ⬜ à faire | — |
 | GA-28 | Étapes non falsifiables détectées, avec reformulation proposée | S | A | ✅ faite | `src/core/falsifiable/falsifiability.ts` |
-| GA-29 | Exécution en mode dégradé d'urgence, avec raison et revue différée obligatoire | S | B | ⬜ à faire | — |
+| GA-29 | Exécution en mode dégradé d'urgence, avec raison et revue différée obligatoire | S | B | ✅ faite | mode `emergency` : raison écrite + revue différée à 7 jours |
 | GA-30 | Publication de gammes vers d'autres espaces ou organisations | C | — | ⬜ à faire | — |
 | GA-31 | Connecteur de graphe (app jumelle) pour graver les gammes comme documents reliés | C | F | ⬜ à faire | — |
 | GA-32 | Ordonnancement de gammes composées (une gamme qui appelle une gamme) | C | — | ⬜ à faire | — |
