@@ -15,6 +15,7 @@ import { fail, ok, refusals, type Result } from "../result";
 import type { ActorRef, Gamme, GhostCandidate, IssueDigest } from "../types";
 import { createVersion, nextCode } from "../version/versioning";
 import { median } from "../stats/rates";
+import { tokensOf as tokenize } from "../text/tokens";
 import { daysBetween } from "../../platform/clock";
 
 /** En dessous de ce nombre de tickets semblables, on ne propose rien : pas de motif, pas de fantôme. */
@@ -22,16 +23,10 @@ export const MIN_CLUSTER_SIZE = 5;
 /** Une journée de travail facturée 8 h : le coût estimé est un ordre de grandeur, affiché comme tel. */
 export const HOURS_PER_DAY = 8;
 
-const STOP = new Set(["le", "la", "les", "de", "du", "des", "un", "une", "et", "a", "sur", "pour", "the", "of", "and", "to", "in", "on", "reset", "request"]);
+/** Le bruit des titres Jira/JSM : ces mots-là ne font pas un motif de procédure. */
+const JIRA_NOISE = ["reset", "request"];
 
-const tokensOf = (summary: string): readonly string[] =>
-  summary
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, " ")
-    .split(" ")
-    .filter((w) => w.length > 2 && !STOP.has(w));
+const tokensOf = (summary: string): readonly string[] => tokenize(summary, JIRA_NOISE);
 
 /** Clé de regroupement : projet + composants + les trois mots les plus porteurs du titre. */
 export const clusterKeyOf = (issue: IssueDigest): string => {

@@ -17,8 +17,8 @@ Lot : voir [`CONTRATS.md`](CONTRATS.md). État mis à jour par l'intégrateur à
 | GA-10 | Désynchronisation détectée par empreinte de contenu, diff de recompilation proposé | M | F | ✅ faite | `src/core/binding/binding.ts`, `src/core/compile/recompile.ts`, recette 12 testée |
 | GA-11 | Verrou de secret avant publication, avec proposition d'emplacement de remplacement | M | A | ✅ faite | `src/core/secrets/detectors.ts`, recette 5 testée (empreinte + aperçu masqué) |
 | GA-12 | Verrou de permis : une étape à risque par agent exige un permis valide | M | B | ✅ faite | verrou de permis via le port `PermitRegistry`, recette 9 testée |
-| GA-13 | Export `SKILL.md` par gamme approuvée, et skill générique côté Forge | M | G | ⬜ à faire | — |
-| GA-14 | Outils MCP du § 18 | M | G | ⬜ à faire | — |
+| GA-13 | Export `SKILL.md` par gamme approuvée, et skill générique côté Forge | M | G | ✅ faite | `src/core/export/skill-md.ts` + `skills/derouler-une-gamme/SKILL.md`, recette 17 testée |
+| GA-14 | Outils MCP du § 18 | M | G | ✅ faite | `src/core/mcp/{tools,search}.ts` (16 outils), `test/mcp/tools.test.ts` |
 | GA-15 | Agent Rovo « Le compagnon » | M | H | ⬜ à faire | — |
 | GA-16 | Encart sur le ticket Jira : quelle gamme s'applique, la démarrer, voir les traces | M | H | ⬜ à faire | — |
 | GA-17 | Macro Confluence dans la page source : état, version, exécutions, fraîcheur | M | H | ⬜ à faire | — |
@@ -30,7 +30,7 @@ Lot : voir [`CONTRATS.md`](CONTRATS.md). État mis à jour par l'intégrateur à
 | GA-23 | Détection des conflits entre gammes et avec les pages de politique | S | D | ✅ faite | `test/conflits/` (16 tests), `src/core/conflicts/`, conciliateur `src/core/conciliation/hermes.ts` |
 | GA-24 | Comparaison de versions (un amendement a-t-il amélioré quelque chose ?) | S | C | ✅ faite | `compareVersions`, recette 16 testée |
 | GA-25 | Flux Jira pour la version humaine d'une gamme, et validateur de transition exigeant une trace | S | H | ⬜ à faire | — |
-| GA-26 | Point d'entrée externe signé (`webtrigger`) pour les hooks d'agents et le CI | S | G | ⬜ à faire | — |
+| GA-26 | Point d'entrée externe signé (`webtrigger`) pour les hooks d'agents et le CI | S | G | ✅ faite | `src/platform/webtrigger.ts` (HMAC-SHA256, échec fermé sans secret) |
 | GA-27 | Lecture du graphe pour le périmètre et le propriétaire (`document`, `software-service`, `project`) | S | E | ✅ faite | `src/integrations/graph.ts` (droit manquant = vide sans erreur) |
 | GA-28 | Étapes non falsifiables détectées, avec reformulation proposée | S | A | ✅ faite | `src/core/falsifiable/falsifiability.ts` |
 | GA-29 | Exécution en mode dégradé d'urgence, avec raison et revue différée obligatoire | S | B | ✅ faite | mode `emergency` : raison écrite + revue différée à 7 jours |
