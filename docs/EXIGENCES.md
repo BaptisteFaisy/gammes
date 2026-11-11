@@ -22,13 +22,13 @@ Lot : voir [`CONTRATS.md`](CONTRATS.md). État mis à jour par l'intégrateur à
 | GA-15 | Agent Rovo « Le compagnon » | M | H | ⬜ à faire | — |
 | GA-16 | Encart sur le ticket Jira : quelle gamme s'applique, la démarrer, voir les traces | M | H | ⬜ à faire | — |
 | GA-17 | Macro Confluence dans la page source : état, version, exécutions, fraîcheur | M | H | ⬜ à faire | — |
-| GA-18 | L'atelier : registre des gammes, états, poussières, couverture | M | C | ⬜ à faire | — |
-| GA-19 | Statistiques d'atelier par étape, avec effectif et « pas assez de recul » | M | C | ⬜ à faire | — |
-| GA-20 | Amendement proposé depuis les traces, avec ses preuves, jamais appliqué seul | M | C | ⬜ à faire | — |
-| GA-21 | Aucune statistique par personne | M | C | ⬜ à faire | — |
-| GA-22 | Détection des gammes fantômes depuis l'historique Jira/JSM, avec preuves et coût | S | C | ⬜ à faire | — |
+| GA-18 | L'atelier : registre des gammes, états, poussières, couverture | M | C | ✅ faite | `src/core/coverage/coverage.ts` + `src/core/stats/workshop.ts` (poussière, atelier) |
+| GA-19 | Statistiques d'atelier par étape, avec effectif et « pas assez de recul » | M | C | ✅ faite | `src/core/stats/step-stats.ts`, recette 14/15 testées |
+| GA-20 | Amendement proposé depuis les traces, avec ses preuves, jamais appliqué seul | M | C | ✅ faite | `src/core/amendments/amendments.ts`, recette 14 testée |
+| GA-21 | Aucune statistique par personne | M | C | ✅ faite | test explicite : aucune clé d'acteur dans les agrégats + `npm run lint` |
+| GA-22 | Détection des gammes fantômes depuis l'historique Jira/JSM, avec preuves et coût | S | C | ✅ faite | `src/core/ghosts/ghosts.ts`, recette 18 testée |
 | GA-23 | Détection des conflits entre gammes et avec les pages de politique | S | D | ✅ faite | `test/conflits/` (16 tests), `src/core/conflicts/`, conciliateur `src/core/conciliation/hermes.ts` |
-| GA-24 | Comparaison de versions (un amendement a-t-il amélioré quelque chose ?) | S | C | ⬜ à faire | — |
+| GA-24 | Comparaison de versions (un amendement a-t-il amélioré quelque chose ?) | S | C | ✅ faite | `compareVersions`, recette 16 testée |
 | GA-25 | Flux Jira pour la version humaine d'une gamme, et validateur de transition exigeant une trace | S | H | ⬜ à faire | — |
 | GA-26 | Point d'entrée externe signé (`webtrigger`) pour les hooks d'agents et le CI | S | G | ⬜ à faire | — |
 | GA-27 | Lecture du graphe pour le périmètre et le propriétaire (`document`, `software-service`, `project`) | S | E | ⬜ à faire | — |
