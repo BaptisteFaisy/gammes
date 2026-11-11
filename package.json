@@ -1,0 +1,35 @@
+{
+  "name": "gammes",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "description": "Gammes — your runbooks, as tools. Compiles Confluence procedure pages into executable, lockable, traceable gammes that any agent can call (Atlassian Forge · Codegeist 2026).",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "lint": "node scripts/check-limits.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "verify": "npm run lint && npm run typecheck && npm run test",
+    "demo": "tsx scripts/demo.ts",
+    "seed": "tsx scripts/seed.ts"
+  },
+  "dependencies": {
+    "@forge/api": "8.5.0",
+    "@forge/llm": "1.0.10",
+    "@forge/resolver": "2.0.2",
+    "@forge/sql": "4.0.10",
+    "@forge/storage": "2.0.3",
+    "@forge/ui": "1.11.4"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.2",
+    "tsx": "4.19.2",
+    "typescript": "5.9.3",
+    "vitest": "3.2.4",
+    "yaml": "2.6.1"
+  }
+}

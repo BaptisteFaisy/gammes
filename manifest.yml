@@ -1,0 +1,162 @@
+# Gammes — manifeste Forge (Atlassian Codegeist 2026)
+#
+# ESQUISSE À VALIDER avec `forge lint` puis `forge deploy` (cahier des charges § 20 et § 22).
+# Les modules Rovo (`rovo:mcp`, `rovo:skill`, `rovo:agent`) sont en Preview : leur forme exacte
+# doit être confirmée sur une app de test. Ce qui est certain : le manifeste est STATIQUE, donc
+# une seule couche outillée (outils paramétrés) + une couche exportée (SKILL.md par gamme).
+
+modules:
+  # --- Point d'entrée fonction ---
+  function:
+    - key: gammes-fn
+      handler: index.handler
+
+  resolver:
+    - key: gammes-resolver
+      function: gammes-fn
+
+  # --- Outils MCP : UN jeu d'outils sert TOUTES les gammes (contenu en base, pas dans le manifeste) ---
+  rovo:mcp:
+    - key: gammes-mcp
+      name: Gammes
+      description: Find, run and trace procedures compiled from Confluence pages.
+      function: gammes-fn
+
+  # --- Skill générique : la conduite attendue de tout agent ---
+  rovo:skill:
+    - key: derouler-une-gamme
+      name: Dérouler une gamme
+      description: >-
+        Chercher une gamme avant d'agir, demander les entrées typées, acquitter chaque étape avec
+        sa preuve, déclarer toute déviation, s'arrêter net au premier verrou humain ou de permis,
+        ne jamais improviser une étape à risque, citer la version dans le compte rendu.
+      instructions: skills/derouler-une-gamme/SKILL.md
+
+  # --- Agent Rovo « Le compagnon » ---
+  rovo:agent:
+    - key: le-compagnon
+      name: Le compagnon
+      description: Déroule une gamme sous supervision et refuse d'improviser.
+      prompt: agents/le-compagnon.md
+      conversationStarters:
+        - text: Quelle procédure pour déployer ce service en production ?
+        - text: Quelles gammes sont désynchronisées de leur page ?
+        - text: Quelle étape échoue le plus ce trimestre ?
+      actions:
+        - gammes-mcp
+
+  # --- Surfaces Confluence ---
+  confluence:globalPage:
+    - key: gammes-atelier
+      resource: main
+      title: Gammes — Atelier
+      route: /atelier
+  confluence:contentAction:
+    - key: gammes-page-action
+      resource: main
+      title: Gammes
+  confluence:macro:
+    - key: gammes-macro
+      resource: main
+      title: État de la gamme
+      description: Version, état, exécutions et fraîcheur de la gamme compilée depuis cette page.
+      icon: ""
+  confluence:spaceSettingsPage:
+    - key: gammes-settings
+      resource: main
+      title: Gammes — Réglages
+      route: /reglages
+
+  # --- Surfaces Jira ---
+  jira:issuePanel:
+    - key: gammes-issue-panel
+      resource: main
+      title: Gammes
+  jira:globalPage:
+    - key: gammes-registre-jira
+      resource: main
+      title: Gammes — Registre
+      route: /registre
+  jira:workflowValidator:
+    - key: gammes-trace-validator
+      name: Gammes trace required
+      description: Refuse la transition tant qu'aucune trace d'exécution n'est liée au ticket.
+      validator:
+        type: gammes-trace-required
+
+  # --- Événements, planifications, traitements longs, entrée externe signée ---
+  trigger:
+    - key: gammes-page-events
+      function: gammes-fn
+      events:
+        - avi:confluence:page:added
+        - avi:confluence:page:updated
+        - avi:confluence:page:deleted
+        - avi:jira:issue:commented
+        - avi:jira:issue:linked
+  scheduledTrigger:
+    - key: gammes-nightly
+      function: gammes-fn
+      interval: day
+      handler: nightly
+  consumer:
+    - key: gammes-long-jobs
+      function: gammes-fn
+      maxDuration: 900
+      triggers:
+        - compile
+        - recompute-stats
+        - detect-ghosts
+        - detect-conflicts
+  webtrigger:
+    - key: gammes-hook
+      function: gammes-fn
+
+  sql:
+    queries:
+      - key: gammes-scope-query
+        query: ""
+
+  llm:
+    - key: gammes-llm
+      models:
+        - claude-3-5-haiku
+
+resources:
+  - key: main
+    path: static/main/index.html
+
+app:
+  id: ari:cloud:ecosystem::app/00000000-0000-0000-0000-000000000000
+  runtime:
+    name: nodejs22.x
+
+permissions:
+  scopes:
+    - read:confluence-content.all
+    - write:confluence-content
+    - read:confluence-props
+    - write:confluence-props
+    - read:confluence-space
+    - read:confluence-user
+    - read:confluence-content.permission
+    - storage:app
+    - read:attachment:confluence
+    - read:issue-details:jira
+    - write:issue-details:jira
+    - read:jira-work
+    - write:jira-work
+    - manage:jira-configuration
+    - read:graph:document
+    - read:graph:project
+    - read:graph:software-service
+    - read:rovo:teamwork-graph
+    - execute:rovo:actions
+    - llm:public-models
+  content:
+    styles:
+      - unsafe-inline
+  external:
+    fetch:
+      client:
+        - api.inferhub.dev
