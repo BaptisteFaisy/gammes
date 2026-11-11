@@ -237,7 +237,7 @@ describe("échec, saut et déviation (§ 8, recette 11)", () => {
     expect(res.value.origin).toBe("declared");
     expect(await deps.store.deviations.count()).toBe(1);
 
-    const trace = await buildTrace(deps, await deps.store.runs.get(run.id)!);
+    const trace = await buildTrace(deps, (await deps.store.runs.get(run.id))!);
     expect(trace.deviations).toHaveLength(1);
     expect(trace.deviations[0]?.why).toContain("runner CI");
     const rendered = renderTraceMarkdown(trace, "fr", await deps.store.runs.get(run.id));

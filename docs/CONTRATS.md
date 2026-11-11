@@ -103,20 +103,27 @@ Invariants : chaque étape porte son `SourceSpan` exact (décalages dans le `sto
 n'est appelé **que** sur la prose ambiguë, avec `cacheKey = contentFingerprint(page.storageBody)` ;
 un test prouve que `forbiddenLlm()` suffit sur une page bien formée.
 
-## Lot B — `feat/moteur-execution` (GA-07, GA-08, GA-09, GA-12, GA-29)
+## Lot B — `feat/moteur-execution` (GA-07, GA-08, GA-09, GA-12, GA-29) — fait
 
 Dossiers : `src/core/run/`, `src/core/locks/`, `src/core/trace/`, `test/moteur-execution/`.
 
 ```ts
-// src/core/locks/locks.ts
+// src/core/locks/locks.ts (+ evidence.ts : la grille machine > attestée > déclarée)
 export type LockDecision = { readonly allowed: boolean; readonly applied: readonly StepLock[];
   readonly permit?: PermitCheck; readonly refusal?: AppError };
+export const evidenceRefusal: (step: Step, evidence?: Evidence) => AppError | undefined;
 export const evaluateStepLocks: (deps: Deps, args: { step: Step; actor: ActorRef; scope: string }) => Promise<LockDecision>;
+
+// src/core/run/run-state.ts — l'état d'une exécution : UN seul endroit lit/écrit la forme Run
+export type CurrentStep = { readonly run: Run; readonly step: Step; readonly evidence: EvidenceSpec;
+  readonly locks: readonly StepLock[]; readonly progress: { done: number; total: number } };
+export const loadRun / loadVersion / loadContext / patchStep / advance(run, version, now, fromStepId)
+export const viewOf: (run: Run, version: GammeVersion) => CurrentStep | undefined;
 
 // src/core/run/runs.ts
 export type RunStart = { readonly run: Run; readonly step: Step; readonly evidence: EvidenceSpec; readonly locks: readonly StepLock[] };
-export type CurrentStep = { readonly run: Run; readonly step: Step; readonly evidence: EvidenceSpec;
-  readonly locks: readonly StepLock[]; readonly progress: { done: number; total: number } };
+export const validateInputs: (specs: readonly InputSpec[], inputs: Record<string, unknown>) => Failure | undefined;
+// recordStep et reportDeviation vivent dans src/core/run/record.ts, réexportés par runs.ts
 export type RecordOutcome = { readonly accepted: boolean; readonly next?: CurrentStep; readonly refusal?: AppError;
   readonly deviation?: Deviation };
 export const startRun: (deps: Deps, args: { code: string; inputs: Record<string, unknown>; actor: ActorRef;
