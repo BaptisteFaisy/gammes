@@ -9,7 +9,7 @@
 
 import type { ConfluencePort, Deps, GraphPort, JiraPort, PermitRegistry } from "../src/core/ports";
 import type { IssueDigest, PageDigest, Run, RunStep } from "../src/core/types";
-import { makeDeps, makePage, T0 } from "../test/helpers";
+import { fakeAwsKey, makeDeps, makePage, T0 } from "../test/helpers";
 import { fixedClock } from "../src/platform/clock";
 import { seqIds } from "../src/platform/ids";
 import { makeHasher } from "../src/platform/hash";
@@ -72,7 +72,7 @@ export const PAGE_COMPTE_RENDU = [
 export const PAGE_AVEC_CLE = [
   "<h1>Procédure : exporter les créances</h1>",
   "<h2>Étapes</h2><ol>",
-  `<li>Exporter la clé AWS ${"AKI" + "AI"}OSFODNN7EXAMPLE puis lancer l'export.</li>`,
+  `<li>Exporter la clé AWS ${fakeAwsKey()} puis lancer l'export.</li>`,
   "<li>Vérifier que le fichier est produit.</li>",
   "</ol>",
 ].join("\n");
