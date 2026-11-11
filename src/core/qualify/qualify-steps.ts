@@ -12,7 +12,7 @@ import type { EvidenceSpec, OnFailure, PageDigest, RiskLevel, Step, StepKind, St
 import type { DraftStep } from "../extract/extract-steps";
 import { assessFalsifiability, proposeRewording } from "../falsifiable/falsifiability";
 import { parseJsonLoose } from "../json";
-import { detectRisk, isRisky } from "../risk/risk-motifs";
+import { detectRisk, isRisky, type RiskMotif } from "../risk/risk-motifs";
 
 export type QualifyOptions = {
   /** Faux en mode strictement déterministe (aucun appel modèle). */
@@ -57,8 +57,8 @@ const onFailureOf = (draft: DraftStep, risk: RiskLevel): OnFailure => {
   return "stop";
 };
 
-const humanOnlyOf = (draft: DraftStep, risk: RiskLevel): boolean =>
-  isRisky(risk) || draft.kind === "decision" || AUTHORITY_RE.test(draft.text);
+const humanOnlyOf = (draft: DraftStep, motif?: RiskMotif): boolean =>
+  motif?.humanOnly === true || draft.kind === "decision" || AUTHORITY_RE.test(draft.text);
 
 const locksOf = (draft: DraftStep, risk: RiskLevel, riskClass?: string, humanOnly = false): readonly StepLock[] => {
   const out: StepLock[] = [];
@@ -133,7 +133,7 @@ export const qualifyStep = async (
   const riskClass = motif?.class;
   const hint = opts.useModel === false || !isAmbiguous(draft, risk) ? undefined : await modelHint(deps, draft);
   const kind = hint?.kind ?? draft.kind;
-  const humanOnly = hint?.humanOnly ?? humanOnlyOf({ ...draft, kind }, risk);
+  const humanOnly = hint?.humanOnly ?? humanOnlyOf({ ...draft, kind }, motif);
   const step = assembleStep(deps, draft, {
     kind,
     risk,
