@@ -281,7 +281,7 @@ Invariants : compiler ne publie rien (état `draft`, diff fourni) ; une version 
 approbation = acte humain daté + `reviewDueAt` ; page modifiée ⇒ `stale` + âge + diff proposé ;
 page disparue ⇒ `source_gone`, la gamme reste exécutable.
 
-## Lot G — `feat/mcp-skill` (GA-13, GA-14, GA-26) — vague 2
+## Lot G — `feat/mcp-skill` (GA-13, GA-14, GA-26) — fait
 
 Dossiers : `src/core/mcp/`, `src/core/export/`, `src/platform/webtrigger.ts`,
 `skills/derouler-une-gamme/`, `agents/le-compagnon.md`, `test/mcp/`.
