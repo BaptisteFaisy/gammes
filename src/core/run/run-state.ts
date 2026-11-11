@@ -96,11 +96,13 @@ export const nextStepOf = (run: Run, version: GammeVersion, afterStepId: string)
   return index >= 0 ? ordered[index + 1] : undefined;
 };
 
-/** Fait avancer l'exécution : l'étape suivante devient courante, son chronomètre démarre. */
-export const advance = (run: Run, version: GammeVersion, now: string): Run => {
-  const current = currentStepOf(run);
-  if (!current) return run;
-  const next = nextStepOf(run, version, current.stepId);
+/**
+ * Fait avancer l'exécution : l'étape qui suit `fromStepId` devient courante et son
+ * chronomètre démarre. On part de l'étape qui vient d'être acquittée, pas de l'étape
+ * courante — elle vient justement de cesser de l'être.
+ */
+export const advance = (run: Run, version: GammeVersion, now: string, fromStepId: string): Run => {
+  const next = nextStepOf(run, version, fromStepId);
   if (!next) return run;
   return patchStep(run, next.id, { state: "current", startedAt: now });
 };

@@ -7,7 +7,7 @@
  */
 
 import type { Deps } from "../ports";
-import { fail, ok, refusals, type Result } from "../result";
+import { fail, ok, refusals, type Failure, type Result } from "../result";
 import type {
   ActorRef,
   EvidenceSpec,
@@ -63,7 +63,7 @@ const typeMatches = (spec: InputSpec, value: unknown): boolean => {
 export const validateInputs = (
   specs: readonly InputSpec[],
   inputs: Record<string, unknown>,
-): Result<Record<string, unknown>> | undefined => {
+): Failure | undefined => {
   for (const spec of specs) {
     const value = inputs[spec.name];
     const missing = value === undefined || value === null || value === "";

@@ -31,12 +31,12 @@ const hasLock = (step: Step, kind: StepLock["kind"]): boolean => step.locks.some
 /** Le verrou de secret n'a pas de circonstance atténuante : l'étape ne passe pas. */
 const secretRefusal = (step: Step): AppError | undefined => {
   const lock = step.locks.find((l) => l.kind === "secret");
-  return lock ? refusals.secretFound(step.id, lock.replacement?.findingId ?? "inconnu") : undefined;
+  return lock ? refusals.secretFound(step.id, lock.replacement?.findingId ?? "inconnu").error : undefined;
 };
 
 const humanRefusal = (step: Step, actor: ActorRef): AppError | undefined => {
   const humanOnly = step.humanOnly || hasLock(step, "human");
-  return humanOnly && actor.kind !== "human" ? refusals.humanOnly(step.id, actor.id) : undefined;
+  return humanOnly && actor.kind !== "human" ? refusals.humanOnly(step.id, actor.id).error : undefined;
 };
 
 const permitCheck = async (deps: Deps, ctx: LockContext, lock: StepLock): Promise<PermitCheck> => {
@@ -67,7 +67,7 @@ const permitRefusal = async (
   const permit = await permitCheck(deps, ctx, lock);
   if (permit.result === "granted") return { permit };
   const requestUrl = permit.requestUrl ?? (deps.permits ? deps.permits.requestUrl(permit.permitClass) : undefined);
-  return { permit, refusal: refusals.permitMissing(ctx.step.id, permit.permitClass, requestUrl) };
+  return { permit, refusal: refusals.permitMissing(ctx.step.id, permit.permitClass, requestUrl).error };
 };
 
 /**
@@ -93,9 +93,9 @@ export const evaluateStepLocks = async (deps: Deps, ctx: LockContext): Promise<L
 /** Une preuve manquante ou trop faible bloque l'étape : ce n'est pas un verrou, c'est une exigence. */
 export const evidenceRefusal = (step: Step, evidence?: Evidence): AppError | undefined => {
   if (!step.evidence.required) return undefined;
-  if (!evidence) return refusals.evidenceRequired(step.id, step.evidence.kind);
+  if (!evidence) return refusals.evidenceRequired(step.id, step.evidence.kind).error;
   if (!isStrongEnough(step.evidence.strength, evidence.strength)) {
-    return refusals.evidenceRequired(step.id, `${step.evidence.strength} (fournie : ${evidence.strength})`);
+    return refusals.evidenceRequired(step.id, `${step.evidence.strength} (fournie : ${evidence.strength})`).error;
   }
   return undefined;
 };

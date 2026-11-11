@@ -146,7 +146,7 @@ const acceptStep = async (deps: Deps, args: RecordStepArgs, ctx: Ctx): Promise<R
     ...(startedAt ? { durationS: durationSeconds(startedAt, now) } : {}),
     ...(args.evidence ? { evidence: args.evidence } : {}),
   });
-  const moved = advance(done, ctx.version, now);
+  const moved = advance(done, ctx.version, now, args.stepId);
   await persist(deps, moved);
   await logStep(deps, moved, "run.step_recorded", { stepId: args.stepId, outcome: "done" });
   const next = viewOf(moved, ctx.version);
@@ -161,34 +161,31 @@ const failStep = async (deps: Deps, args: RecordStepArgs, ctx: Ctx): Promise<Res
   const state = args.outcome === "skipped" ? "skipped" : args.outcome === "refused" ? "refused" : "failed";
   const retry = args.outcome === "failed" && ctx.step.onFailure === "retry";
   const advanceAfter = !retry && (state !== "failed" || ctx.step.onFailure === "skip_with_reason");
-  let next = patchStep(ctx.run, args.stepId, {
+  let updated = patchStep(ctx.run, args.stepId, {
     state: retry ? "current" : state,
     attempts: attemptsOf(ctx.run, args.stepId),
     ...(retry ? {} : { doneAt: now }),
     ...(args.reason ? { refusedReason: args.reason } : {}),
   });
-  next = advanceAfter ? advance(next, ctx.version, now) : next;
-  next = args.reason
-    ? await attachDeviation(
-        deps,
-        next,
-        makeDeviation(deps, {
-          runId: next.id,
-          stepId: args.stepId,
-          whatHappened: `étape ${args.outcome}`,
-          why: args.reason,
-          actorKind: args.actor.kind,
-          origin: "declared",
-        }),
-      )
-    : await persist(deps, next);
-  await logStep(deps, next, "run.step_recorded", {
+  updated = advanceAfter ? advance(updated, ctx.version, now, args.stepId) : updated;
+  const deviation = args.reason
+    ? makeDeviation(deps, {
+        runId: updated.id,
+        stepId: args.stepId,
+        whatHappened: `étape ${args.outcome}`,
+        why: args.reason,
+        actorKind: args.actor.kind,
+        origin: "declared",
+      })
+    : undefined;
+  updated = deviation ? await attachDeviation(deps, updated, deviation) : await persist(deps, updated);
+  await logStep(deps, updated, "run.step_recorded", {
     stepId: args.stepId,
     outcome: args.outcome,
     onFailure: ctx.step.onFailure,
   });
-  const view = viewOf(next, ctx.version);
-  return ok({ accepted: true, ...(view ? { next } : {}) });
+  const view = viewOf(updated, ctx.version);
+  return ok({ accepted: true, ...(view ? { next: view } : {}), ...(deviation ? { deviation } : {}) });
 };
 
 /** Déclarer ce qui a été fait à la place, et pourquoi : la matière la plus précieuse du produit. */
