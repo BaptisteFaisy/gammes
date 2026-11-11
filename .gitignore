@@ -1,4 +1,4 @@
-node_modules/
+node_modules
 dist/
 .build/
 *.log
@@ -8,3 +8,4 @@ dist/
 !.env.example
 coverage/
 .forge/
+docs/DEMANDES/*.local.md
