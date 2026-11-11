@@ -17,6 +17,13 @@ export type RiskMotif = {
   readonly level: RiskLevel;
   /** Raison lisible, affichée à l'opérateur et au propriétaire. */
   readonly label: string;
+  /**
+   * Vrai pour les gestes destructifs/irréversibles : réservés à un humain (verrou humain).
+   * Les autres gestes à risque sont seulement soumis au verrou de permis : un agent muni
+   * d'un permis valide peut les exécuter (§ 9). Recette 4 (kubectl delete → verrou humain)
+   * et recette 9 (production-write par un agent → verrou de permis) coexistent ainsi.
+   */
+  readonly humanOnly?: boolean;
 };
 
 export const DEFAULT_RISK_MOTIFS: readonly RiskMotif[] = [
@@ -25,30 +32,35 @@ export const DEFAULT_RISK_MOTIFS: readonly RiskMotif[] = [
     pattern: /\b(?:curl|wget)\b[^|\n]*\|\s*(?:ba|z|da)?sh\b/i,
     level: "critical",
     label: "téléchargement exécuté directement par un interpréteur",
+    humanOnly: true,
   },
   {
     class: "destructive-filesystem",
     pattern: /\brm\s+(?:-[a-zA-Z]*\s+)*-[a-zA-Z]*r[a-zA-Z]*f|\brm\s+-rf\b|\bshred\b|\bmkfs\b|\bdd\s+if=/i,
     level: "critical",
     label: "suppression récursive ou irréversible du système de fichiers",
+    humanOnly: true,
   },
   {
     class: "destructive-database",
     pattern: /\b(?:DROP\s+(?:TABLE|DATABASE|SCHEMA)|TRUNCATE\s+TABLE|DELETE\s+FROM\s+\w+\s*;)/i,
     level: "critical",
     label: "destruction de données en base",
+    humanOnly: true,
   },
   {
     class: "force-push",
     pattern: /\bgit\s+push\b[^\n]*(?:--force\b|-f\b)|\bforce-push\b/i,
     level: "high",
     label: "réécriture de l'historique partagé",
+    humanOnly: true,
   },
   {
     class: "kubernetes-delete",
     pattern: /\bkubectl\s+(?:delete|drain|cordon)\b|\bhelm\s+(?:uninstall|delete)\b/i,
     level: "high",
     label: "suppression ou retrait d'une charge en production",
+    humanOnly: true,
   },
   {
     class: "insecure-permission",

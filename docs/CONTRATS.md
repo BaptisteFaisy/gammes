@@ -315,7 +315,7 @@ Le resolver est le **seul** point de montage : il n'importe que des services des
 logique métier n'y vit. Un écran = un fichier ; l'atelier visuel et le registre tableau portent la
 même information (WCAG AA, la poussière et le panneau rouge ne sont jamais les seuls codages).
 
-## Lot I — `feat/seed-recette` (§ 27, § 25) — vague 2
+## Lot I — `feat/seed-recette` (§ 27, § 25) — fait
 
 Dossiers : `seed/`, `scripts/seed.ts`, `scripts/demo.ts`, `test/recette/`, `docs/DEMO.md`,
 `docs/JUGES.md`. Les **21 points de recette** du § 25 deviennent 21 tests nommés
