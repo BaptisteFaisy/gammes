@@ -19,6 +19,8 @@ export type ErrorCode =
   | "unknown_version"
   | "unknown_run"
   | "unknown_step"
+  | "unknown_conflict"
+  | "conciliator_unavailable"
   | "step_not_current"
   | "run_already_finished"
   | "exclusive_busy"
@@ -145,5 +147,19 @@ export const refusals = {
       `Page source injoignable (${pageAri}) : la gamme approuvée reste déroulable depuis la base.`,
       `Source page unreachable (${pageAri}): the approved gamme still runs from the store.`,
       { pageAri },
+    ),
+  unknownConflict: (id: string): Failure =>
+    fail(
+      "unknown_conflict",
+      `Conflit ${id} introuvable.`,
+      `Conflict ${id} not found.`,
+      { conflictId: id },
+    ),
+  conciliatorUnavailable: (conflictId: string, reason: string): Failure =>
+    fail(
+      "conciliator_unavailable",
+      `Conciliateur indisponible pour le conflit ${conflictId} : ${reason}. Le conflit reste porté aux propriétaires.`,
+      `Conciliator unavailable for conflict ${conflictId}: ${reason}. The conflict is still raised to both owners.`,
+      { conflictId, reason },
     ),
 } as const;
