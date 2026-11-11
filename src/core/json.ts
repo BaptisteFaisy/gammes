@@ -22,11 +22,13 @@ export const parseJsonLoose = <T>(text: string): T | undefined => {
   }
 };
 
+/** Chaîne non vide, trimée — sinon `undefined`. Le garde commun des réponses de modèle. */
+export const asText = (value: unknown): string | undefined =>
+  typeof value === "string" && value.trim().length > 0 ? value.trim() : undefined;
+
 /** Récupère une chaîne non vide dans un objet inconnu (réponse de modèle non typée). */
-export const textField = (value: unknown, key: string): string | undefined => {
-  const raw = (value as Record<string, unknown> | undefined)?.[key];
-  return typeof raw === "string" && raw.trim().length > 0 ? raw.trim() : undefined;
-};
+export const textField = (value: unknown, key: string): string | undefined =>
+  asText((value as Record<string, unknown> | undefined)?.[key]);
 
 /** Récupère un tableau dans un objet inconnu, ou un tableau vide. */
 export const arrayField = (value: unknown, key: string): readonly unknown[] => {

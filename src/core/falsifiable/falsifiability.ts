@@ -8,7 +8,7 @@
 
 import type { Deps } from "../ports";
 import type { Step } from "../types";
-import { stripFence } from "../json";
+import { parseJsonLoose, textField } from "../json";
 
 const VAGUE_PATTERNS: readonly RegExp[] = [
   /(s'?assurer|assurez-vous|vérifi\w+|contrôl\w+|check)\s*(que|if)?\s*(tout|ça|ca|cela)\s*(va|marche|fonctionne|est\s+ok|se\s+passe\s+bien)/i,
@@ -94,9 +94,7 @@ export const proposeRewording = async (deps: Deps, step: Step): Promise<string |
       cacheKey: deps.hasher.hash(step.text),
       json: true,
     });
-    const parsed = JSON.parse(stripFence(res.text)) as { rewording?: unknown };
-    const rewording = typeof parsed.rewording === "string" ? parsed.rewording.trim() : "";
-    return rewording.length > 0 ? rewording : undefined;
+    return textField(parseJsonLoose<{ rewording?: unknown }>(res.text), "rewording");
   } catch {
     return undefined; // modèle indisponible : le signalement suffit, on ne devine pas
   }

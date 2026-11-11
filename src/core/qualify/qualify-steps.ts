@@ -11,6 +11,7 @@ import type { Deps } from "../ports";
 import type { EvidenceSpec, OnFailure, PageDigest, RiskLevel, Step, StepKind, StepLock } from "../types";
 import type { DraftStep } from "../extract/extract-steps";
 import { assessFalsifiability, proposeRewording } from "../falsifiable/falsifiability";
+import { parseJsonLoose } from "../json";
 import { detectRisk, isRisky } from "../risk/risk-motifs";
 
 export type QualifyOptions = {
@@ -107,7 +108,8 @@ const modelHint = async (deps: Deps, draft: DraftStep): Promise<ModelHint | unde
       cacheKey: deps.hasher.hash(draft.text),
       json: true,
     });
-    const parsed = JSON.parse(res.text) as Record<string, unknown>;
+    const parsed = parseJsonLoose<Record<string, unknown>>(res.text);
+    if (!parsed) return undefined;
     const hint: ModelHint = {};
     if (typeof parsed.kind === "string" && HINT_KINDS.includes(parsed.kind as StepKind)) {
       hint.kind = parsed.kind as StepKind;

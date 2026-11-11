@@ -233,7 +233,7 @@ Dossiers : `src/core/compile/`, `src/core/version/`, `src/core/binding/`, `src/p
 // src/core/compile/compile-page.ts
 export type CompileOutcome = { readonly gamme: Gamme; readonly version: GammeVersion;
   readonly diff: string; readonly findings: readonly SecretFinding[]; readonly nonFalsifiable: readonly string[];
-  readonly usedModel: boolean };
+  readonly usedModel: boolean; readonly droppedSteps: number };
 export const compilePage: (deps: Deps, args: { page: PageDigest; confirmedBy: ActorRef; spaceKey?: string }) => Promise<Result<CompileOutcome>>;
 
 // src/core/version/versioning.ts
@@ -242,7 +242,7 @@ export const createVersion: (deps: Deps, gammeId: string, draft: VersionDraft) =
 export const isInvocable: (gamme: Gamme) => boolean;   // approuvée + propriétaire + non dépréciée
 export const canTransition: (from: GammeState, to: GammeState) => boolean;
 export const slugify: (title: string) => string;
-export const approveVersion: (deps: Deps, args: { versionId: string; approver: ActorRef; reviewAfterDays?: number }) => Promise<Result<Gamme>>;
+export const approveVersion: (deps: Deps, args: { versionId: string; approver: ActorRef; reviewAfterDays?: number; notes?: string }) => Promise<Result<Gamme>>;
 export const deprecateGamme: (deps: Deps, args: { gammeId: string; by: ActorRef; replacedBy?: string }) => Promise<Result<Gamme>>;
 export const getVersion: (deps: Deps, code: string, version?: number) => Promise<Result<GammeVersion>>;
 export const listVersions: (deps: Deps, gammeId: string) => Promise<readonly GammeVersion[]>;

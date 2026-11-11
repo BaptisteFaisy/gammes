@@ -7,10 +7,10 @@ import type { Deps } from "../../src/core/ports";
 import type { ActorRef, Gamme, GammeVersion, PageDigest } from "../../src/core/types";
 import { compilePage, type CompileOutcome } from "../../src/core/compile/compile-page";
 import { approveVersion } from "../../src/core/version/versioning";
-import { human, makePage, T0 } from "../helpers";
+import { fakeAwsKey, human, makePage, T0 } from "../helpers";
 
-/** Fausses valeurs : construites par concaténation, jamais une clé réelle. */
-export const fakeAwsKey = (): string => `AKI${"AI"}OSFODNN7EXAMPLE`;
+/** Fausse clé : une seule copie, chez les fixtures partagées (`test/helpers.ts`). */
+export { fakeAwsKey };
 
 export const PAGE_DEPLOY = [
   "<h1>Procédure : déployer le service paiements</h1>",

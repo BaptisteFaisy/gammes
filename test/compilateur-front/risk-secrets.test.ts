@@ -5,7 +5,7 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { makeDeps } from "../helpers";
+import { fakeAwsKey, makeDeps } from "../helpers";
 import { DEFAULT_RISK_MOTIFS, detectAllRisks, detectRisk, isRisky } from "../../src/core/risk/risk-motifs";
 import {
   DEFAULT_SECRET_DETECTORS,
@@ -14,7 +14,6 @@ import {
   summarizeFindings,
 } from "../../src/core/secrets/detectors";
 
-const fakeAwsKey = (): string => `AKI${"AI"}OSFODNN7EXAMPLE`;
 const fakeOpenAiKey = (): string => `sk-${"a1B2c3D4e5F6g7H8i9J0"}`;
 const fakeGithubToken = (): string => `ghp_${"0123456789abcdefghijABCDEF"}`;
 

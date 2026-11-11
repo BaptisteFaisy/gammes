@@ -236,3 +236,10 @@ export const echoLlm = (): LlmClient => ({
     cached: false,
   }),
 });
+
+// ---------------------------------------------------------------------------
+// Fausses valeurs de sécurité — construites par concaténation, jamais une clé
+// réelle : le garde-fou anti-secret de la CI ne dépend pas d'un marqueur.
+// ---------------------------------------------------------------------------
+
+export const fakeAwsKey = (): string => `AKI${"AI"}OSFODNN7EXAMPLE`;
