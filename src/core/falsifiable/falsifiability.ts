@@ -8,6 +8,7 @@
 
 import type { Deps } from "../ports";
 import type { Step } from "../types";
+import { stripFence } from "../conciliation/hermes";
 
 const VAGUE_PATTERNS: readonly RegExp[] = [
   /(s'?assurer|assurez-vous|vérifi\w+|contrôl\w+|check)\s*(que|if)?\s*(tout|ça|ca|cela)\s*(va|marche|fonctionne|est\s+ok|se\s+passe\s+bien)/i,
@@ -78,11 +79,6 @@ const buildPrompt = (step: Step, note: string): string =>
     step.command ? `Commande citée : ${step.command}` : "Aucune commande citée.",
     `Diagnostic : ${note}`,
   ].join("\n");
-
-const stripFence = (text: string): string => {
-  const fenced = /```(?:json)?\s*([\s\S]*?)```/i.exec(text);
-  return (fenced?.[1] ?? text).trim();
-};
 
 /**
  * Reformulation proposée par le modèle — une **proposition**, jamais une écriture

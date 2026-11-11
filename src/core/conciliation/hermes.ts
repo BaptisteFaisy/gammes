@@ -58,7 +58,8 @@ export const buildPrompt = (conflict: Conflict): string => {
 const asText = (value: unknown): string | undefined =>
   typeof value === "string" && value.trim().length > 0 ? value.trim() : undefined;
 
-const stripFence = (text: string): string => {
+/** Enveloppe ```json``` retirée avant analyse : l'unique copie, importée par les autres lots (règle zéro duplication). */
+export const stripFence = (text: string): string => {
   const fenced = /```(?:json)?\s*([\s\S]*?)```/i.exec(text);
   return (fenced?.[1] ?? text).trim();
 };

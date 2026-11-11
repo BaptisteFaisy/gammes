@@ -12,6 +12,7 @@
 
 import type { Deps } from "../ports";
 import type { InputSpec, PageDigest, SourceSpan, StepKind } from "../types";
+import { stripFence } from "../conciliation/hermes";
 
 export type BlockKind = "heading" | "list_item" | "checkbox" | "code" | "table_row" | "paragraph";
 
@@ -263,11 +264,6 @@ const proseDrafts = (
     });
   });
   return out;
-};
-
-const stripFence = (text: string): string => {
-  const fenced = /```(?:json)?\s*([\s\S]*?)```/i.exec(text);
-  return (fenced?.[1] ?? text).trim();
 };
 
 /** Extraction complète : règles d'abord, modèle sur la prose ambiguë seulement. */

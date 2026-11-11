@@ -63,7 +63,7 @@ Dossiers possédés : `src/core/detect/`, `src/core/extract/`, `src/core/qualify
 ```ts
 // src/core/detect/detect-candidates.ts
 export const scorePage: (page: PageDigest, settings?: SpaceSettings) => { score: number; signals: readonly CandidateSignal[] };
-export const detectCandidates: (deps: Deps, pages: readonly PageDigest[], settings?: SpaceSettings) => readonly CandidatePage[];
+export const detectCandidates: (deps: Deps, pages: readonly PageDigest[], settings?: SpaceSettings) => Promise<readonly CandidatePage[]>;   // persiste dans Store.candidates (async), déduplique par ARI
 export const DETECTION_SIGNALS: readonly { key: string; weight: number; test: (p: PageDigest) => boolean; reason: string }[];
 
 // src/core/extract/extract-steps.ts
