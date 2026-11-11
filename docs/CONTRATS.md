@@ -63,17 +63,22 @@ Dossiers possédés : `src/core/detect/`, `src/core/extract/`, `src/core/qualify
 ```ts
 // src/core/detect/detect-candidates.ts
 export const scorePage: (page: PageDigest, settings?: SpaceSettings) => { score: number; signals: readonly CandidateSignal[] };
-export const detectCandidates: (deps: Deps, pages: readonly PageDigest[], settings?: SpaceSettings) => readonly CandidatePage[];
+export const detectCandidates: (deps: Deps, pages: readonly PageDigest[], settings?: SpaceSettings) => Promise<readonly CandidatePage[]>;   // persiste dans Store.candidates (async), déduplique par ARI
 export const DETECTION_SIGNALS: readonly { key: string; weight: number; test: (p: PageDigest) => boolean; reason: string }[];
 
 // src/core/extract/extract-steps.ts
-export type DraftStep = Omit<Step, "id" | "evidence" | "locks" | "humanOnly" | "risk" | "falsifiable"> & {
-  readonly evidence?: EvidenceSpec; readonly sectionTitle?: string; readonly rawSpan: SourceSpan;
-};
+export type DraftStep = { readonly ord: number; readonly kind: StepKind; readonly text: string;
+  readonly command?: string; readonly expectedResult?: string; readonly source: SourceSpan;
+  readonly sectionTitle?: string; readonly inferredBy: "rule" | "model"; readonly inferredReason?: string };
+export type ParsedBlock = { readonly kind: "heading" | "list_item" | "checkbox" | "code" | "table_row" | "paragraph";
+  readonly level?: number; readonly text: string; readonly command?: string; readonly start: number;
+  readonly end: number; readonly section: string };
 export type ExtractionResult = { readonly drafts: readonly DraftStep[]; readonly usedModel: boolean;
   readonly modelTasks: readonly string[]; readonly inputs: readonly InputSpec[] };
 export const extractSteps: (deps: Deps, page: PageDigest) => Promise<ExtractionResult>;
 export const parseStorageBody: (page: PageDigest) => readonly ParsedBlock[];   // déterministe, sans LLM
+export const extractInputs: (blocks: readonly ParsedBlock[]) => readonly InputSpec[];
+export const stripTags: (html: string) => string;
 
 // src/core/qualify/qualify-steps.ts
 export const qualifySteps: (deps: Deps, drafts: readonly DraftStep[], page: PageDigest) => Promise<readonly Step[]>;
