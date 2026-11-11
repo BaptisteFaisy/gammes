@@ -139,10 +139,12 @@ Invariants : un agent sur une étape `human_only` ⇒ refus **et** déviation `o
 preuve exigée absente ⇒ l'étape n'avance pas ; la version est épinglée au démarrage ; mode urgence ⇒
 raison écrite + `emergencyReviewDueAt` à 7 jours ; aucun secret dans une trace (références seulement).
 
-## Lot C — `feat/mesures-atelier` (GA-19, GA-20, GA-21, GA-22, GA-24, GA-18)
+## Lot C — `feat/mesures-atelier` (GA-19, GA-20, GA-21, GA-22, GA-24, GA-18) — fait
 
 Dossiers : `src/core/stats/`, `src/core/amendments/`, `src/core/ghosts/`, `src/core/coverage/`,
-`test/mesures-atelier/`.
+`test/mesures-atelier/`. Arbitrage : `Rate.value === undefined` sous le seuil, fourchette de Wilson
+à 95 %, `peopleCount` des fantômes = borne basse (un effectif, jamais un nom), l'adoption d'un
+fantôme ouvre une gamme brouillon pré-remplie (avec une version citée depuis les tickets).
 
 ```ts
 // src/core/stats/rates.ts

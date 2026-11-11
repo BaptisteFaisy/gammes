@@ -6,6 +6,6 @@ dist/
 .env
 .env.*
 !.env.example
-coverage/
+/coverage/
 .forge/
 docs/DEMANDES/*.local.md
