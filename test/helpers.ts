@@ -9,6 +9,7 @@ import type { Clock, Deps, Hasher, IdGen, LlmClient, Store } from "../src/core/p
 import type {
   ActorRef,
   ContentFingerprint,
+  Evidence,
   EvidenceSpec,
   Gamme,
   GammeScope,
@@ -222,6 +223,25 @@ export const makeIssue = (over: Partial<IssueDigest> = {}): IssueDigest => ({
 
 export const human = (id = "ari:cloud:aaid:demo:ana"): ActorRef => ({ id, kind: "human" });
 export const agent = (id = "ari:cloud:rovo:agent:compagnon"): ActorRef => ({ id, kind: "agent" });
+
+// ---------------------------------------------------------------------------
+// Preuves types — toujours une référence, jamais le contenu brut (§ 8).
+// ---------------------------------------------------------------------------
+
+export const machineEvidence = (ref = "https://ci.example.internal/build/42"): Evidence => ({
+  kind: "command_output",
+  strength: "machine",
+  ref,
+  capturedAt: T0,
+});
+
+export const attestationEvidence = (by = "ari:cloud:aaid:demo:ana", note?: string): Evidence => ({
+  kind: "attestation",
+  strength: "attested",
+  ref: `attestation:${by}`,
+  capturedAt: T0,
+  ...(note ? { note } : {}),
+});
 
 export const fingerprint = (hasher: Hasher, body: string): ContentFingerprint => hasher.contentHash(body);
 

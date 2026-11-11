@@ -6,7 +6,7 @@
 
 import type { Deps, PermitRegistry, ReservationRegistry } from "../../src/core/ports";
 import type { Evidence, Gamme, GammeVersion, PermitCheck, Step } from "../../src/core/types";
-import { evidenceSpec, lock, makeGamme, makeStep, makeVersion, span, T0 } from "../helpers";
+import { attestationEvidence, evidenceSpec, lock, makeGamme, makeStep, makeVersion, span, T0 } from "../helpers";
 
 export const OWNER = "ari:cloud:aaid:demo:ana";
 export const PERMIT_URL = "https://permis.example.internal/demande";
@@ -120,19 +120,8 @@ export const freeReservations = (): ReservationRegistry & { readonly held: strin
   };
 };
 
-export const machineEvidence = (ref = "https://ci.example.internal/build/42"): Evidence => ({
-  kind: "command_output",
-  strength: "machine",
-  ref,
-  capturedAt: T0,
-});
+export { machineEvidence } from "../helpers";
 
-export const attestation = (by = OWNER): Evidence => ({
-  kind: "attestation",
-  strength: "attested",
-  ref: `attestation:${by}`,
-  capturedAt: T0,
-  note: "validé de vive voix en astreinte",
-});
+export const attestation = (by = OWNER): Evidence => attestationEvidence(by, "validé de vive voix en astreinte");
 
 export const validInputs = (): Record<string, unknown> => ({ service: "paiements", version_cible: "1.8.2" });

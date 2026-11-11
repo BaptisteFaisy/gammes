@@ -54,5 +54,5 @@ export const confluenceStub = (pages: Record<string, PageDigest> = {}): Confluen
   isReachable: async () => true,
 });
 
-export const machineEvidence = () => ({ kind: "command_output" as const, strength: "machine" as const, ref: "https://ci/build/1", capturedAt: T0 });
-export const attestationEvidence = () => ({ kind: "attestation" as const, strength: "attested" as const, ref: `attestation:${OWNER}`, capturedAt: T0 });
+// Les preuves types viennent du harness partagé : une seule implémentation.
+export { attestationEvidence, machineEvidence } from "../helpers";

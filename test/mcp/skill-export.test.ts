@@ -6,12 +6,10 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { makeDeps, makeGamme, makeStep, makeVersion, T0 } from "../helpers";
+import { fakeAwsKey, makeDeps, makeGamme, makeStep, makeVersion, T0 } from "../helpers";
 import { exportSkillMd } from "../../src/core/export/skill-md";
 import { createSignedHook, signBody } from "../../src/platform/webtrigger";
 import { CODE, seedApproved } from "./fixtures";
-
-const fakeKey = (): string => `AKI${"AI"}OSFODNN7EXAMPLE`;
 
 describe("export SKILL.md (GA-13, recette 17)", () => {
   it("produit un SKILL.md qui cite la version, les étapes, les verrous et les preuves", async () => {
@@ -43,7 +41,7 @@ describe("export SKILL.md (GA-13, recette 17)", () => {
         id: "ver_secret",
         gammeId: "gam_secret",
         version: 1,
-        steps: [makeStep({ id: "stp_k", text: `Exporter la clé ${fakeKey()} puis continuer` })],
+        steps: [makeStep({ id: "stp_k", text: `Exporter la clé ${fakeAwsKey()} puis continuer` })],
         sourcePages: ["ari:p/9"],
       }),
     );

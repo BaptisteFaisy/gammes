@@ -13,6 +13,7 @@ import type { Deps } from "../ports";
 import { fail, ok, refusals, type Result } from "../result";
 import type { ActorRef, Gamme, GammeVersion, RiskLevel } from "../types";
 import { syncBindingToVersion } from "../binding/binding";
+import { fold, STOP_WORDS } from "../text/tokens";
 
 /** Ce que produit la compilation avant gravure : tout sauf l'identité et le numéro. */
 export type VersionDraft = Omit<GammeVersion, "id" | "gammeId" | "immutable" | "version">;
@@ -22,14 +23,9 @@ const RISK_ORDER: readonly RiskLevel[] = ["none", "low", "medium", "high", "crit
 export const maxRisk = (levels: readonly RiskLevel[]): RiskLevel =>
   levels.reduce<RiskLevel>((worst, l) => (RISK_ORDER.indexOf(l) > RISK_ORDER.indexOf(worst) ? l : worst), "none");
 
-const STOP_WORDS = new Set(["le", "la", "les", "de", "du", "des", "un", "une", "et", "a", "sur", "pour", "the", "of", "and", "to", "in", "on"]);
-
 /** `Procédure : déployer le service paiements` → `deployer-service-paiements`. */
 export const slugify = (title: string): string => {
-  const cleaned = title
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
+  const cleaned = fold(title)
     .replace(/procedure|mode operatoire|runbook|how-to|\bsop\b|checklist/g, " ")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
