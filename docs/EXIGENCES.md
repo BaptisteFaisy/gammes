@@ -27,7 +27,7 @@ Lot : voir [`CONTRATS.md`](CONTRATS.md). État mis à jour par l'intégrateur à
 | GA-20 | Amendement proposé depuis les traces, avec ses preuves, jamais appliqué seul | M | C | ⬜ à faire | — |
 | GA-21 | Aucune statistique par personne | M | C | ⬜ à faire | — |
 | GA-22 | Détection des gammes fantômes depuis l'historique Jira/JSM, avec preuves et coût | S | C | ⬜ à faire | — |
-| GA-23 | Détection des conflits entre gammes et avec les pages de politique | S | D | ⬜ à faire | — |
+| GA-23 | Détection des conflits entre gammes et avec les pages de politique | S | D | ✅ faite | `test/conflits/` (16 tests), `src/core/conflicts/`, conciliateur `src/core/conciliation/hermes.ts` |
 | GA-24 | Comparaison de versions (un amendement a-t-il amélioré quelque chose ?) | S | C | ⬜ à faire | — |
 | GA-25 | Flux Jira pour la version humaine d'une gamme, et validateur de transition exigeant une trace | S | H | ⬜ à faire | — |
 | GA-26 | Point d'entrée externe signé (`webtrigger`) pour les hooks d'agents et le CI | S | G | ⬜ à faire | — |
