@@ -31,7 +31,7 @@ Lot : voir [`CONTRATS.md`](CONTRATS.md). État mis à jour par l'intégrateur à
 | GA-24 | Comparaison de versions (un amendement a-t-il amélioré quelque chose ?) | S | C | ✅ faite | `compareVersions`, recette 16 testée |
 | GA-25 | Flux Jira pour la version humaine d'une gamme, et validateur de transition exigeant une trace | S | H | ⬜ à faire | — |
 | GA-26 | Point d'entrée externe signé (`webtrigger`) pour les hooks d'agents et le CI | S | G | ⬜ à faire | — |
-| GA-27 | Lecture du graphe pour le périmètre et le propriétaire (`document`, `software-service`, `project`) | S | E | ⬜ à faire | — |
+| GA-27 | Lecture du graphe pour le périmètre et le propriétaire (`document`, `software-service`, `project`) | S | E | ✅ faite | `src/integrations/graph.ts` (droit manquant = vide sans erreur) |
 | GA-28 | Étapes non falsifiables détectées, avec reformulation proposée | S | A | ✅ faite | `src/core/falsifiable/falsifiability.ts` |
 | GA-29 | Exécution en mode dégradé d'urgence, avec raison et revue différée obligatoire | S | B | ✅ faite | mode `emergency` : raison écrite + revue différée à 7 jours |
 | GA-30 | Publication de gammes vers d'autres espaces ou organisations | C | — | ⬜ à faire | — |
