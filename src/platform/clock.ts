@@ -43,3 +43,7 @@ export const shiftMinutes = addMinutes;
 
 export const daysBetween = (fromIso: string, toIso: string): number =>
   Math.floor((new Date(toIso).getTime() - new Date(fromIso).getTime()) / 86_400_000);
+
+/** Durée en secondes entre deux horodatages ISO — utilisé par les traces, jamais par Date dans le cœur. */
+export const secondsBetween = (fromIso: string, toIso: string): number =>
+  Math.max(0, Math.round((new Date(toIso).getTime() - new Date(fromIso).getTime()) / 1000));
