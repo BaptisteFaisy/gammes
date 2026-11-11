@@ -37,8 +37,8 @@ import type {
 
 export interface Clock {
   now(): string;
-  /** Pour les tests : avance contrôlée. */
-  plusDays?(days: number): string;
+  /** Décale une date ISO en jours : les échéances (révision, revue différée) passent par ici. */
+  plusDays(days: number, from?: string): string;
 }
 
 export interface IdGen {

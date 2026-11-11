@@ -8,7 +8,7 @@
 
 import type { Deps } from "../ports";
 import type { Step } from "../types";
-import { stripFence } from "../conciliation/hermes";
+import { stripFence } from "../json";
 
 const VAGUE_PATTERNS: readonly RegExp[] = [
   /(s'?assurer|assurez-vous|vérifi\w+|contrôl\w+|check)\s*(que|if)?\s*(tout|ça|ca|cela)\s*(va|marche|fonctionne|est\s+ok|se\s+passe\s+bien)/i,

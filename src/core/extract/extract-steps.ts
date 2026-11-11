@@ -12,7 +12,7 @@
 
 import type { Deps } from "../ports";
 import type { InputSpec, PageDigest, SourceSpan, StepKind } from "../types";
-import { stripFence } from "../conciliation/hermes";
+import { stripFence } from "../json";
 
 export type BlockKind = "heading" | "list_item" | "checkbox" | "code" | "table_row" | "paragraph";
 
