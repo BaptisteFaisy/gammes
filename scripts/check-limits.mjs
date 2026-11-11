@@ -21,6 +21,8 @@ const SOURCE_EXT = new Set([".ts", ".tsx", ".mjs"]);
 const MAX_FILE_LINES = 500;
 const MAX_FUNC_LINES = 50;
 const ALLOWLIST = join("scripts", "limits-allowlist.json");
+/** Marqueur explicite d'une fausse clé de fixture (jamais de secret réel en test). */
+const SECRET_FIXTURE_MARKER = "gammes-allow-secret-fixture";
 
 const violations = [];
 const add = (rule, file, line, detail) => violations.push(`${rule} · ${file}:${line} · ${detail}`);
@@ -111,15 +113,18 @@ const checkFile = (rel, allow) => {
     add("file-too-long", rel, lines.length, `${lines.length} lignes (max ${MAX_FILE_LINES}) — découper`);
   }
   const inCore = rel.startsWith(join("src", "core"));
+  let markerAbove = false;
   lines.forEach((line, idx) => {
     const n = idx + 1;
     const t = line.trimStart();
+    const marker = line.includes(SECRET_FIXTURE_MARKER) || markerAbove;
+    markerAbove = line.includes(SECRET_FIXTURE_MARKER);
     if (t.startsWith("*") || t.startsWith("//") || t.startsWith("/*")) return;
     if (NO_ENUM.test(line)) add("erasable-syntax", rel, n, line.trim().slice(0, 80));
     if (inCore && SYSTEM_TIME.test(line)) add("no-system-clock", rel, n, "utiliser le port Clock");
     if (rel.startsWith("src") && PER_PERSON.test(line)) add("no-per-person-stats", rel, n, line.trim().slice(0, 80));
     // Une fausse clé de fixture est assumée par un marqueur explicite, jamais par défaut.
-    if (!line.includes("gammes-allow-secret-fixture")) {
+    if (!marker) {
       for (const [name, re] of SECRET_PATTERNS) {
         if (re.test(line)) add("secret-committed", rel, n, `motif ${name}`);
       }
@@ -147,6 +152,7 @@ const checkDocsAndSeed = () => {
   for (const rel of extras) {
     const lines = readFileSync(join(ROOT, rel), "utf8").split("\n");
     lines.forEach((line, idx) => {
+      if (line.includes(SECRET_FIXTURE_MARKER)) return;
       for (const [name, re] of SECRET_PATTERNS) {
         if (re.test(line)) add("secret-committed", rel, idx + 1, `motif ${name}`);
       }
