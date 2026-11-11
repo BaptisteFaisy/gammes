@@ -6,7 +6,10 @@
 
 import type { Clock } from "../core/ports";
 
-export const systemClock = (): Clock => ({ now: () => new Date().toISOString() });
+export const systemClock = (): Clock => ({
+  now: () => new Date().toISOString(),
+  plusDays: (days, from) => addDays(from ?? new Date().toISOString(), days),
+});
 
 const addDays = (iso: string, days: number): string =>
   new Date(new Date(iso).getTime() + days * 86_400_000).toISOString();
@@ -19,7 +22,7 @@ export const fixedClock = (startIso: string): Clock & { advanceDays(d: number): 
   let current = startIso;
   return {
     now: () => current,
-    plusDays: (days: number) => (current = addDays(current, days)),
+    plusDays: (days: number, from?: string) => addDays(from ?? current, days),
     advanceDays: (days: number) => {
       current = addDays(current, days);
     },
@@ -35,6 +38,7 @@ export const steppingClock = (startIso: string, stepMinutes = 1): Clock => {
       current = addMinutes(current, stepMinutes);
       return out;
     },
+    plusDays: (days: number, from?: string) => addDays(from ?? current, days),
   };
 };
 

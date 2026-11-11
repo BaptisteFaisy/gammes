@@ -9,12 +9,12 @@ Lot : voir [`CONTRATS.md`](CONTRATS.md). État mis à jour par l'intégrateur à
 | GA-02 | Extraire les étapes en déterministe d'abord, modèle sur l'ambigu seulement, avec le passage source de chaque étape | M | A | ✅ faite | `src/core/extract/`, recettes 1 et 2 testées |
 | GA-03 | Qualifier chaque étape : nature, preuve attendue, verrou humain, idempotence, risque, conduite en échec | M | A | ✅ faite | `src/core/qualify/qualify-steps.ts` |
 | GA-04 | Détecter les étapes à risque par motifs et leur affecter un verrou | M | A | ✅ faite | `src/core/risk/risk-motifs.ts`, recette 4 testée |
-| GA-05 | Versionnage immuable ; exécution épinglée à sa version | M | F | ⬜ à faire | — |
-| GA-06 | Cycle de vie avec approbation humaine datée et date de révision | M | F | ⬜ à faire | — |
+| GA-05 | Versionnage immuable ; exécution épinglée à sa version | M | F | ✅ faite | `src/core/version/versioning.ts`, `test/cycle-de-vie/versioning.test.ts` |
+| GA-06 | Cycle de vie avec approbation humaine datée et date de révision | M | F | ✅ faite | `approveVersion` (acte humain daté + `reviewDueAt`), `deprecateGamme`, `canTransition` |
 | GA-07 | Exécution pas à pas : étape courante, preuve exigée, acquittement, déviation, reprise | M | B | ⬜ à faire | — |
 | GA-08 | Refus d'acquittement par un agent sur une étape réservée à un humain, tentative enregistrée | M | B | ⬜ à faire | — |
 | GA-09 | Trace complète par exécution, consultable et citable | M | B | ⬜ à faire | — |
-| GA-10 | Désynchronisation détectée par empreinte de contenu, diff de recompilation proposé | M | F | ⬜ à faire | — |
+| GA-10 | Désynchronisation détectée par empreinte de contenu, diff de recompilation proposé | M | F | ✅ faite | `src/core/binding/binding.ts`, `src/core/compile/recompile.ts`, recette 12 testée |
 | GA-11 | Verrou de secret avant publication, avec proposition d'emplacement de remplacement | M | A | ✅ faite | `src/core/secrets/detectors.ts`, recette 5 testée (empreinte + aperçu masqué) |
 | GA-12 | Verrou de permis : une étape à risque par agent exige un permis valide | M | B | ⬜ à faire | — |
 | GA-13 | Export `SKILL.md` par gamme approuvée, et skill générique côté Forge | M | G | ⬜ à faire | — |

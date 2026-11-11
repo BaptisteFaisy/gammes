@@ -16,6 +16,7 @@
 import type { Deps, LlmClient } from "../ports";
 import { ok, refusals, type Result } from "../result";
 import type { ActorRef, Conflict, Conciliation, ConciliationOption } from "../types";
+import { stripFence } from "../json";
 
 export const HERMES_CONDUCT = [
   "Tu es le conciliateur de l'atelier Gammes. Deux procédures prescrivent des choses incompatibles.",
@@ -59,11 +60,6 @@ const asText = (value: unknown): string | undefined =>
   typeof value === "string" && value.trim().length > 0 ? value.trim() : undefined;
 
 /** Enveloppe ```json``` retirée avant analyse : l'unique copie, importée par les autres lots (règle zéro duplication). */
-export const stripFence = (text: string): string => {
-  const fenced = /```(?:json)?\s*([\s\S]*?)```/i.exec(text);
-  return (fenced?.[1] ?? text).trim();
-};
-
 const parseOptions = (raw: readonly RawOption[], ids: Deps["ids"]): readonly ConciliationOption[] =>
   raw.slice(0, MAX_OPTIONS).flatMap((o) => {
     const title = asText(o.title);
