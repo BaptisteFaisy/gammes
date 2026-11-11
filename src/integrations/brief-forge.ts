@@ -13,8 +13,8 @@ import { DEFAULT_SECRET_DETECTORS, type SecretDetector } from "../core/secrets/d
 export const quoteSpan = (body: string, span: SourceSpan): { quote: string; valid: boolean } => {
   const inBounds = span.start >= 0 && span.end <= body.length && span.end >= span.start;
   const slice = inBounds ? body.slice(span.start, span.end) : "";
-  // Le passage cité doit être exactement celui borné par les décalages.
-  return { quote: slice, valid: inBounds && span.quote.length > 0 && body.slice(span.start, span.end).length === slice.length };
+  // Le passage cité doit être exactement celui borné par les décalages : une citation qui ne colle pas n'en est pas une.
+  return { quote: slice, valid: inBounds && span.quote.length > 0 && slice === span.quote };
 };
 
 export type BudgetResult = {
@@ -59,6 +59,6 @@ export const DELEGATION_BUDGET_CHARS = 20_000;
 export const conversationBudget = (turn: { system: string; user: string }, maxChars = DELEGATION_BUDGET_CHARS): BudgetResult =>
   fitsBudget([turn.system, turn.user], maxChars);
 
-/** Masque et borne l'invite d'une tâche de modèle : une seule porte de sortie vers le LLM. */
+/** Masque et borne l'invite d'une tâche de modèle : une seule porte de sortie vers le LLM, tout est masqué. */
 export const preparePrompt = (system: string, user: string, maxChars = DELEGATION_BUDGET_CHARS): BudgetResult =>
-  fitsBudget([system, maskUnified(user)], maxChars);
+  fitsBudget([maskUnified(system), maskUnified(user)], maxChars);

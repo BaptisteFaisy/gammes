@@ -5,6 +5,7 @@
 
 import { describe, expect, it } from "vitest";
 import { makeDeps } from "../helpers";
+import { seedGamme, seedRuns } from "../mesures-atelier/fixtures";
 import type { StepStat } from "../../src/core/types";
 import { DEFAULT_THRESHOLD, rate } from "../../src/core/stats/rates";
 import { DELEGATION_FAIL_CEILING, delegableSteps, renderDelegation } from "../../src/integrations/delegable-ou-pas";
@@ -99,6 +100,16 @@ describe("vigie", () => {
     expect(keys).not.toMatch(/(actor|assignee|person|owner|user|byRef|name)/i);
     expect(payload.scope).toBe("*");
     expect(payload).toHaveProperty("taux_echec_etapes");
+  });
+
+  it("sous le seuil de cohorte : vigie ne publie aucun taux, aucun pourcentage", async () => {
+    const deps = makeDeps();
+    await seedGamme(deps);
+    await seedRuns(deps, 3, 1); // 3 exécutions dont 1 échec : très loin du seuil de 30
+    const results = await keyResults(deps, "*");
+    expect(results.stepFailureRate.value).toBeUndefined();
+    expect(results.stepFailureRate.cohort.enoughHistory).toBe(false);
+    expect(toVigiePayload(results).taux_echec_etapes).toMatchObject({ enough_history: false });
   });
 });
 

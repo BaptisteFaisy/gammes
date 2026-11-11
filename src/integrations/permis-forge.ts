@@ -9,7 +9,7 @@
  * toujours : **jamais d'accord par défaut**.
  */
 
-import type { EvidenceStrength, PermitCheck } from "../core/types";
+import type { PermitCheck } from "../core/types";
 import type { PermitRegistry as PortPermitRegistry } from "../core/ports";
 
 export type PermitGrant = {

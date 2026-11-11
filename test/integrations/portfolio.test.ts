@@ -4,15 +4,11 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { makeDeps, makeStep } from "../helpers";
+import { fakeAwsKey, makeDeps, makeStep, span } from "../helpers";
 import { createPermitRegistry, DEMO_GRANTS } from "../../src/integrations/permis-forge";
 import { explain, isStrongEnough, strengthFor, STRENGTH_ORDER } from "../../src/integrations/preuve-a-l-appui";
 import { createSecretScanner, resolveFinding, scanSteps } from "../../src/integrations/placard-wiki";
 import { fitsBudget, maskUnified, preparePrompt, quoteSpan } from "../../src/integrations/brief-forge";
-import { span } from "../helpers";
-
-// Fausse clé construite par concaténation : jamais une valeur réelle.
-const fakeKey = (): string => `AKI${"AI"}OSFODNN7EXAMPLE`;
 
 describe("permis-forge", () => {
   it("un agent sans permis est refusé prudemment, avec la demande à créer", async () => {
@@ -61,19 +57,19 @@ describe("preuve-a-l-appui", () => {
 describe("placard-wiki", () => {
   it("une étape qui cache une clé est écartée, son signalement masqué", () => {
     const deps = makeDeps();
-    const step = makeStep({ id: "stp_secret", text: `Exporter la clé ${fakeKey()} puis vérifier` });
+    const step = makeStep({ id: "stp_secret", text: `Exporter la clé ${fakeAwsKey()} puis vérifier` });
     const outcome = scanSteps(deps, [step, makeStep({ id: "stp_ok" })], "ari:cloud:confluence:demo:page/1001");
     expect(outcome.kept.map((s) => s.id)).toEqual(["stp_ok"]);
     expect(outcome.dropped.map((s) => s.id)).toEqual(["stp_secret"]);
     expect(outcome.findings).toHaveLength(1);
-    expect(JSON.stringify(outcome.findings)).not.toContain(fakeKey());
+    expect(JSON.stringify(outcome.findings)).not.toContain(fakeAwsKey());
     expect(outcome.findings[0]?.maskedPreview).toBe("AKI…[20]");
   });
 
   it("le port scanne une page, et un signalement se résout sans jamais avoir contenu la valeur", async () => {
     const deps = makeDeps();
     const scanner = createSecretScanner(deps);
-    const findings = scanner.scan(`token: ${fakeKey()}`, "ari:p/9");
+    const findings = scanner.scan(`token: ${fakeAwsKey()}`, "ari:p/9");
     expect(findings).toHaveLength(1);
     expect(createSecretScanner(deps).scan("rien ici", "ari:p/9")).toHaveLength(0);
     // La compilation grave le signalement ; le résoudre n'exige que son identifiant.
@@ -90,6 +86,9 @@ describe("brief-forge", () => {
     expect(quoteSpan(body, good).valid).toBe(true);
     const bad = span({ pageAri: "ari:p/1", start: 2, end: 20, quote: "2345" });
     expect(quoteSpan(body, bad).valid).toBe(false);
+    // Décalages dans les bornes mais texte qui ne colle pas : ce n'est pas une citation non plus.
+    const mismatch = span({ pageAri: "ari:p/1", start: 2, end: 6, quote: "ABCD" });
+    expect(quoteSpan(body, mismatch).valid).toBe(false);
   });
 
   it("le budget de contexte coupe en le disant, jamais en silence", () => {
@@ -103,10 +102,10 @@ describe("brief-forge", () => {
   });
 
   it("le masquage unifié retire les secrets d'une invite avant l'envoi au modèle", () => {
-    const prompt = `Voici ma clé ${fakeKey()} dans le texte.`;
+    const prompt = `Voici ma clé ${fakeAwsKey()} dans le texte.`;
     const masked = maskUnified(prompt);
-    expect(masked).not.toContain(fakeKey());
+    expect(masked).not.toContain(fakeAwsKey());
     expect(masked).toContain("api_key:AKI…[20]");
-    expect(preparePrompt("système", `clé ${fakeKey()}`).content).not.toContain(fakeKey());
+    expect(preparePrompt("système", `clé ${fakeAwsKey()}`).content).not.toContain(fakeAwsKey());
   });
 });

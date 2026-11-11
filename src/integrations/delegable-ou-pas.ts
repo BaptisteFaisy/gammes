@@ -7,7 +7,6 @@
  */
 
 import type { StepStat } from "../core/types";
-import { DEFAULT_THRESHOLD } from "../core/stats/rates";
 
 export type DelegationVerdict = "delegable" | "needs_human" | "not_enough_history";
 
@@ -19,21 +18,24 @@ export type StepDelegation = {
   readonly n: number;
 };
 
+/** Le seuil d'échec au-delà duquel une étape revient à un humain : 20 %, comme les cohorts. */
+export const DELEGATION_FAIL_CEILING = 0.2;
+
 /** Une étape est délégable à un agent seulement si ses traces le montrent. */
-export const delegableSteps = (stats: readonly StepStat[], threshold: number = DEFAULT_THRESHOLD): readonly StepDelegation[] =>
+export const delegableSteps = (
+  stats: readonly StepStat[],
+  ceiling: number = DELEGATION_FAIL_CEILING,
+): readonly StepDelegation[] =>
   stats.map((stat) => {
     if (!stat.failRate.cohort.enoughHistory) {
       return { stepId: stat.stepId, versionId: stat.versionId, verdict: "not_enough_history", n: stat.failRate.cohort.n };
     }
     const value = stat.failRate.value ?? 0;
-    if (value >= 0.2) {
+    if (value >= ceiling) {
       return { stepId: stat.stepId, versionId: stat.versionId, verdict: "needs_human", failRate: value, n: stat.failRate.cohort.n };
     }
     return { stepId: stat.stepId, versionId: stat.versionId, verdict: "delegable", failRate: value, n: stat.failRate.cohort.n };
   });
-
-/** Le seuil d'échec au-delà duquel une étape revient à un humain : 20 %, comme les cohorts. */
-export const DELEGATION_FAIL_CEILING = 0.2;
 
 /** Résumé lisible pour l'écran de couverture et l'agent Rovo. */
 export const renderDelegation = (steps: readonly StepDelegation[], lang: "fr" | "en"): string => {

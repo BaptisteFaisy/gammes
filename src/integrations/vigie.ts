@@ -30,11 +30,14 @@ const overallStepFailure = async (deps: Deps): Promise<Rate> => {
   for (const gamme of gammes) {
     const stats = await computeStepStats(deps, { code: gamme.code, version: gamme.currentVersion });
     for (const stat of stats) {
+      // Sous le seuil par étape, aucune valeur publiée : on n'agrège pas ce qui n'est pas mesuré.
+      if (stat.failRate.value === undefined) continue;
       touched += stat.n;
-      failures += stat.n * (stat.failRate.value ?? 0);
+      failures += stat.n * stat.failRate.value;
     }
   }
-  return { ...rate(Math.round(failures), touched), value: touched === 0 ? undefined : Math.round((failures / touched) * 1000) / 1000 };
+  // Le contrat du cœur tient la règle : sous le seuil, `value` reste `undefined` — jamais de taux inventé.
+  return rate(Math.round(failures), touched);
 };
 
 export const keyResults = async (deps: Deps, scope = "*"): Promise<KeyResults> => {

@@ -40,7 +40,6 @@ export const scanSteps = (
     if (found.length > 0) {
       dropped.push(step);
       findings.push(...found);
-      void step;
     } else {
       kept.push(step);
     }
