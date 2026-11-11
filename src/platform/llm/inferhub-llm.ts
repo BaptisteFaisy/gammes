@@ -11,6 +11,7 @@
  */
 
 import type { LlmBudget, LlmClient, LlmRequest, LlmResponse } from "../../core/ports";
+import { systemFor } from "./prompts";
 
 export type InferHubOptions = {
   readonly baseUrl?: string;
@@ -25,16 +26,6 @@ type ChatCompletion = {
   choices?: readonly { readonly message?: { readonly content?: string } }[];
   usage?: { readonly prompt_tokens?: number; readonly completion_tokens?: number };
   model?: string;
-};
-
-const SYSTEM_BY_TASK: Readonly<Record<string, string>> = {
-  extract_prose: "Tu extrais des étapes d'une procédure. Réponds en JSON strict.",
-  qualify_step: "Tu qualifies une étape : nature, preuve, risque. Réponds en JSON strict.",
-  reword_falsifiable: "Tu reformules une étape invérifiable en contrôle falsifiable. JSON strict.",
-  summarize_amendment: "Tu synthétises un amendement à partir de traces. JSON strict.",
-  conciliate_conflict:
-    "Tu prépares un dossier de conciliation entre deux procédures en conflit. Tu ne tranches JAMAIS : tu exposes les options et leurs conséquences. JSON strict.",
-  cluster_ghost: "Tu regroupe des tickets semblables en motif de travail répété. JSON strict.",
 };
 
 type Ctx = {
@@ -56,7 +47,7 @@ const postChat = async (req: LlmRequest, ctx: Ctx): Promise<LlmResponse> => {
     body: JSON.stringify({
       model: ctx.model,
       messages: [
-        { role: "system", content: SYSTEM_BY_TASK[req.task] ?? "Réponds en JSON strict." },
+        { role: "system", content: systemFor(req.task) },
         { role: "user", content: req.prompt },
       ],
       max_tokens: req.maxTokens ?? 2048,

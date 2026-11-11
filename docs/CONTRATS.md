@@ -224,7 +224,7 @@ graph.ts               → GraphPort           (lecture Teamwork Graph ; droit m
 Chaque adaptateur est utilisable **hors Forge** (bouchon local) et documente l'appel réel dans son
 en-tête. Aucun secret, aucun appel réseau en test.
 
-## Lot F — `feat/cycle-de-vie` (GA-05, GA-06, GA-10) — vague 2
+## Lot F — `feat/cycle-de-vie` (GA-05, GA-06, GA-10) — fait
 
 Dossiers : `src/core/compile/`, `src/core/version/`, `src/core/binding/`, `src/platform/forge/`,
 `test/cycle-de-vie/`.
@@ -233,12 +233,16 @@ Dossiers : `src/core/compile/`, `src/core/version/`, `src/core/binding/`, `src/p
 // src/core/compile/compile-page.ts
 export type CompileOutcome = { readonly gamme: Gamme; readonly version: GammeVersion;
   readonly diff: string; readonly findings: readonly SecretFinding[]; readonly nonFalsifiable: readonly string[];
-  readonly usedModel: boolean };
+  readonly usedModel: boolean; readonly droppedSteps: number };
 export const compilePage: (deps: Deps, args: { page: PageDigest; confirmedBy: ActorRef; spaceKey?: string }) => Promise<Result<CompileOutcome>>;
 
 // src/core/version/versioning.ts
-export const createVersion: (deps: Deps, gammeId: string, draft: Omit<GammeVersion, "id" | "gammeId" | "immutable">) => Promise<Result<GammeVersion>>;
-export const approveVersion: (deps: Deps, args: { versionId: string; approver: ActorRef; reviewAfterDays?: number }) => Promise<Result<Gamme>>;
+export type VersionDraft = Omit<GammeVersion, "id" | "gammeId" | "immutable" | "version">;  // la numérotation est calculée
+export const createVersion: (deps: Deps, gammeId: string, draft: VersionDraft) => Promise<Result<GammeVersion>>;
+export const isInvocable: (gamme: Gamme) => boolean;   // approuvée + propriétaire + non dépréciée
+export const canTransition: (from: GammeState, to: GammeState) => boolean;
+export const slugify: (title: string) => string;
+export const approveVersion: (deps: Deps, args: { versionId: string; approver: ActorRef; reviewAfterDays?: number; notes?: string }) => Promise<Result<Gamme>>;
 export const deprecateGamme: (deps: Deps, args: { gammeId: string; by: ActorRef; replacedBy?: string }) => Promise<Result<Gamme>>;
 export const getVersion: (deps: Deps, code: string, version?: number) => Promise<Result<GammeVersion>>;
 export const listVersions: (deps: Deps, gammeId: string) => Promise<readonly GammeVersion[]>;
@@ -247,11 +251,21 @@ export const nextCode: (deps: Deps, spaceKey: string, slug: string) => Promise<s
 // src/core/binding/binding.ts
 export type SyncReport = { readonly sync: SyncState; readonly ageDays?: number; readonly diff?: string; readonly binding: Binding };
 export const bindPage: (deps: Deps, gammeId: string, page: PageDigest) => Promise<Binding>;
+export const upsertBinding: (deps: Deps, gammeId: string, page: PageDigest, extra?: Partial<Binding>) => Promise<Binding>;
 export const checkSync: (deps: Deps, gammeId: string, page: PageDigest) => Promise<Result<SyncReport>>;
-export const proposeRecompile: (deps: Deps, gammeId: string, page: PageDigest) => Promise<Result<CompileOutcome>>;
 export const markSourceGone: (deps: Deps, gammeId: string) => Promise<Result<Binding>>;
+export const markGammeSync: (deps: Deps, gammeId: string, sync: SyncState) => Promise<void>;
+export const syncBindingToVersion: (deps: Deps, gammeId: string, version: GammeVersion) => Promise<void>;
+export const stalenessOf: (binding: Binding, now: string) => number | undefined;
+export const isRunnableWhileStale: (gamme: Gamme) => boolean;
 
-// src/platform/forge/schema.sql + forge-sql.ts (Store sur @forge/sql) + forge-hosted-llm.ts (LlmClient sur @forge/llm)
+// src/core/compile/recompile.ts — la recompilation vit chez `compile`, pas chez `binding`,
+// pour éviter l'import circulaire (binding ← compile ← recompile).
+export const proposeRecompile: (deps: Deps, args: { gammeId: string; page: PageDigest; confirmedBy: ActorRef }) => Promise<Result<CompileOutcome>>;
+
+// src/platform/forge/ — schema.sql (DDL § 21), forge-sql.ts (Store sur @forge/sql),
+// forge-hosted-llm.ts (LlmClient sur @forge/llm). Le port Clock exige désormais
+// `plusDays(days, from?)` : les échéances (révision, revue différée) passent par là.
 ```
 
 Invariants : compiler ne publie rien (état `draft`, diff fourni) ; une version approuvée est immuable ;

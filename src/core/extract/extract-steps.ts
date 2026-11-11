@@ -12,7 +12,7 @@
 
 import type { Deps } from "../ports";
 import type { InputSpec, PageDigest, SourceSpan, StepKind } from "../types";
-import { stripFence } from "../conciliation/hermes";
+import { arrayField, parseJsonLoose } from "../json";
 
 export type BlockKind = "heading" | "list_item" | "checkbox" | "code" | "table_row" | "paragraph";
 
@@ -293,8 +293,10 @@ const withProseModel = async (
       cacheKey: deps.hasher.contentHash(page.storageBody),
       json: true,
     });
-    const parsed = JSON.parse(stripFence(res.text)) as { steps?: unknown };
-    const raw = Array.isArray(parsed.steps) ? (parsed.steps as readonly RawProseStep[]) : [];
+    const parsed = parseJsonLoose<{ steps?: unknown }>(res.text);
+    // Réponse inexploitable : même issue qu'un modèle indisponible, les règles tiennent seules.
+    if (!parsed) return { drafts, usedModel: false, modelTasks: [], inputs };
+    const raw = arrayField(parsed, "steps") as readonly RawProseStep[];
     const extra = proseDrafts(page, prose, raw, drafts.length + 1);
     return {
       drafts: [...drafts, ...extra],

@@ -16,6 +16,7 @@
 import type { Deps, LlmClient } from "../ports";
 import { ok, refusals, type Result } from "../result";
 import type { ActorRef, Conflict, Conciliation, ConciliationOption } from "../types";
+import { asText, parseJsonLoose } from "../json";
 
 export const HERMES_CONDUCT = [
   "Tu es le conciliateur de l'atelier Gammes. Deux procédures prescrivent des choses incompatibles.",
@@ -55,15 +56,6 @@ export const buildPrompt = (conflict: Conflict): string => {
   ].join("\n");
 };
 
-const asText = (value: unknown): string | undefined =>
-  typeof value === "string" && value.trim().length > 0 ? value.trim() : undefined;
-
-/** Enveloppe ```json``` retirée avant analyse : l'unique copie, importée par les autres lots (règle zéro duplication). */
-export const stripFence = (text: string): string => {
-  const fenced = /```(?:json)?\s*([\s\S]*?)```/i.exec(text);
-  return (fenced?.[1] ?? text).trim();
-};
-
 const parseOptions = (raw: readonly RawOption[], ids: Deps["ids"]): readonly ConciliationOption[] =>
   raw.slice(0, MAX_OPTIONS).flatMap((o) => {
     const title = asText(o.title);
@@ -78,12 +70,8 @@ export const parseDossier = (
   text: string,
   ids: Deps["ids"],
 ): { summary: string; options: readonly ConciliationOption[] } | undefined => {
-  let raw: RawDossier;
-  try {
-    raw = JSON.parse(stripFence(text)) as RawDossier;
-  } catch {
-    return undefined;
-  }
+  const raw = parseJsonLoose<RawDossier>(text);
+  if (!raw) return undefined;
   const summary = asText(raw.summary);
   if (!summary || !Array.isArray(raw.options)) return undefined;
   const options = parseOptions(raw.options as readonly RawOption[], ids);
