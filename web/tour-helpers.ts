@@ -20,6 +20,12 @@ export const preuveMachine = (state: AppState, ref = "https://ci.example.interna
   strength: "machine",
   ref,
   capturedAt: state.deps.clock.now(),
+  note: [
+    "$ gh run list --workflow ci --limit 1",
+    "✓ build #4242 — pipeline vert — 2 min 14 s",
+    "✓ merge check: passed",
+    "✓ run #4242 conclu : SUCCESS",
+  ].join("\n"),
 });
 
 export const attestation = (state: AppState): Evidence => ({
@@ -27,7 +33,11 @@ export const attestation = (state: AppState): Evidence => ({
   strength: "attested",
   ref: `attestation:${OWNER}`,
   capturedAt: state.deps.clock.now(),
-  note: "validé de vive voix en astreinte",
+  note: [
+    "Attestation — responsable d'astreinte",
+    "« Déploiement validé : merge check vert, contrôle d'erreur à 0,2 % sur 5 minutes. »",
+    `Référence : ticket PAY-412 — ${state.deps.clock.now()}`,
+  ].join("\n"),
 });
 
 /** Un refus inattendu arrête l'étape avec un message lisible — jamais de `!` optimiste. */

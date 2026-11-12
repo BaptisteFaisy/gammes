@@ -49,6 +49,35 @@ describe("la démo : une preuve par étape franchie", () => {
     }
   });
 
+  it("chaque preuve semée porte un extrait que le juge peut lire", async () => {
+    const { deps } = seedAtelier();
+    const out = await compileAndApprove(deps, "ari:page/deploy");
+    await seedTraces(deps, {
+      gammeId: out.gamme.id, code: out.gamme.code, versionId: out.version.id, n: 3, failures: 0,
+      stepId: out.version.steps[0]!.id,
+    });
+    const runs = await deps.store.runs.list();
+    for (const etape of runs[0]!.steps.filter((s) => s.state === "done")) {
+      expect(etape.evidence?.note, etape.stepId).toBeTruthy();
+      expect(etape.evidence?.note?.length ?? 0).toBeGreaterThan(20);
+    }
+  });
+
+  it("l'extrait d'une étape à commande montre la commande et sa sortie", async () => {
+    const { deps } = seedAtelier();
+    const out = await compileAndApprove(deps, "ari:page/deploy");
+    const commande = out.version.steps.find((s) => s.command);
+    expect(commande).toBeDefined();
+    await seedTraces(deps, {
+      gammeId: out.gamme.id, code: out.gamme.code, versionId: out.version.id, n: 1, failures: 0,
+      stepId: commande!.id,
+    });
+    const runs = await deps.store.runs.list();
+    const extrait = runs[0]!.steps.find((s) => s.stepId === commande!.id)?.evidence?.note ?? "";
+    expect(extrait).toContain(commande!.command);
+    expect(extrait.length).toBeGreaterThan(20);
+  });
+
   it("la preuve semée suit la spec de la version (une seule source de vérité)", async () => {
     const { deps } = seedAtelier();
     const out = await compileAndApprove(deps, "ari:page/deploy");

@@ -8,7 +8,7 @@
  */
 
 import type { ConfluencePort, Deps, GraphPort, JiraPort, LlmClient, PermitRegistry } from "../src/core/ports";
-import type { Evidence, EvidenceSpec, IssueDigest, PageDigest, Run, RunStep } from "../src/core/types";
+import type { Evidence, EvidenceSpec, IssueDigest, PageDigest, Run, RunStep, Step } from "../src/core/types";
 import { fakeAwsKey, makeDeps, makePage, T0 } from "../test/helpers";
 import { fixedClock } from "../src/platform/clock";
 import { seqIds } from "../src/platform/ids";
@@ -185,12 +185,34 @@ export const seedSettings = async (deps: Deps): Promise<void> => {
 };
 
 /**
- * La preuve d'une étape de démonstration : la **spec de la version** (une seule
- * source de vérité) et une référence plausible. Une étape franchie sans preuve
- * ne serait pas une preuve — le produit ne dit jamais « la procédure est
- * respectée » sans trace, la démo doit respecter la même règle.
+ * L'extrait de preuve d'une étape : **ce que l'opérateur a réellement laissé**.
+ *
+ * Un juge doit pouvoir lire la preuve, pas seulement une référence : la sortie
+ * de la commande, la ligne de CI, la validation d'un responsable. L'extrait est
+ * donc écrit à partir de l'étape elle-même (sa commande, son verrou, son
+ * résultat attendu) — il estAttached à la preuve, il ne la remplace pas.
  */
-const preuveDe = (spec: EvidenceSpec | undefined, index: number): Evidence => ({
+const excerptFor = (step: Step, index: number): string => {
+  if (step.command) {
+    const sortie = step.command.startsWith("kubectl apply")
+      ? ["deployment.apps/paiements configured", "deployment.apps/paiements rollout status: successfully rolled out"]
+      : ["✓ build #4242 — pipeline vert — 2 min 14 s", "✓ merge check: passed"];
+    return [`$ ${step.command}`, ...sortie, ...(step.expectedResult ? [`attendu : ${step.expectedResult}`] : [])].join("\n");
+  }
+  if (step.humanOnly || step.locks.some((l) => l.kind === "human")) {
+    return `validation du responsable d'astreinte — « ${step.text} » — 2026-03-03T02:1${index}:00.000Z (ticket PAY-412)`;
+  }
+  return `« ${step.text} » — vérifié le 2026-03-03T02:1${index}:00.000Z — conforme`;
+};
+
+/**
+ * La preuve d'une étape de démonstration : la **spec de la version** (une seule
+ * source de vérité), une référence plausible, et l'extrait que le juge peut lire.
+ * Une étape franchie sans preuve ne serait pas une preuve — le produit ne dit
+ * jamais « la procédure est respectée » sans trace, la démo doit respecter la
+ * même règle.
+ */
+const preuveDe = (spec: EvidenceSpec | undefined, step: Step | undefined, index: number): Evidence => ({
   kind: spec?.kind ?? "command_output",
   strength: spec?.strength ?? "machine",
   ref:
@@ -198,6 +220,7 @@ const preuveDe = (spec: EvidenceSpec | undefined, index: number): Evidence => ({
       ? `attestation:${OWNER}`
       : `https://ci.example.internal/build/${42 + index}`,
   capturedAt: T0,
+  ...(step ? { note: excerptFor(step, index) } : {}),
 });
 
 /** Trace synthétique : `n` exécutions dont `failures` en échec sur `stepId`. */
@@ -217,7 +240,7 @@ export const seedTraces = async (
     const version = await deps.store.versions.get(args.versionId);
     const specDe = (stepId: string) => version?.steps.find((s) => s.id === stepId)?.evidence;
     const steps: RunStep[] = order.map((stepId, index) => {
-      const preuve = preuveDe(specDe(stepId), index);
+      const preuve = preuveDe(specDe(stepId), version?.steps.find((s) => s.id === stepId), index);
       if (stepId === args.stepId) {
         return {
           stepId, state: failed ? "failed" : "done", attempts: 1, startedAt: args.startedAt ?? T0,

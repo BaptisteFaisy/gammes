@@ -7,6 +7,7 @@
  */
 
 import { badge, button, h, kv, line, list, note, panel } from "./dom";
+import type { Navigate } from "./types";
 import { tourCoverage, type TourStep } from "./tour";
 import { TOUR_STEPS } from "./tour-steps";
 import type { Rerender } from "./types";
@@ -45,7 +46,7 @@ const stepLine = (index: number, step: TourStep): HTMLElement =>
     ),
   );
 
-export const tourPanel = (start: () => void, rerender: Rerender): HTMLElement => {
+export const tourPanel = (start: () => void, rerender: Rerender, go?: Navigate): HTMLElement => {
   const coverage = tourCoverage();
   const root = panel("Démo complète — le produit entier, étape par étape");
   root.append(
@@ -60,6 +61,10 @@ export const tourPanel = (start: () => void, rerender: Rerender): HTMLElement =>
     ),
     kv("étapes", String(coverage.steps)),
     kv("exigences couvertes", coverage.ga.join(", ")),
+    line(
+      button("Voir les preuves de chaque étape", () => go?.("preuves"), "primary"),
+      h("span", { class: "muted" }, "l'écran 14 liste, pour chaque étape, la preuve attendue et l'extrait que vous pouvez lire"),
+    ),
     h("h3", {}, "Le programme"),
     ...TOUR_STEPS.map((step, index) => stepLine(index, step)),
     h("h3", {}, "Ce que la démo ne fait pas"),

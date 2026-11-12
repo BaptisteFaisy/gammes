@@ -25,6 +25,7 @@ import { tourPanel } from "./panels-tour";
 import { runTour } from "./tour";
 import { createTourOverlay } from "./tour-ui";
 import { realDataPanel } from "./panels-realdata";
+import { preuvesPanel } from "./panels-preuves";
 import { describeEngine } from "./engine";
 import type { Navigate, Rerender } from "./types";
 
@@ -32,7 +33,8 @@ type Screen =
   | "demo"
   | "atelier" | "detecter" | "compiler" | "gamme" | "avant-agir" | "derouler"
   | "liaison" | "mesures" | "amendements" | "conflits" | "fantomes"
-  | "mcp" | "skill" | "encarts" | "journal" | "reglages" | "modele" | "donnees";
+  | "mcp" | "skill" | "encarts" | "journal" | "reglages" | "modele" | "donnees"
+  | "preuves";
 
 type Group = { readonly title: string; readonly items: readonly { id: Screen; label: string }[] };
 
@@ -78,15 +80,16 @@ const GROUPS: readonly Group[] = [
   {
     title: "Gouvernance",
     items: [
-      { id: "journal", label: "14 · Journal d'audit" },
-      { id: "reglages", label: "15 · Réglages" },
+      { id: "preuves", label: "14 · Preuves (le tableau du juge)" },
+      { id: "journal", label: "15 · Journal d'audit" },
+      { id: "reglages", label: "16 · Réglages" },
     ],
   },
   {
     title: "Brancher du réel",
     items: [
-      { id: "modele", label: "16 · Modèle réel (OpenCode…)" },
-      { id: "donnees", label: "17 · Tes données réelles" },
+      { id: "modele", label: "17 · Modèle réel (OpenCode…)" },
+      { id: "donnees", label: "18 · Tes données réelles" },
     ],
   },
 ];
@@ -130,7 +133,8 @@ const build = async (screen: Screen, go: Navigate): Promise<HTMLElement> => {
   const app = state;
   const rerender: Rerender = () => void mount();
   switch (screen) {
-    case "demo": return tourPanel(startTour, rerender);
+    case "demo": return tourPanel(startTour, rerender, go);
+    case "preuves": return preuvesPanel(app, rerender);
     case "atelier": return atelierPanel(app);
     case "detecter": return detectPanel(app, rerender);
     case "compiler": return compilePanel(app, rerender);
