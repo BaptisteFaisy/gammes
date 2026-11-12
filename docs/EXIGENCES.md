@@ -29,7 +29,7 @@ Lot : voir [`CONTRATS.md`](CONTRATS.md). État mis à jour par l'intégrateur à
 | GA-22 | Détection des gammes fantômes depuis l'historique Jira/JSM, avec preuves et coût | S | C | ✅ faite | `src/core/ghosts/ghosts.ts`, recette 18 testée |
 | GA-23 | Détection des conflits entre gammes et avec les pages de politique | S | D | ✅ faite | `test/conflits/` (16 tests), `src/core/conflicts/`, conciliateur `src/core/conciliation/hermes.ts` |
 | GA-24 | Comparaison de versions (un amendement a-t-il amélioré quelque chose ?) | S | C | ✅ faite | `compareVersions`, recette 16 testée |
-| GA-25 | Flux Jira pour la version humaine d'une gamme, et validateur de transition exigeant une trace | S | M | 🟨 en cours | `src/resolver/jira.ts` (ébauche), validateur et manifeste conforme au lot M |
+| GA-25 | Flux Jira pour la version humaine d'une gamme, et validateur de transition exigeant une trace | S | M | ✅ faite | `src/jira/trace-gate.ts` (trois verdicts motivés), `src/validator.ts` (handler Forge, échec fermé), `src/resolver/jira.ts`, 9 tests |
 | GA-26 | Point d'entrée externe signé (`webtrigger`) pour les hooks d'agents et le CI | S | G | ✅ faite | `src/platform/webtrigger.ts` (HMAC-SHA256, échec fermé sans secret) |
 | GA-27 | Lecture du graphe pour le périmètre et le propriétaire (`document`, `software-service`, `project`) | S | E | ✅ faite | `src/integrations/graph.ts` (droit manquant = vide sans erreur) |
 | GA-28 | Étapes non falsifiables détectées, avec reformulation proposée | S | A | ✅ faite | `src/core/falsifiable/falsifiability.ts` |
