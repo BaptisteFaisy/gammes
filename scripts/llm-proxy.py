@@ -36,6 +36,7 @@ import sys
 import threading
 import time
 import urllib.error
+import subprocess
 import urllib.request
 from collections import deque
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -44,6 +45,13 @@ UPSTREAM = os.environ.get("GAMMES_LLM_UPSTREAM", "https://api.inferhub.dev/v1").
 API_KEY = os.environ.get("GAMMES_LLM_KEY", "")
 # Le modèle est IMPOSÉ : un appelant public ne choisit pas ce qu'il fait tourner.
 FORCED_MODEL = os.environ.get("GAMMES_LLM_MODEL", "combo/cheap")
+# « inferhub » : l'API OpenAI-compatible, clé côté serveur.
+# « zeroclaw » : un agent ZeroClaw local, dont le modèle EST InferHub
+#                (l'agent `b` est configuré sur custom.inferhub). La clé ne
+#                passe alors jamais par le proxy : c'est le binaire qui la lit.
+BACKEND = os.environ.get("GAMMES_LLM_BACKEND", "inferhub").strip().lower()
+ZEROCLAW_BIN = os.environ.get("GAMMES_LLM_ZEROCLAW_BIN", "zeroclaw")
+ZEROCLAW_AGENT = os.environ.get("GAMMES_LLM_ZEROCLAW_AGENT", "b")
 MAX_TOKENS_CAP = int(os.environ.get("GAMMES_LLM_MAX_TOKENS", "2048"))
 RATE_LIMIT = int(os.environ.get("GAMMES_LLM_RATE_PER_MIN", "12"))
 DAILY_REQUEST_CAP = int(os.environ.get("GAMMES_LLM_DAILY_REQUESTS", "400"))
@@ -99,6 +107,50 @@ def account(tokens: int) -> None:
 def budget_left() -> dict[str, int]:
     with _lock:
         return {"requests": DAILY_REQUEST_CAP - _day["requests"], "tokens": DAILY_TOKEN_CAP - _day["tokens"]}
+
+
+def zeroclaw_message(payload: dict) -> str:
+    """Le message de l'agent : la consigne système repliée, puis la demande."""
+    messages = payload.get("messages") or []
+    morceaux = []
+    for message in messages:
+        if isinstance(message, dict) and message.get("content"):
+            morceaux.append(str(message["content"]))
+    if not morceaux:
+        morceaux.append(str(payload.get("prompt") or ""))
+    return "\n\n".join(morceaux)
+
+
+def forward_zeroclaw(payload: dict) -> tuple[int, bytes, int]:
+    """Délègue à un agent ZeroClaw local (son modèle est InferHub)."""
+    message = zeroclaw_message(payload)
+    commande = [ZEROCLAW_BIN, "agent", "--agent", ZEROCLAW_AGENT, "-m", message]
+    try:
+        fini = subprocess.run(
+            commande, capture_output=True, text=True, timeout=240, check=False
+        )
+    except FileNotFoundError:
+        return 503, json.dumps({
+            "error": {"message": f"binaire ZeroClaw introuvable : {ZEROCLAW_BIN}"}
+        }).encode(), 0
+    except subprocess.TimeoutExpired:
+        return 504, json.dumps({"error": {"message": "agent ZeroClaw trop lent"}}).encode(), 0
+    if fini.returncode != 0:
+        detail = (fini.stderr or fini.stdout or "").strip()[:200]
+        if "owns the config state" in detail:
+            detail = ("un daemon ZeroClaw détient l'état : arrêtez-le ou "
+                      "repassez sur le backend inferhub")
+        return 502, json.dumps({"error": {"message": f"agent ZeroClaw en échec : {detail}"}}).encode(), 0
+    texte = (fini.stdout or "").strip()
+    if not texte:
+        return 502, json.dumps({"error": {"message": "agent ZeroClaw : réponse vide"}}).encode(), 0
+    corps = {
+        "choices": [{"index": 0, "message": {"role": "assistant", "content": texte}}],
+        "model": f"zeroclaw:@{ZEROCLAW_AGENT}",
+        "usage": {"total_tokens": max(1, len(message + texte) // 4)},
+    }
+    raw = json.dumps(corps, ensure_ascii=False).encode("utf-8")
+    return 200, raw, corps["usage"]["total_tokens"]
 
 
 def forward(payload: dict) -> tuple[int, bytes, int]:
@@ -172,6 +224,8 @@ class Handler(BaseHTTPRequestHandler):
                 "service": "gammes-llm-proxy",
                 "upstream": UPSTREAM,
                 "modele_impose": FORCED_MODEL,
+                "backend": BACKEND,
+                "agent_zeroclaw": ZEROCLAW_AGENT if BACKEND == "zeroclaw" else None,
                 "cle_configurée": bool(API_KEY),
                 "plafond_jetons_par_appel": MAX_TOKENS_CAP,
                 "requete_par_minute_par_client": RATE_LIMIT,
@@ -210,7 +264,7 @@ class Handler(BaseHTTPRequestHandler):
         except (ValueError, json.JSONDecodeError):
             self._send(400, b'{"error":{"message":"JSON invalide ou messages manquants"}}')
             return
-        status, body, tokens = forward(payload)
+        status, body, tokens = forward_zeroclaw(payload) if BACKEND == "zeroclaw" else forward(payload)
         account(tokens)
         left = budget_left()
         self.log_message("POST %s → %s · %s · %d jetons · reste %d req / %d jetons", self.path, status, FORCED_MODEL, tokens, left["requests"], left["tokens"])
@@ -224,7 +278,8 @@ def main() -> int:
     args = parser.parse_args()
     if not API_KEY:
         print("⚠ aucune clé dans GAMMES_LLM_KEY — l'amont refusera les modèles payants.", file=sys.stderr)
-    print(f"proxy Gammes → {UPSTREAM} · modèle imposé {FORCED_MODEL} · {args.host}:{args.port}", file=sys.stderr)
+    cible = f"agent ZeroClaw @{ZEROCLAW_AGENT} (modèle {FORCED_MODEL})" if BACKEND == "zeroclaw" else f"{UPSTREAM} · modèle imposé {FORCED_MODEL}"
+    print(f"proxy Gammes → {cible} · {args.host}:{args.port}", file=sys.stderr)
     print(
         f"origines : {', '.join(ALLOWED_ORIGINS)} · {RATE_LIMIT} req/min/client · "
         f"{DAILY_REQUEST_CAP} req/jour · {DAILY_TOKEN_CAP} jetons/jour · {MAX_TOKENS_CAP} jetons/appel",
