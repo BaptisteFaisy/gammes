@@ -149,8 +149,10 @@ Matrice détaillée et à jour : [`docs/EXIGENCES.md`](docs/EXIGENCES.md).
 prouve que chaque étape a fonctionné, et la commande qui le vérifie.
 
 ```bash
-npm ci && npm run verify   # 236 tests, vert
+npm ci && npm run verify   # 283 tests, vert
 node tools/check-manifest.mjs   # le manifeste est conforme au schéma Forge
+npm run cli -- compile procedure.html   # une page de wiki devient un paquet portable
+npm run cli -- verify out/gamme.json   # l'empreinte du paquet est-elle encore bonne ?
 npm run demo               # le scénario complet, en mémoire, sans réseau
 npm run seed               # l'espace de démonstration des juges
 ```
