@@ -106,7 +106,7 @@ export const stepsTable = (steps: readonly Step[]): HTMLElement =>
       h("div", {}, s.text, s.command ? code(s.command) : null),
       `${s.evidence.kind} / ${s.evidence.strength}${s.evidence.required ? " (exigée)" : " (facultative)"}`,
       s.locks.length ? list(s.locks.map((l) => badge(l.kind === "human" ? "humain" : l.kind === "permit" ? `permis ${l.permitClass ?? ""}` : "secret", l.kind === "human" ? "ko" : "warn"))) : "—",
-      s.riskClass ? `${badge(s.risk, s.risk === "critical" ? "ko" : "warn")} ${s.riskClass}` : badge("none", "idle"),
+      s.riskClass ? [badge(s.risk, s.risk === "critical" ? "ko" : "warn"), ` ${s.riskClass}`] : badge("none", "idle"),
       s.onFailure,
       s.falsifiable ? badge("oui", "ok") : badge("non", "ko"),
     ]),
