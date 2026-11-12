@@ -17,15 +17,42 @@ export type TourStep = {
   readonly screen: string;
   /** Ce que le visiteur doit constater. */
   readonly expect: string;
-  /** Exige l'exigence du cahier des charges couverte, pour le bilan final. */
+  /** Exigence du cahier des charges couverte, pour le bilan final. */
   readonly ga: readonly string[];
   /** Joue l'étape et rend la preuve en une ligne. */
   readonly run: (state: AppState) => Promise<string>;
+  /**
+   * Sélecteur CSS de l'élément qui **prouve** le résultat sur l'écran (dans le panneau
+   * courant). L'élément est mis en avant après l'étape ; s'il n'existe pas, la preuve
+   * reste dans la carte affichée en haut de l'écran.
+   */
+  readonly highlight?: string;
+};
+
+/** Élément qui sert de preuve sur chaque écran, par défaut ; une étape peut le surcharger. */
+export const HIGHLIGHT_BY_SCREEN: Readonly<Record<string, string>> = {
+  detecter: ".panel .out .table",
+  compiler: ".panel .out h3",
+  gamme: ".panel details",
+  "avant-agir": ".panel .out",
+  derouler: ".panel .current",
+  liaison: ".panel .out",
+  mesures: ".panel .out .table",
+  amendements: ".panel .out",
+  conflits: ".panel .out",
+  fantomes: ".panel .out",
+  mcp: ".panel .out .table",
+  skill: ".panel .out",
+  encarts: ".panel .out",
+  journal: ".panel .out .table",
+  atelier: ".panel .out",
+  reglages: ".panel .out",
 };
 
 export type TourHooks = {
   readonly go: (screen: string) => void;
   readonly onStep: (index: number, step: TourStep) => void;
+  readonly onProof: (index: number, step: TourStep, proof: string, failed: boolean) => void;
   readonly onResult: (index: number, step: TourStep, proof: string, failed: boolean) => void;
   readonly onDone: (done: number, failed: number) => void;
 };
@@ -68,6 +95,10 @@ export const runTour = async (state: AppState, hooks: TourHooks, options: TourOp
     const result = await runStep(state, step);
     if (result.failed) failed += 1;
     else done += 1;
+    // On re-rend l'écran : sans ça le résultat existe dans l'état mais pas à l'écran.
+    hooks.go(step.screen);
+    await pause(220);
+    hooks.onProof(i, step, result.proof, result.failed);
     hooks.onResult(i, step, result.proof, result.failed);
     await pause(delay);
   }

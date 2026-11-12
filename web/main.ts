@@ -24,6 +24,7 @@ import { modelePanel } from "./panels-model";
 import { tourPanel } from "./panels-tour";
 import { runTour } from "./tour";
 import { createTourOverlay } from "./tour-ui";
+import { showProof } from "./proof";
 import { realDataPanel } from "./panels-realdata";
 import { describeEngine } from "./engine";
 import type { Navigate, Rerender } from "./types";
@@ -188,6 +189,7 @@ const startTour = (): void => {
     await runTour(state, {
       go: (screen) => goTo(screen as Screen),
       onStep: (i, step) => overlay?.onStep(i, step),
+      onProof: (i, step, proof, failed) => showProof(step, proof, failed),
       onResult: (i, step, proof, failed) => overlay?.onResult(i, step, proof, failed),
       onDone: (done, failed) => overlay?.onDone(done, failed),
     }, { delayMs: 1100, control });
