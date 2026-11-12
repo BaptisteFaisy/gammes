@@ -20,7 +20,7 @@ Lot : voir [`CONTRATS.md`](CONTRATS.md). État mis à jour par l'intégrateur à
 | GA-13 | Export `SKILL.md` par gamme approuvée, et skill générique côté Forge | M | G | ✅ faite | `src/core/export/skill-md.ts` + `skills/derouler-une-gamme/SKILL.md`, recette 17 testée |
 | GA-14 | Outils MCP du § 18 | M | G | ✅ faite | `src/core/mcp/{tools,search}.ts` (16 outils), `test/mcp/tools.test.ts` |
 | GA-15 | Agent Rovo « Le compagnon » | M | H | ✅ faite | `agents/le-compagnon.md` (les 7 questions du § 18) + `rovo:agent` au manifeste |
-| GA-16 | Encart sur le ticket Jira : quelle gamme s'applique, la démarrer, voir les traces | M | K | 🟨 en cours | socle UI Kit 2 posé (`src/frontend/`, `src/resolver/panel.ts`) |
+| GA-16 | Encart sur le ticket Jira : quelle gamme s'applique, la démarrer, voir les traces | M | K | ✅ faite | `src/ui/issue-panel/panel-model.ts`, `src/resolver/panel.ts` (4 actions), `src/frontend/surfaces/issue-panel.tsx`, 9 tests |
 | GA-17 | Macro Confluence dans la page source : état, version, exécutions, fraîcheur | M | L | 🟨 en cours | socle UI Kit 2 posé (`src/frontend/surfaces/macro.tsx`, `src/resolver/macro.ts`) |
 | GA-18 | L'atelier : registre des gammes, états, poussières, couverture | M | C | ✅ faite | `src/core/coverage/coverage.ts`, `src/core/stats/workshop.ts` + atelier du site public |
 | GA-19 | Statistiques d'atelier par étape, avec effectif et « pas assez de recul » | M | C | ✅ faite | `src/core/stats/step-stats.ts`, recette 14/15 testées |
