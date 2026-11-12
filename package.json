@@ -23,14 +23,19 @@
   },
   "dependencies": {
     "@forge/api": "8.5.0",
+    "@forge/bridge": "^7.3.0",
     "@forge/llm": "1.0.10",
+    "@forge/react": "^12.5.0",
     "@forge/resolver": "2.0.2",
     "@forge/sql": "4.0.10",
     "@forge/storage": "2.0.3",
     "@forge/ui": "1.11.4"
   },
   "devDependencies": {
+    "@forge/manifest": "^1.5.1",
     "@types/node": "^22.12.0",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
     "tsx": "4.19.2",
     "typescript": "5.9.3",
     "vite": "8.3.8",
