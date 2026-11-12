@@ -38,7 +38,8 @@ GUARD_FILES = (".github/ci-budget/", ".github/couche0/",
                # Gammes : l'agent de conflits et son balayeur sont des gardes
                # comme les autres — une PR qui les éteint doit le dire.
                ".github/inferhub/",
-               ".github/workflows/conflict-resolver.yml")
+               ".github/workflows/conflict-resolver.yml",
+               ".github/workflows/file-de-merge.yml")
 GUARD_FLAG = "SAMVISION_ALLOW_GUARD_BUMP"
 
 # Exemptés de déclaration de périmètre : régénérable ou non signé.
