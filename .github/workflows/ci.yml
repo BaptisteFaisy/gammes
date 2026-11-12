@@ -47,6 +47,13 @@ jobs:
       - name: Install
         run: npm ci --no-audit --no-fund
 
+      # Le manifeste est un fichier de garde : sans lui, `manifest.yml` reste une
+      # intention et l'app ne se déploie pas. Le garde valide contre le schéma
+      # officiel `@forge/manifest` et vérifie que les actions Rovo correspondent
+      # aux outils MCP du code.
+      - name: Manifeste Forge conforme (schéma @forge/manifest)
+        run: node tools/check-manifest.mjs
+
       - name: House rules (file size, no per-person stats, no secrets)
         run: npm run lint
 
