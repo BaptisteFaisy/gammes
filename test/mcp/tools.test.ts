@@ -44,6 +44,16 @@ describe("recherche avant action (GA-14)", () => {
     expect(verdict.messageFr).toContain("Ne pas improviser");
   });
 
+  it("une gamme approuvée sans aucun rapport avec le geste n'est pas proposée", async () => {
+    const deps = makeDeps();
+    await seedApproved(deps);
+    const verdict = await checkBeforeActing(deps, { intendedAction: "redémarrer le routeur de secours à 3 h du matin", service: "reseau" });
+    expect(verdict.found).toBe(false);
+    expect(verdict.messageFr).toContain("Ne pas improviser");
+    const matches = await findProcedure(deps, { query: "redémarrer le routeur de secours", context: { service: "reseau" } });
+    expect(matches).toHaveLength(0);
+  });
+
   it("une gamme non approuvée est trouvée mais signalée comme telle", async () => {
     const deps = makeDeps();
     await seedApproved(deps);
