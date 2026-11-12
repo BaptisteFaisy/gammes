@@ -56,6 +56,37 @@ tailscale funnel 8901 on        # → https://<hote>.ts.net (HTTPS, nécessaire 
 
 Dans le site : champ **Proxy** = `https://<hote>.ts.net/v1`, puis « Tester la connexion ».
 
+### La voie « ZeroClaw » : le modèle est un agent
+
+Une troisième voie, et la plus interessante : **le modèle n'est pas une API, c'est un
+agent ZeroClaw** — dont le modèle est lui-même InferHub (`[agents.b].model_provider =
+"custom.inferhub"` dans la config ZeroClaw). L'agent apporte ce qu'une API n'a pas :
+ses outils, ses compétences, sa discipline.
+
+Côté Node (le cœur, la CLI, les tests) :
+
+```ts
+import { zeroClawLlm } from "./src/platform/llm/zeroclaw-llm";
+
+const llm = zeroClawLlm({ agent: "b" });   // zeroclaw agent --agent b -m "<message>"
+```
+
+Côté navigateur (le site public passe par le proxy, qui lance l'agent côté serveur) :
+
+```bash
+export GAMMES_LLM_BACKEND=zeroclaw        # au lieu de « inferhub »
+export GAMMES_LLM_ZEROCLAW_AGENT=b        # l'alias de l'agent ZeroClaw
+python3 scripts/llm-proxy.py --port 8901  # la clé ne passe plus par le proxy :
+                                          # c'est le binaire ZeroClaw qui la lit
+```
+
+Le proxy renvoie la même forme OpenAI, donc **rien ne change du côté du site** : mêmes
+quotas, mêmes origines autorisées, même journal (jamais la clé, jamais le corps).
+
+⚠️ Un binaire ZeroClaw refuse de démarrer un second agent si un **daemon** détient
+l'état de configuration (`owns the config state`). L'erreur est traduite en français et
+dit quoi faire : arrêter le daemon, ou repasser sur le backend `inferhub`.
+
 ### Ce que le modèle change vraiment
 
 Le modèle n'intervient **que** sur quatre tâches (`LlmTask`) : `extract_prose` (prose ambiguë),
