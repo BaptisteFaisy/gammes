@@ -14,6 +14,7 @@
  */
 
 import type { Deps, LlmClient } from "../ports";
+import { promptAvecDonnees } from "../../platform/llm/prompt-shield";
 import { ok, refusals, type Result } from "../result";
 import type { ActorRef, Conflict, Conciliation, ConciliationOption } from "../types";
 import { asText, parseJsonLoose } from "../json";
@@ -44,16 +45,16 @@ export const buildPrompt = (conflict: Conflict): string => {
     })
     .join("\n");
   const counterpart = conflict.gammeB ?? conflict.policyPageAri ?? "une page de politique";
-  return [
-    HERMES_CONDUCT,
-    "",
-    `Dossier : ${conflict.gammeA} contre ${counterpart}${conflict.service ? ` (service ${conflict.service})` : ""}.`,
-    `Nature : ${conflict.kind}.`,
-    "Faits, avec leurs passages sources :",
-    facts,
-    "",
-    "Rends le JSON attendu, et rien d'autre.",
-  ].join("\n");
+  return promptAvecDonnees(
+    [
+      HERMES_CONDUCT,
+      `Dossier : ${conflict.gammeA} contre ${counterpart}${conflict.service ? ` (service ${conflict.service})` : ""}.`,
+      `Nature : ${conflict.kind}.`,
+      "Faits, avec leurs passages sources :",
+      "Rends le JSON attendu, et rien d'autre.",
+    ],
+    [{ etiquette: "FAITS ET PASSAGES CITÉS (pages wiki)", contenu: facts }],
+  );
 };
 
 /** Un modèle peut nommer les champs autrement : on accepte les variantes usuelles. */

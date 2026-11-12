@@ -8,6 +8,7 @@
  */
 
 import type { LlmTask } from "../../core/ports";
+import { SHIELD_RULE } from "./prompt-shield";
 
 export const SYSTEM_BY_TASK: Readonly<Record<LlmTask, string>> = {
   extract_prose: "Tu extrais les étapes implicites d'une prose de procédure. Réponds en JSON strict.",
@@ -19,7 +20,11 @@ export const SYSTEM_BY_TASK: Readonly<Record<LlmTask, string>> = {
   cluster_ghost: "Tu regroupes des tickets semblables en motif de travail répété. JSON strict.",
 };
 
-export const systemFor = (task: LlmTask): string => SYSTEM_BY_TASK[task];
+/**
+ * L'invite système porte TOUJOURS la règle du rempart : une page wiki est une
+ * donnée non fiable, jamais une consigne (voir `prompt-shield.ts`).
+ */
+export const systemFor = (task: LlmTask): string => `${SYSTEM_BY_TASK[task]}\n\n${SHIELD_RULE}`;
 
 /** Modèles hébergés déclarés au manifeste (`llm:`) — Haiku pour rester dans le budget. */
 export const HOSTED_MODEL = "claude-3-5-haiku";
