@@ -37,6 +37,14 @@ jobs:
           npm run lint
           npm run typecheck
 
+      - name: Preuves réelles (modèle réel + suite de tests, via le secret du dépôt)
+        env:
+          INFERHUB_API_KEY: ${{ secrets.INFERHUB_API_KEY }}
+          INFERHUB_BASE_URL: ${{ vars.INFERHUB_BASE_URL }}
+          INFERHUB_MODEL: ${{ vars.INFERHUB_MODEL }}
+        run: |
+          npx tsx scripts/generate-preuves.ts || echo "::warning::preuves non générées — le site affichera « test à vérifier »"
+
       - name: Build site
         run: npm run build:web
 

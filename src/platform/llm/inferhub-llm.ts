@@ -36,7 +36,22 @@ type Ctx = {
   signal: AbortSignal;
 };
 
-const postChat = async (req: LlmRequest, ctx: Ctx): Promise<LlmResponse> => {
+const textOf = (body: ChatCompletion): string =>
+  body.choices?.[0]?.message?.content ?? "";
+
+/**
+ * Un modèle de raisonnement peut consommer tous les jetons en réflexion : la réponse
+ * arrive vide, ou tronquée au milieu d'un JSON. Dans les deux cas, on **retente avec un
+ * budget plus large** au lieu de perdre la réponse.
+ */
+const looksUnusable = (body: ChatCompletion, wantsJson: boolean): boolean => {
+  const text = textOf(body).trim();
+  if (text.length === 0) return true;
+  if (!wantsJson) return false;
+  return !(text.startsWith("{") || text.startsWith("[") || text.startsWith("```"));
+};
+
+const chatOnce = async (req: LlmRequest, ctx: Ctx, maxTokens: number): Promise<ChatCompletion> => {
   const res = await ctx.doFetch(`${ctx.baseUrl.replace(/\/$/, "")}/chat/completions`, {
     method: "POST",
     signal: ctx.signal,
@@ -50,14 +65,23 @@ const postChat = async (req: LlmRequest, ctx: Ctx): Promise<LlmResponse> => {
         { role: "system", content: systemFor(req.task) },
         { role: "user", content: req.prompt },
       ],
-      max_tokens: req.maxTokens ?? 2048,
+      max_tokens: maxTokens,
       ...(req.json ? { response_format: { type: "json_object" } } : {}),
     }),
   });
   if (!res.ok) throw new Error(`LLM ${res.status}: ${(await res.text()).slice(0, 200)}`);
-  const body = (await res.json()) as ChatCompletion;
+  return (await res.json()) as ChatCompletion;
+};
+
+const postChat = async (req: LlmRequest, ctx: Ctx): Promise<LlmResponse> => {
+  const base = req.maxTokens ?? 2048;
+  let body = await chatOnce(req, ctx, base);
+  for (const factor of [2, 4]) {
+    if (!looksUnusable(body, req.json === true)) break;
+    body = await chatOnce(req, ctx, Math.min(base * factor, 16384));
+  }
   return {
-    text: body.choices?.[0]?.message?.content ?? "",
+    text: textOf(body),
     model: body.model ?? ctx.model,
     tokensIn: body.usage?.prompt_tokens ?? 0,
     tokensOut: body.usage?.completion_tokens ?? 0,
@@ -93,7 +117,7 @@ export const inferHubLlm = (options: InferHubOptions = {}): LlmClient & {
       const hit = key ? cache.get(key) : undefined;
       if (hit) return { ...hit, cached: true };
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), options.timeoutMs ?? 60_000);
+      const timer = setTimeout(() => controller.abort(), options.timeoutMs ?? 150_000);
       let res: LlmResponse;
       try {
         res = await postChat(req, { baseUrl, model, apiKey, doFetch, signal: controller.signal });

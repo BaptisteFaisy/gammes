@@ -1,0 +1,236 @@
+{
+  "generatedAt": "2026-11-12T16:28:39.446Z",
+  "engine": "inferhub",
+  "model": "combo/cheap",
+  "suite": {
+    "tests": 239,
+    "passed": 239,
+    "failed": 0
+  },
+  "steps": {
+    "detecter": {
+      "proof": "7 pages analysées, 5 recommandées avec leurs raisons ; « Compte rendu du comité du 3 mars » écartée : aucun signal de procédure.",
+      "test": {
+        "file": "test/compilateur-front/detect-extract.test.ts",
+        "name": "recette 2 : une page sans signal n'est pas proposée, et le dit",
+        "status": "passed"
+      }
+    },
+    "compiler": {
+      "proof": "GAM-deployer-service-paiements-01 v1 : 5 étapes (chacune avec son passage source et ses décalages), 3 verrou(x), modèle utilisé : non — extraction 100 % déterministe.",
+      "test": {
+        "file": "test/compilateur-front/detect-extract.test.ts",
+        "name": "recette 1 : liste numérotée et bloc de code deviennent des étapes citant leur passage",
+        "status": "passed"
+      }
+    },
+    "secret": {
+      "proof": "1 signalement(s) — aws-access-key-id, aperçu « AKI…[20] », empreinte 3826ae71…, 1 étape(s) écartée(s) ; approbation refusée : lock_secret.",
+      "test": {
+        "file": "test/cycle-de-vie/compile.test.ts",
+        "name": "recette 5 : une clé dans une étape empêche la publication et ouvre un signalement",
+        "status": "passed"
+      }
+    },
+    "approuver": {
+      "proof": "v1 figée, approuvée le 2026-11-11 par ari:cloud:aaid:dem… ; révision due le 2027-11-11.",
+      "test": {
+        "file": "test/cycle-de-vie/versioning.test.ts",
+        "name": "l'approbation est un acte humain daté, nommé, avec une date de révision",
+        "status": "passed"
+      }
+    },
+    "avant-agir-oui": {
+      "proof": "« GAM-deployer-service-paiements-01@v1 » trouvée — permis requis pour un agent ; Gamme GAM-deployer-service-paiements-01@v1 trouvée : des permis sont requis.",
+      "test": {
+        "file": "test/mcp/tools.test.ts",
+        "name": "trouve la gamme approuvée et dit si des permis sont requis",
+        "status": "passed"
+      }
+    },
+    "avant-agir-non": {
+      "proof": "« Aucune gamme approuvée pour « redémarrer le routeur de secours à 3 h du matin ». Ne pas improviser : demander à un humain de documenter la procédure. »",
+      "test": {
+        "file": "test/mcp/tools.test.ts",
+        "name": "sans gamme approuvée : on le dit, on n'improvise pas",
+        "status": "passed"
+      }
+    },
+    "executer-agent": {
+      "proof": "étape 1 acquittée avec sa preuve machine ; étape « Déployer la version candidate en production  » → REFUS lock_permit_missing — l'agent ne franchit pas le verrou, la tentative est tracée.",
+      "test": {
+        "file": "test/moteur-execution/locks-record.test.ts",
+        "name": "sans permis valide : refus explicite et demande de permis à créer",
+        "status": "passed"
+      }
+    },
+    "verrou-humain": {
+      "proof": "étape « Obtenir la validation du responsable d'astre » : l'agent reçoit lock_human_only, la tentative devient une déviation ; la personne authenticate passe : acquis.",
+      "test": {
+        "file": "test/moteur-execution/locks-record.test.ts",
+        "name": "un agent refusé sur une étape humaine, et la tentative devient une déviation",
+        "status": "passed"
+      }
+    },
+    "trace": {
+      "proof": "GAM-deployer-service-paiements-01@v1 · run_n — 5 étapes, 2 déviation(s), durée 0 s, acteur : agent, issue : succeeded.",
+      "test": {
+        "file": "test/moteur-execution/runs.test.ts",
+        "name": "le démarrage rend la première étape, ses verrous et sa preuve exigée",
+        "status": "passed"
+      }
+    },
+    "desynchronisation": {
+      "proof": "page modifiée → gamme désynchronisée (écart de 0 jour(s)) ; l'exécution déjà close garde sa version épinglée.",
+      "test": {
+        "file": "test/cycle-de-vie/binding.test.ts",
+        "name": "recette 12 : la page modifiée marque la gamme désynchronisée, avec l'âge et le diff",
+        "status": "passed"
+      }
+    },
+    "recompilation": {
+      "proof": "v2 proposée en brouillon — la version en service reste v1 ; diff de 9 ligne(s) conservé pour la revue.",
+      "test": {
+        "file": "test/cycle-de-vie/binding.test.ts",
+        "name": "la recompilation proposée produit un diff et un brouillon, sans republier",
+        "status": "passed"
+      }
+    },
+    "refermer-ecart": {
+      "proof": "v2 approuvée (révision due le 2027-11-11) ; l'écart est refermé : synced.",
+      "test": {
+        "file": "test/cycle-de-vie/binding.test.ts",
+        "name": "l'approbation de la nouvelle version referme l'écart",
+        "status": "passed"
+      }
+    },
+    "mesures": {
+      "proof": "40 exécutions semées ; l'étape la plus faible : 60 % (n=40) — une étape qui échoue 6 fois sur 10 n'est pas difficile, elle est fausse.",
+      "test": {
+        "file": "test/mesures-atelier/stats.test.ts",
+        "name": "six échecs sur dix sur 40 exécutions : taux publié, déviations et durée médiane",
+        "status": "passed"
+      }
+    },
+    "pas-assez-de-recul": {
+      "proof": "version v1 : pas assez de recul (n=4) — aucun pourcentage inventé sous le seuil de 4/30.",
+      "test": {
+        "file": "test/mesures-atelier/stats.test.ts",
+        "name": "sous le seuil : aucun pourcentage, seulement « pas assez de recul »",
+        "status": "passed"
+      }
+    },
+    "amendement": {
+      "proof": "« Réécrire l'étape 2 : elle échoue 60 % (fourchette 45–74 %, sur 40 exécutions). Énoncer le  » — 12 preuve(s) jointe(s) ; Échecs : 60 % (fourchette 45–74 %, sur 40 exécutions) sur 40 exécution(s) atteignant cette.",
+      "test": {
+        "file": "test/mesures-atelier/stats.test.ts",
+        "name": "recette 14 : l'étape qui échoue six fois sur dix déclenche une proposition, preuves à l'appui",
+        "status": "passed"
+      }
+    },
+    "amendement-decide": {
+      "proof": "amendement accepted le 2026-11-11 par ari:cloud:aaid:dem… ; la modification de la page est proposée à son propriétaire, pas appliquée.",
+      "test": {
+        "file": "test/mesures-atelier/stats.test.ts",
+        "name": "décider est humain : refus à un agent, décision datée et nommée pour un humain",
+        "status": "passed"
+      }
+    },
+    "comparaison": {
+      "proof": "v2 : 19 % (n=128) · v3 : 0 % (n=200) → verdict « improved » : l'amendement a-t-il amélioré quelque chose ?",
+      "test": {
+        "file": "test/mesures-atelier/stats.test.ts",
+        "name": "v1 contre v2 : les deux taux sont affichés avec leurs effectifs",
+        "status": "passed"
+      }
+    },
+    "delegable": {
+      "proof": "5 étape(s) délégable(s) à un agent, 0 à garder humaines, 0 sans recul suffisant.",
+      "test": {
+        "file": "test/integrations/atelier.test.ts",
+        "name": "une étape fiable pour un agent seulement si ses traces le prouvent",
+        "status": "passed"
+      }
+    },
+    "fantomes": {
+      "proof": "« reinitialiser coffre cles » : 40 tickets semblables sur 251 jours, durée médiane 4 h, coût estimé 20 jours, 3 personne(s) — un effectif, jamais un nom.",
+      "test": {
+        "file": "test/mesures-atelier/workshop-ghosts.test.ts",
+        "name": "recette 18 : 38 tickets semblables sans procédure écrite, avec preuves et coût",
+        "status": "passed"
+      }
+    },
+    "adopter-fantome": {
+      "proof": "brouillon GAM-reinitialiser-coffre-cles-01 créé, pré-rempli avec 3 étape(s) issues des commentaires les plus constants ; l'adoption est un acte humain, l'approbation reste à faire.",
+      "test": {
+        "file": "test/mesures-atelier/workshop-ghosts.test.ts",
+        "name": "l'adoption est humaine et ouvre un brouillon pré-rempli depuis les commentaires constants",
+        "status": "passed"
+      }
+    },
+    "conflits": {
+      "proof": "4 conflit(s) détectés (requirement_mismatch, exclusive_resource, policy_contradiction), déterministes et sans modèle ; sur « approbations:paiements », les deux passages sont cités : « Obtenir la validation du responsable d'a » / « Obtenir la validation du responsable (1  ».",
+      "test": {
+        "file": "test/conflits/detect.test.ts",
+        "name": "19. deux gammes aux approbations incompatibles déclenchent un conflit, passages cités",
+        "status": "passed"
+      }
+    },
+    "concilier": {
+      "proof": "dossier « Pour le déploiement du service paiements, GAM-deployer-service-paiements-01 exig » — 4 option(s) ; l'option retenue est choisie ; chaque option exige une décision humaine.",
+      "test": {
+        "file": "test/conflits/conciliate.test.ts",
+        "name": "prépare un dossier : résumé, options, aucune appliquée, décision humaine exigée",
+        "status": "passed"
+      }
+    },
+    "mcp": {
+      "proof": "check-before-acting → GAM-deployer-service-paiements-01 ; list-procedures → 2 gamme(s) ; get-procedure-stats → 3 ligne(s) de statistiques ; 16 outils exposés, un seul dispatch.",
+      "test": {
+        "file": "test/surfaces/resolver.test.ts",
+        "name": "mcp : l'action relaie les 16 outils sans logique propre",
+        "status": "passed"
+      }
+    },
+    "skill": {
+      "proof": "SKILL.md de GAM-reinitialiser-coffre-cles-01 : 903 caractères, empreinte 6c1c9832a745…, version citée, aucun secret ; le skill générique et le prompt de l'agent sont affichés tels quels.",
+      "test": {
+        "file": "test/mcp/skill-export.test.ts",
+        "name": "recette 17 : aucun secret ne passe dans l'export, même par accident",
+        "status": "passed"
+      }
+    },
+    "encarts": {
+      "proof": "encart Jira : 3 gamme(s) applicable(s) ; la macro affiche l'état « draft », la version v1, 0 exécution(s) et la fraîcheur — la page dit si elle est outillée.",
+      "test": {
+        "file": "test/surfaces/resolver.test.ts",
+        "name": "issuePanel : trouve la procédure qui correspond au ticket",
+        "status": "passed"
+      }
+    },
+    "journal": {
+      "proof": "30 événement(s) journalisés, 14 types d'acte distincts ; aucun n'est modifié ni supprimé — déprécier n'est pas effacer.",
+      "test": {
+        "file": "test/demo/preuve.test.ts",
+        "name": "le scénario se joue de bout en bout, chaque étape rend sa preuve",
+        "status": "passed"
+      }
+    },
+    "atelier": {
+      "proof": "7 page(s) détectée(s), 57 % compilé(s), 25 % tracé(s) ; 100 % synchronisé(s), 0 désynchronisée(s) depuis plus de 90 jours ; budget modèle : 0 appel(s), 0 jetons.",
+      "test": {
+        "file": "test/surfaces/resolver.test.ts",
+        "name": "atelier : registre, poussières, fraîcheur et couverture d'un coup",
+        "status": "passed"
+      }
+    },
+    "reglages": {
+      "proof": "espace SRE : seuil 30 exécutions, politique de verrous « human_or_permitted_agent », révision à 365 j, poussière à 90 j, 1 page(s) de politique ; 11 motifs de risque, 13 détecteurs de secrets.",
+      "test": {
+        "file": "test/mesures-atelier/workshop-ghosts.test.ts",
+        "name": "fraîcheur : part synchronisée, âge médian de l'écart, alerte au-delà de 90 jours",
+        "status": "passed"
+      }
+    }
+  }
+}
