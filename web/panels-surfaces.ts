@@ -14,6 +14,7 @@ import { findProcedure } from "../src/core/mcp/search";
 import { getGammeByCode } from "../src/core/version/versioning";
 import { freshness } from "../src/core/stats/workshop";
 import { DEFAULT_RISK_MOTIFS } from "../src/core/risk/risk-motifs";
+import { sealEvents, verifySeal } from "../src/core/audit/journal-seal";
 import { DEFAULT_SECRET_DETECTORS } from "../src/core/secrets/detectors";
 import { DEFAULT_THRESHOLD } from "../src/core/stats/rates";
 import { PAGES, TICKETS } from "../seed/atelier";
@@ -122,10 +123,29 @@ const KINDS: readonly string[] = [
   "ghost.proposed", "secret.found", "skill.exported", "stats.computed",
 ];
 
+/**
+ * Le sceau : la tête de la chaîne d'empreintes et sa vérification.
+ * Le journal est append-only ; le sceau prouve qu'il n'a pas été altéré.
+ */
+const sceauDuJournal = async (state: AppState): Promise<HTMLElement> => {
+  const tous = await state.deps.store.events();
+  if (!tous.length) return h("div", {});
+  const seal = sealEvents(state.deps.hasher, tous);
+  const verdict = verifySeal(state.deps.hasher, seal, tous);
+  return h("div", { class: "line" },
+    h("span", { class: "muted" }, "Sceau d'intégrité :"),
+    h("code", {}, `${seal.head.slice(0, 16)}…`),
+    verdict.valid
+      ? badge(`chaîne vérifiée sur ${verdict.checked} entrée(s)`, "ok")
+      : badge(`chaîne rompue à ${verdict.firstInvalidId ?? "?"}`, "ko"),
+  );
+};
+
 const showJournal = async (state: AppState, out: HTMLElement): Promise<void> => {
   const events = await state.deps.store.events(state.eventKind ? (e: DomainEvent) => e.kind === state.eventKind : undefined);
   out.replaceChildren(
     h("h3", {}, `${events.length} événement(s)`),
+    await sceauDuJournal(state),
     events.length
       ? table(
           ["Horodatage", "Acte", "Sujet", "Acteur", "Charge utile"],
