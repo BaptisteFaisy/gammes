@@ -1,12 +1,12 @@
 /**
  * Encart Jira (GA-16) — « quelle gamme s'applique à ce ticket, la démarrer,
- * voir les traces ».
+ * voir les traces », et **la preuve de chaque étape**.
  *
- * Le rendu reste mince : les données viennent de l'action `issuePanel` du
- * resolver, la logique est dans `src/ui/issue-panel/panel-model.ts` (testée hors
- * navigateur). Un refus de verrou s'affiche comme un refus lisible — jamais
- * comme une erreur technique. Chaque morceau est un composant séparé : la règle
- * de la maison (fonction < 50 lignes) est tenue par découpage, pas par exception.
+ * Le rendu reste mince : les données viennent des actions du resolver, la
+ * logique est dans `src/ui/issue-panel/panel-model.ts` (testée hors navigateur).
+ * Un refus de verrou s'affiche comme un refus lisible — jamais comme une erreur
+ * technique. Chaque morceau est un composant séparé : la règle de la maison
+ * (fonction < 50 lignes) est tenue par découpage, pas par exception.
  */
 import { useEffect, useState } from "react";
 import { Box, Button, Heading, Lozenge, Stack, Text } from "@forge/react";
@@ -21,6 +21,17 @@ type Candidate = {
   readonly invocable: boolean;
   readonly requiresHuman: boolean;
   readonly requiresPermit: boolean;
+};
+
+type Proof = { readonly kind: string; readonly strength: string; readonly required: boolean; readonly hint?: string };
+
+type PanelStep = {
+  readonly stepId: string;
+  readonly ord: number;
+  readonly text: string;
+  readonly proofExpected: Proof;
+  readonly locks: readonly { readonly kind: string; readonly reason: string }[];
+  readonly proof?: { readonly kind: string; readonly strength: string; readonly ref: string };
 };
 
 type Trace = { readonly runId: string; readonly code: string; readonly version: number; readonly closed: boolean; readonly outcome?: string };
@@ -69,6 +80,37 @@ const Applicable = ({
   </Stack>
 );
 
+/** Les étapes, avec la preuve attendue et la preuve laissée. */
+const Etapes = ({ steps }: { readonly steps: readonly PanelStep[] }) => (
+  <Stack space="space.200">
+    <Text as="strong">Étapes et preuves</Text>
+    {steps.map((s) => (
+      <Stack key={s.stepId} space="space.050">
+        <Text>
+          {s.ord}. {s.text}
+        </Text>
+        <Text>
+          preuve attendue : {s.proofExpected.kind} · {s.proofExpected.strength}
+          {s.proofExpected.required ? " (obligatoire)" : ""}
+          {s.proofExpected.hint ? ` — ${s.proofExpected.hint}` : ""}
+        </Text>
+        {s.proof ? (
+          <Text>
+            preuve laissée : {s.proof.kind} · {s.proof.strength} · {s.proof.ref}
+          </Text>
+        ) : (
+          <Lozenge appearance="neutral">aucune preuve encore</Lozenge>
+        )}
+        {s.locks.map((l) => (
+          <Lozenge key={`${s.stepId}-${l.kind}`} appearance="warning">
+            {l.kind} — {l.reason}
+          </Lozenge>
+        ))}
+      </Stack>
+    ))}
+  </Stack>
+);
+
 /** Les traces déjà liées au ticket — le passé, cité. */
 const Traces = ({ traces }: { readonly traces: readonly Trace[] }) => (
   <Stack space="space.100">
@@ -95,32 +137,43 @@ const Corps = ({ etat, onDemarrer }: { readonly etat: PanelState; readonly onDem
   return <Applicable candidat={applicable} manquantes={etat.missingInputs} onDemarrer={onDemarrer} />;
 };
 
+/** Charge l'état de l'encart et les étapes (preuve attendue, preuve acquittée). */
+const charger = async (
+  issueKey: string,
+): Promise<{ readonly etat: PanelState; readonly etapes: readonly PanelStep[] }> => {
+  const reponse = await appeler<PanelState>("issuePanelState", { issueKey });
+  if (!reponse) return { etat: vide, etapes: [] };
+  const applicable = reponse.candidates.find((c) => c.invocable);
+  if (!applicable) return { etat: reponse, etapes: [] };
+  const detail = await appeler<{ steps: readonly PanelStep[] }>("issuePanelSteps", { code: applicable.code });
+  return { etat: reponse, etapes: detail?.steps ?? [] };
+};
+
 export const IssuePanel = ({ facts }: { readonly facts: ExtensionFacts }) => {
   const [etat, setEtat] = useState<PanelState>(vide);
+  const [etapes, setEtapes] = useState<readonly PanelStep[]>([]);
   const [refus, setRefus] = useState<string | undefined>(undefined);
   const issueKey = facts.issueKey ?? "";
 
-  const charger = async () => {
+  const rafraichir = async () => {
     if (!issueKey) return;
-    const reponse = await appeler<PanelState>("issuePanelState", { issueKey });
-    if (reponse) setEtat(reponse);
+    const { etat: etatCharge, etapes: etapesChargees } = await charger(issueKey);
+    setEtat(etatCharge);
+    setEtapes(etapesChargees);
   };
 
   const demarrer = async () => {
     const applicable = etat.candidates.find((c) => c.invocable);
     if (!applicable) return;
     const resultat = await appeler<ResultatStart>("issuePanelStart", {
-      code: applicable.code,
-      issueKey,
-      inputs: {},
-      actorKind: "human",
+      code: applicable.code, issueKey, inputs: {}, actorKind: "human",
     });
     setRefus(resultat && resultat.ok === false ? (resultat.error?.message ?? "Démarrage refusé.") : undefined);
-    await charger();
+    await rafraichir();
   };
 
   useEffect(() => {
-    void charger();
+    void rafraichir();
   }, [issueKey]);
 
   if (!issueKey) {
@@ -137,6 +190,7 @@ export const IssuePanel = ({ facts }: { readonly facts: ExtensionFacts }) => {
         <Heading as="h2">Gammes — {issueKey}</Heading>
         <Corps etat={etat} onDemarrer={() => void demarrer()} />
         {refus ? <Lozenge appearance="danger">{refus}</Lozenge> : null}
+        {etapes.length > 0 ? <Etapes steps={etapes} /> : null}
         {etat.traces.length > 0 ? <Traces traces={etat.traces} /> : <Text>Aucune trace liée à ce ticket pour l'instant.</Text>}
       </Stack>
     </Box>

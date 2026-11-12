@@ -8,7 +8,7 @@
  */
 
 import type { ConfluencePort, Deps, GraphPort, JiraPort, LlmClient, PermitRegistry } from "../src/core/ports";
-import type { IssueDigest, PageDigest, Run, RunStep } from "../src/core/types";
+import type { Evidence, EvidenceSpec, IssueDigest, PageDigest, Run, RunStep } from "../src/core/types";
 import { fakeAwsKey, makeDeps, makePage, T0 } from "../test/helpers";
 import { fixedClock } from "../src/platform/clock";
 import { seqIds } from "../src/platform/ids";
@@ -16,6 +16,7 @@ import { makeHasher } from "../src/platform/hash";
 import { memoryStore } from "../src/platform/memory-store";
 import { memoryBudget } from "../src/platform/llm/budget";
 import { scriptedLlm } from "../src/platform/llm/fake-llm";
+import { OWNER } from "../test/moteur-execution/fixtures";
 
 const code = (macro: string): string =>
   `<ac:structured-macro ac:name="code"><ac:plain-text-body><![CDATA[${macro}]]></ac:plain-text-body></ac:structured-macro>`;
@@ -183,6 +184,22 @@ export const seedSettings = async (deps: Deps): Promise<void> => {
   });
 };
 
+/**
+ * La preuve d'une étape de démonstration : la **spec de la version** (une seule
+ * source de vérité) et une référence plausible. Une étape franchie sans preuve
+ * ne serait pas une preuve — le produit ne dit jamais « la procédure est
+ * respectée » sans trace, la démo doit respecter la même règle.
+ */
+const preuveDe = (spec: EvidenceSpec | undefined, index: number): Evidence => ({
+  kind: spec?.kind ?? "command_output",
+  strength: spec?.strength ?? "machine",
+  ref:
+    spec?.strength === "attested"
+      ? `attestation:${OWNER}`
+      : `https://ci.example.internal/build/${42 + index}`,
+  capturedAt: T0,
+});
+
 /** Trace synthétique : `n` exécutions dont `failures` en échec sur `stepId`. */
 export const seedTraces = async (
   deps: Deps,
@@ -197,14 +214,20 @@ export const seedTraces = async (
   const failIndex = order.indexOf(args.stepId);
   for (let i = 0; i < args.n; i += 1) {
     const failed = i < args.failures;
+    const version = await deps.store.versions.get(args.versionId);
+    const specDe = (stepId: string) => version?.steps.find((s) => s.id === stepId)?.evidence;
     const steps: RunStep[] = order.map((stepId, index) => {
+      const preuve = preuveDe(specDe(stepId), index);
       if (stepId === args.stepId) {
-        return { stepId, state: failed ? "failed" : "done", attempts: 1, startedAt: args.startedAt ?? T0, ...(failed ? {} : { durationS: 120 }) };
+        return {
+          stepId, state: failed ? "failed" : "done", attempts: 1, startedAt: args.startedAt ?? T0,
+          evidence: preuve, ...(failed ? {} : { durationS: 120 }),
+        };
       }
       if (failed && failIndex >= 0 && index > failIndex) {
         return { stepId, state: "pending", attempts: 0 };
       }
-      return { stepId, state: "done", attempts: 1, startedAt: args.startedAt ?? T0, durationS: 120 };
+      return { stepId, state: "done", attempts: 1, startedAt: args.startedAt ?? T0, durationS: 120, evidence: preuve };
     });
     const run: Run = {
       id: `run_seed_${args.versionId}_${i}`,
