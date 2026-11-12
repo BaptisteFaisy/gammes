@@ -17,7 +17,9 @@ const deps = (): Promise<Deps> => (depsPromise ??= buildForgeDeps());
 
 /** Les clés d'actions, alignées sur `createActions`. */
 const ACTION_KEYS: readonly ActionKey[] = [
-  "mcp", "atelier", "gamme", "run", "stats", "conflicts", "ghosts", "issuePanel", "nightly", "pageEvent",
+  "mcp", "atelier", "gamme", "run", "stats", "conflicts", "ghosts", "nightly", "pageEvent",
+  // surfaces (un groupe par lot) : encart Jira, macro Confluence, Jira hors encart
+  "issuePanel", "issuePanelTraces", "macroState", "macroFreshness", "issueTraces",
 ];
 
 type AnyAction = (payload: ActionPayload, request: ForgeRequest) => Promise<unknown>;
