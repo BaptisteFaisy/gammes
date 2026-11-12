@@ -20,4 +20,7 @@ export const jiraActions = (deps: Deps) => ({
   },
 });
 
+/** Clés d'actions de ce groupe : le lot propriétaire n'édite que ce fichier. */
+export const jiraKeys = ["issueTraces"] as const;
+
 export type JiraActions = ReturnType<typeof jiraActions>;

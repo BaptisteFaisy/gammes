@@ -33,4 +33,7 @@ export const macroActions = (deps: Deps) => ({
   macroFreshness: async (): Promise<Result<unknown>> => ok(await freshness(deps)),
 });
 
+/** Clés d'actions de ce groupe : le lot propriétaire n'édite que ce fichier. */
+export const macroKeys = ["macroState", "macroFreshness"] as const;
+
 export type MacroActions = ReturnType<typeof macroActions>;

@@ -9,19 +9,14 @@
 
 import Resolver from "@forge/resolver";
 import type { Deps } from "../core/ports";
-import { createActions, type ActionKey, type ActionPayload, type ForgeRequest } from "./actions";
+import { ACTION_KEYS, createActions, type ActionPayload, type ForgeRequest } from "./actions";
 import { buildForgeDeps } from "../platform/forge/deps";
 
 let depsPromise: Promise<Deps> | undefined;
 const deps = (): Promise<Deps> => (depsPromise ??= buildForgeDeps());
 
-/** Les clés d'actions, alignées sur `createActions`. */
-const ACTION_KEYS: readonly ActionKey[] = [
-  "mcp", "atelier", "gamme", "run", "stats", "conflicts", "ghosts", "nightly", "pageEvent",
-  // surfaces (un groupe par lot) : encart Jira, macro Confluence, Jira hors encart
-  "issuePanel", "issuePanelTraces", "macroState", "macroFreshness", "issueTraces",
-];
-
+// Les clés d'actions viennent de `actions.ts` : elles sont composées depuis les
+// trois groupes de surfaces, donc un lot n'édite jamais ce fichier.
 type AnyAction = (payload: ActionPayload, request: ForgeRequest) => Promise<unknown>;
 type ForgeReq = { readonly payload?: unknown; readonly accountId?: string };
 
