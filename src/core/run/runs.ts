@@ -167,7 +167,7 @@ export const startRun = async (deps: Deps, args: StartRunArgs): Promise<Result<R
     actorKind: run.actor.kind,
     payload: { code: run.code, version: run.pinnedVersion, mode: run.mode, ticketRef: run.ticketRef ?? null },
   });
-  const first = version.steps[0]!;
+  const first = [...version.steps].sort((a, b) => a.ord - b.ord)[0]!;
   return ok({ run, step: first, evidence: first.evidence, locks: first.locks });
 };
 

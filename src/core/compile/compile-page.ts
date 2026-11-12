@@ -77,6 +77,14 @@ type DraftGroups = {
   readonly fallback: readonly DraftStep[];
 };
 
+/**
+ * Les numéros d'ordre viennent de la page (entrées et préconditions comprises) : une fois
+ * les sections réparties, la gamme se renumérote 1..N. L'opérateur lit « étape 2 sur 4 »,
+ * pas « étape 5 sur 9 ».
+ */
+const renumber = (drafts: readonly DraftStep[]): readonly DraftStep[] =>
+  drafts.map((draft, index) => ({ ...draft, ord: index + 1 }));
+
 /** Les sections « avant de commencer » et « si ça tourne mal » ne sont pas des étapes ordinaires. */
 export const splitBySection = (drafts: readonly DraftStep[]): DraftGroups => {
   const out: {
@@ -162,8 +170,8 @@ export const compilePage = async (
   const spaceKey = args.spaceKey ?? args.page.spaceKey;
   const extraction = await extractSteps(deps, args.page);
   const groups = splitBySection(extraction.drafts);
-  const steps = await qualifySteps(deps, groups.steps, args.page);
-  const fallbackSteps = await qualifySteps(deps, groups.fallback, args.page);
+  const steps = await qualifySteps(deps, renumber(groups.steps), args.page);
+  const fallbackSteps = await qualifySteps(deps, renumber(groups.fallback), args.page);
 
   const findings = detectSecrets(deps, args.page.storageBody, args.page.ari);
   await recordFindings(deps, findings);
