@@ -9,3 +9,7 @@ dist/
 /coverage/
 .forge/
 docs/DEMANDES/*.local.md
+
+# Python (gardes CI et agent de conflits)
+__pycache__/
+*.pyc
