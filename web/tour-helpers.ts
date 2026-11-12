@@ -20,6 +20,7 @@ export const preuveMachine = (state: AppState, ref = "https://ci.example.interna
   strength: "machine",
   ref,
   capturedAt: state.deps.clock.now(),
+  origin: "fixture",
   note: [
     "$ gh run list --workflow ci --limit 1",
     "✓ build #4242 — pipeline vert — 2 min 14 s",
@@ -33,6 +34,7 @@ export const attestation = (state: AppState): Evidence => ({
   strength: "attested",
   ref: `attestation:${OWNER}`,
   capturedAt: state.deps.clock.now(),
+  origin: "fixture",
   note: [
     "Attestation — responsable d'astreinte",
     "« Déploiement validé : merge check vert, contrôle d'erreur à 0,2 % sur 5 minutes. »",

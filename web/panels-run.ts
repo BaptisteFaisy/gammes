@@ -125,7 +125,9 @@ const etapesFranchies = (run: Run): HTMLElement => {
     s.evidence
       ? details(
           `${s.evidence.kind} · force ${s.evidence.strength} · ${s.evidence.ref}`,
-          h("div", { class: "out" }, s.evidence.note ? code(s.evidence.note) : note("aucun extrait", "info")),
+          h("div", { class: "out" },
+            s.evidence.origin === "fixture" ? badge("fixture (démo)", "idle") : badge("preuve réelle", "ok"),
+            s.evidence.note ? code(s.evidence.note) : note("aucun extrait", "info")),
         )
       : badge("AUCUNE PREUVE", "ko"),
   ]);
