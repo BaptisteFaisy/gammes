@@ -7,6 +7,7 @@
  */
 
 import type { Deps } from "../ports";
+import { promptAvecDonnees } from "../../platform/llm/prompt-shield";
 import type { Step } from "../types";
 import { parseJsonLoose, textField } from "../json";
 
@@ -73,16 +74,19 @@ export const assessFalsifiability = (text: string): Falsifiability => {
 const REWORD_TASK = "reword_falsifiable";
 
 const buildPrompt = (step: Step, note: string): string =>
-  [
-    "Une étape de procédure est invérifiable. Reformule-la en un contrôle falsifiable,",
-    "c'est-à-dire avec un objet observable (commande, seuil, code de retour, lien, métrique).",
-    "Garde la même intention, ne change pas la langue, ne rajoute aucun contexte inventé.",
-    "Réponds en JSON strict : {\"rewording\": string, \"observable\": string}.",
-    "",
-    `Étape : ${step.text}`,
-    step.command ? `Commande citée : ${step.command}` : "Aucune commande citée.",
-    `Diagnostic : ${note}`,
-  ].join("\n");
+  promptAvecDonnees(
+    [
+      "Une étape de procédure est invérifiable. Reformule-la en un contrôle falsifiable,",
+      "c'est-à-dire avec un objet observable (commande, seuil, code de retour, lien, métrique).",
+      "Garde la même intention, ne change pas la langue, ne rajoute aucun contexte inventé.",
+      "Réponds en JSON strict : {\"rewording\": string, \"observable\": string}.",
+      `Diagnostic : ${note}`,
+    ],
+    [{
+      etiquette: "ÉTAPE (page wiki)",
+      contenu: [step.text, step.command ? `Commande citée : ${step.command}` : "Aucune commande citée."].join("\n"),
+    }],
+  );
 
 /**
  * Reformulation proposée par le modèle — une **proposition**, jamais une écriture

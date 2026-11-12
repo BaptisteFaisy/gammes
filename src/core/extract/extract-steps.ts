@@ -11,6 +11,7 @@
  */
 
 import type { Deps } from "../ports";
+import { promptAvecDonnees } from "../../platform/llm/prompt-shield";
 import type { InputSpec, PageDigest, SourceSpan, StepKind } from "../types";
 import { arrayField, parseJsonLoose } from "../json";
 
@@ -215,14 +216,15 @@ export const extractInputs = (blocks: readonly ParsedBlock[]): readonly InputSpe
 };
 
 const prosePrompt = (page: PageDigest, prose: readonly ParsedBlock[]): string =>
-  [
-    "Cette page de procédure contient de la prose qui décrit des étapes sans liste.",
-    "Extrais les étapes implicites, sans rien inventer, sans réécrire les commandes.",
-    "Réponds en JSON strict : {\"steps\":[{\"paragraphIndex\":number,\"text\":string,\"command\":string|null,\"kind\":\"manual\"|\"command\"|\"check\"|\"decision\"|\"notification\"}]}",
-    "",
-    `Page : ${page.title} (${page.ari})`,
-    ...prose.map((b, i) => `[${i}] ${b.text}`),
-  ].join("\n");
+  promptAvecDonnees(
+    [
+      "Cette page de procédure contient de la prose qui décrit des étapes sans liste.",
+      "Extrais les étapes implicites, sans rien inventer, sans réécrire les commandes.",
+      "Réponds en JSON strict : {\"steps\":[{\"paragraphIndex\":number,\"text\":string,\"command\":string|null,\"kind\":\"manual\"|\"command\"|\"check\"|\"decision\"|\"notification\"}]}",
+      `Page : ${page.title} (${page.ari})`,
+    ],
+    [{ etiquette: "PROSE (page wiki)", contenu: prose.map((b, i) => `[${i}] ${b.text}`).join("\n") }],
+  );
 
 const KINDS: readonly StepKind[] = ["manual", "command", "check", "decision", "notification"];
 

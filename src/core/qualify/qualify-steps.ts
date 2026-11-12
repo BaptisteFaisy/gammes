@@ -8,6 +8,7 @@
  */
 
 import type { Deps } from "../ports";
+import { promptAvecDonnees } from "../../platform/llm/prompt-shield";
 import type { EvidenceSpec, OnFailure, PageDigest, RiskLevel, Step, StepKind, StepLock } from "../types";
 import type { DraftStep } from "../extract/extract-steps";
 import { assessFalsifiability, proposeRewording } from "../falsifiable/falsifiability";
@@ -99,12 +100,13 @@ const modelHint = async (deps: Deps, draft: DraftStep): Promise<ModelHint | unde
   try {
     const res = await deps.llm.complete({
       task: "qualify_step",
-      prompt: [
-        "Qualifie cette étape de procédure. Ne devine rien : réponds seulement si tu es sûr.",
-        'JSON strict : {"kind":"manual"|"command"|"check"|"decision"|"notification","humanOnly":boolean,"evidence":"command_output"|"build_link"|"screenshot"|"log_ref"|"ticket_ref"|"attestation"}',
-        "",
-        `Étape : ${draft.text}`,
-      ].join("\n"),
+      prompt: promptAvecDonnees(
+        [
+          "Qualifie cette étape de procédure. Ne devine rien : réponds seulement si tu es sûr.",
+          'JSON strict : {"kind":"manual"|"command"|"check"|"decision"|"notification","humanOnly":boolean,"evidence":"command_output"|"build_link"|"screenshot"|"log_ref"|"ticket_ref"|"attestation"}',
+        ],
+        [{ etiquette: "ÉTAPE (page wiki)", contenu: draft.text }],
+      ),
       cacheKey: deps.hasher.hash(draft.text),
       json: true,
     });
