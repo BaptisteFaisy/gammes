@@ -93,13 +93,12 @@ jobs:
             if [ -n "$MANQUANTS" ]; then
               echo "PR #$PR : checks pas encore verts ($MANQUANTS) — prochain passage"; continue
             fi
-            # Déjà en file ? Le check « Mergify Merge Queue » passe en `pending`
-            # dès que la commande est prise : inutile de la répéter.
-            EN_FILE=$(gh api "repos/$REPO/commits/$SHA/check-runs" \
-              --jq '[.check_runs[] | select(.name=="Mergify Merge Queue") | select(.status!="completed")] | length' 2>/dev/null || echo 0)
-            if [ "${EN_FILE:-0}" != "0" ]; then
-              echo "PR #$PR : déjà en file"; continue
-            fi
+            # Une seule commande par tête : le marqueur HTML est la mémoire du
+            # balayeur. Ne PAS se fier au check « Mergify Merge Queue » : il reste
+            # `pending` sur une PR que la file a **débarquée** (mesuré sur la sonde
+            # de conflit, PR #20 — le balayeur la croyait en file et n'a jamais
+            # repassé la commande après le rebase de l'agent). Une tête nouvelle
+            # (rebase, commit) porte un autre marqueur : elle est bien re-embarquée.
             MARQUE="<!-- file-de-merge sha=$SHA -->"
             if gh api "repos/$REPO/issues/$PR/comments" --paginate \
                 --jq '.[].body' 2>/dev/null | grep -qF "$MARQUE"; then
