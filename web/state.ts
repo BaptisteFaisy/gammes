@@ -38,6 +38,8 @@ export type AppState = {
   conflictId?: string;
   ghostId?: string;
   amendmentId?: string;
+  /** Version en attente d'approbation (scénario de démo). */
+  pendingVersionId?: string;
   projectKey?: string;
   tool?: string;
   lang?: "fr" | "en";

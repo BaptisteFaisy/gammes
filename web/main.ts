@@ -8,7 +8,7 @@
  */
 
 import { createState, type AppState } from "./state";
-import { clear, h } from "./dom";
+import { button, clear, h } from "./dom";
 import { atelierPanel, detectPanel } from "./panels-overview";
 import { compilePanel } from "./panels-compile";
 import { gammePanel } from "./panels-gamme";
@@ -21,11 +21,15 @@ import { mcpPanel } from "./panels-tools";
 import { skillPanel } from "./panels-skill";
 import { encartsPanel, journalPanel, reglagesPanel } from "./panels-surfaces";
 import { modelePanel } from "./panels-model";
+import { tourPanel } from "./panels-tour";
+import { runTour } from "./tour";
+import { createTourOverlay } from "./tour-ui";
 import { realDataPanel } from "./panels-realdata";
 import { describeEngine } from "./engine";
 import type { Navigate, Rerender } from "./types";
 
 type Screen =
+  | "demo"
   | "atelier" | "detecter" | "compiler" | "gamme" | "avant-agir" | "derouler"
   | "liaison" | "mesures" | "amendements" | "conflits" | "fantomes"
   | "mcp" | "skill" | "encarts" | "journal" | "reglages" | "modele" | "donnees";
@@ -33,6 +37,10 @@ type Screen =
 type Group = { readonly title: string; readonly items: readonly { id: Screen; label: string }[] };
 
 const GROUPS: readonly Group[] = [
+  {
+    title: "Démo",
+    items: [{ id: "demo", label: "0 · Démo complète" }],
+  },
   {
     title: "Atelier",
     items: [
@@ -84,6 +92,7 @@ const GROUPS: readonly Group[] = [
 ];
 
 let state: AppState | undefined;
+let overlay: ReturnType<typeof createTourOverlay> | undefined;
 let current: Screen = "atelier";
 let navNode: HTMLElement | undefined;
 let mainNode: HTMLElement | undefined;
@@ -96,6 +105,12 @@ const header = (): HTMLElement => {
     { class: "head" },
     h("h1", {}, "Gammes", h("span", { class: "sub" }, " — your runbooks, as tools")),
     h("p", { class: "pitch" }, "Le wiki sait déjà tout faire. Les agents, non. Gammes compile une page de procédure en outil exécutable, verrouillé et tracé — et refuse l'improvisation."),
+    h(
+      "p",
+      { class: "notebarun" },
+      button("▶ Démo complète", () => startTour(), "primary"),
+      h("span", { class: "muted" }, "28 étapes, le vrai produit, tout seul"),
+    ),
     h(
       "p",
       { class: "note" },
@@ -115,6 +130,7 @@ const build = async (screen: Screen, go: Navigate): Promise<HTMLElement> => {
   const app = state;
   const rerender: Rerender = () => void mount();
   switch (screen) {
+    case "demo": return tourPanel(startTour, rerender);
     case "atelier": return atelierPanel(app);
     case "detecter": return detectPanel(app, rerender);
     case "compiler": return compilePanel(app, rerender);
@@ -161,6 +177,24 @@ const goTo = (screen: Screen): void => {
   void mount();
 };
 
+/** La démo rejoue tout depuis un atelier neuf : mêmes résultats, même ordre, à chaque fois. */
+const startTour = (): void => {
+  if (!overlay) return;
+  const control = { stopped: false, paused: false };
+  overlay.reset();
+  overlay.setRunning(true);
+  void (async () => {
+    state = await createState();
+    await runTour(state, {
+      go: (screen) => goTo(screen as Screen),
+      onStep: (i, step) => overlay?.onStep(i, step),
+      onResult: (i, step, proof, failed) => overlay?.onResult(i, step, proof, failed),
+      onDone: (done, failed) => overlay?.onDone(done, failed),
+    }, { delayMs: 1100, control });
+    overlay?.setRunning(false);
+  })();
+};
+
 const boot = async (): Promise<void> => {
   state = await createState();
   const app = document.getElementById("app");
@@ -169,6 +203,8 @@ const boot = async (): Promise<void> => {
   navNode = h("nav", { class: "nav" });
   mainNode = h("main", { class: "main" });
   app.append(header(), h("div", { class: "layout" }, navNode, mainNode));
+  overlay = createTourOverlay();
+  document.body.append(overlay.element);
   // Le budget et le moteur sont des compteurs vivants : rafraîchis sans redessiner l'écran.
   setInterval(() => {
     if (engineNode && state) engineNode.textContent = describeEngine(state);
