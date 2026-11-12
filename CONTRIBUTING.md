@@ -33,8 +33,9 @@ npm run verify        # lint (règles de la maison) + typecheck + tests
 
 ## CI
 
-Un seul workflow, `ci.yml` : verdict en **5 minutes maximum** (`timeout-minutes: 5`, `concurrency`,
-`fetch-depth: 1`, cache npm). Trois portes : `npm run lint`, `npm run typecheck`, `npm run test`.
+Cinq workflows, une seule porte applicative : `ci.yml` rend le verdict (lint, typecheck,
+tests, gardes Python), `ci-budget.yml` et `couche0.yml` gardent le dépôt, `file-de-merge.yml`
+embarque les PR vertes et `conflict-resolver.yml` réconcilie les conflits.
 Aucun build natif ni E2E dans la CI de PR. On n'allonge jamais un timeout : on découpe le travail.
 
 ## Agents hermes — la gestion des conflits
