@@ -132,6 +132,7 @@ docs/             contrats, architecture, démo, juges, anglais, vidéo, Marketp
 - [`docs/SPEC-EN.md`](docs/SPEC-EN.md) — English summary for the judges.
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — règles de la maison, branches, agents hermes.
 - [`docs/PREUVES.md`](docs/PREUVES.md) — une preuve par étape : l'élément à regarder et la commande qui le vérifie.
+- [`docs/IDEES-1000.md`](docs/IDEES-1000.md) — plus de 1000 idées pour consolider le projet, et les 10 meilleures.
 
 ## État (v0.1.0)
 
