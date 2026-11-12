@@ -1,36 +1,149 @@
 # Gammes — manifeste Forge (Atlassian Codegeist 2026)
 #
-# ESQUISSE À VALIDER avec `forge lint` puis `forge deploy` (cahier des charges § 20 et § 22).
-# Les modules Rovo (`rovo:mcp`, `rovo:skill`, `rovo:agent`) sont en Preview : leur forme exacte
-# doit être confirmée sur une app de test. Ce qui est certain : le manifeste est STATIQUE, donc
-# une seule couche outillée (outils paramétrés) + une couche exportée (SKILL.md par gamme).
+# Validé contre le schéma officiel `@forge/manifest` (13.9.0) par
+# `tools/check-manifest.mjs`, lancé en CI : le manifeste est un fichier de
+# garde, pas une intention. Les formes retenues ici sont celles du schéma :
+#
+#   - les modules Rovo passent par des modules `action` (une action par outil
+#     MCP du § 18) ; `rovo:mcp.tools` et `rovo:agent.actions` y renvoient par
+#     clé — une seule source de vérité, la base ;
+#   - les surfaces partagent UNE ressource (`static/main/index.html`) et se
+#     distinguent par leur clé de module ; le rendu est en UI Kit 2 ;
+#   - `jira:workflowValidator` est une **fonction** (le validateur exige une
+#     trace d'exécution close liée au ticket), pas une expression.
 
 modules:
-  # --- Point d'entrée fonction ---
+  # --- Fonctions : le point d'entrée unique, et le validateur de transition ---
   function:
     - key: gammes-fn
       handler: index.handler
+    - key: gammes-validator-fn
+      handler: validator.handler
 
   resolver:
     - key: gammes-resolver
       function: gammes-fn
 
-  # --- Outils MCP : UN jeu d'outils sert TOUTES les gammes (contenu en base, pas dans le manifeste) ---
+  # --- Outils MCP : une action par outil du § 18 ---
+  action:
+    - key: find-procedure
+      name: Trouver une procédure
+      description: "Chercher une gamme par intention ou contexte."
+      actionType: gammes:procedure:find
+      function: gammes-fn
+    - key: check-before-acting
+      name: Vérifier avant d'agir
+      description: "Existe-t-il une gamme pour ce geste ? Verrous et permis requis."
+      actionType: gammes:procedure:check
+      function: gammes-fn
+    - key: get-procedure
+      name: Lire une procédure
+      description: "Étapes, entrées, preuves, verrous et provenance d'une gamme."
+      actionType: gammes:procedure:get
+      function: gammes-fn
+    - key: list-procedures
+      name: Lister les procédures
+      description: "Le registre filtré : espace, état, fraîcheur."
+      actionType: gammes:procedure:list
+      function: gammes-fn
+    - key: start-run
+      name: Démarrer une exécution
+      description: "Démarrer une exécution épinglée à sa version."
+      actionType: gammes:run:start
+      function: gammes-fn
+    - key: get-current-step
+      name: Étape courante
+      description: "L'étape courante, sa preuve et ses verrous."
+      actionType: gammes:run:current-step
+      function: gammes-fn
+    - key: record-step
+      name: Acquitter une étape
+      description: "Acquitter l'étape avec sa preuve, ou recevoir le refus du verrou."
+      actionType: gammes:run:record-step
+      function: gammes-fn
+    - key: report-deviation
+      name: Déclarer une déviation
+      description: "Déclarer ce qui a été fait à la place, et pourquoi."
+      actionType: gammes:run:report-deviation
+      function: gammes-fn
+    - key: finish-run
+      name: Clore l'exécution
+      description: "Clore l'exécution et rendre la trace citable."
+      actionType: gammes:run:finish
+      function: gammes-fn
+    - key: get-run-trace
+      name: Lire la trace
+      description: "La trace complète d'une exécution."
+      actionType: gammes:run:trace
+      function: gammes-fn
+    - key: get-procedure-stats
+      name: Statistiques d'étape
+      description: "Échecs, sauts, déviations par étape, avec effectifs."
+      actionType: gammes:stats:procedure
+      function: gammes-fn
+    - key: propose-amendment
+      name: Proposer un amendement
+      description: "Proposer un amendement (jamais appliqué seul)."
+      actionType: gammes:amendment:propose
+      function: gammes-fn
+    - key: compile-page
+      name: Compiler une page
+      description: "Compiler une page en brouillon de gamme + diff. Rien n'est publié."
+      actionType: gammes:page:compile
+      function: gammes-fn
+    - key: export-skill
+      name: Exporter le SKILL.md
+      description: "Le SKILL.md d'une gamme approuvée, en source ouverte."
+      actionType: gammes:skill:export
+      function: gammes-fn
+    - key: get-missing-procedures
+      name: Gammes manquantes
+      description: "Les gammes fantômes, avec preuves et coût."
+      actionType: gammes:ghost:list
+      function: gammes-fn
+    - key: get-conflicts
+      name: Conflits de procédures
+      description: "Les conflits détectés, passages cités de part et d'autre."
+      actionType: gammes:conflict:list
+      function: gammes-fn
+
   rovo:mcp:
     - key: gammes-mcp
       name: Gammes
-      description: Find, run and trace procedures compiled from Confluence pages.
-      function: gammes-fn
+      tools:
+        - find-procedure
+        - check-before-acting
+        - get-procedure
+        - list-procedures
+        - start-run
+        - get-current-step
+        - record-step
+        - report-deviation
+        - finish-run
+        - get-run-trace
+        - get-procedure-stats
+        - propose-amendment
+        - compile-page
+        - export-skill
+        - get-missing-procedures
+        - get-conflicts
 
   # --- Skill générique : la conduite attendue de tout agent ---
   rovo:skill:
     - key: derouler-une-gamme
-      name: Dérouler une gamme
       description: >-
-        Chercher une gamme avant d'agir, demander les entrées typées, acquitter chaque étape avec
-        sa preuve, déclarer toute déviation, s'arrêter net au premier verrou humain ou de permis,
-        ne jamais improviser une étape à risque, citer la version dans le compte rendu.
-      instructions: skills/derouler-une-gamme/SKILL.md
+        Chercher une gamme avant d'agir, demander les entrées typées, acquitter
+        chaque étape avec sa preuve, déclarer toute déviation, s'arrêter net au
+        premier verrou humain ou de permis, ne jamais improviser une étape à
+        risque, citer la version dans le compte rendu.
+      source:
+        dir: skills/derouler-une-gamme
+      dependencies:
+        tools:
+          - find-procedure
+          - start-run
+          - record-step
+          - report-deviation
 
   # --- Agent Rovo « Le compagnon » ---
   rovo:agent:
@@ -39,50 +152,68 @@ modules:
       description: Déroule une gamme sous supervision et refuse d'improviser.
       prompt: agents/le-compagnon.md
       conversationStarters:
-        - text: Quelle procédure pour déployer ce service en production ?
-        - text: Quelles gammes sont désynchronisées de leur page ?
-        - text: Quelle étape échoue le plus ce trimestre ?
+        - Quelle procédure pour déployer ce service en production ?
+        - Quelles gammes sont désynchronisées de leur page ?
+        - Quelle étape échoue le plus ce trimestre ?
       actions:
-        - gammes-mcp
+        - find-procedure
+        - check-before-acting
+        - get-procedure
+        - list-procedures
+        - start-run
+        - get-current-step
+        - record-step
+        - report-deviation
+        - finish-run
+        - get-run-trace
+        - get-procedure-stats
+        - propose-amendment
+        - compile-page
+        - export-skill
+        - get-missing-procedures
+        - get-conflicts
+      skills:
+        - derouler-une-gamme
 
   # --- Surfaces Confluence ---
   confluence:globalPage:
     - key: gammes-atelier
-      resource: main
       title: Gammes — Atelier
-      route: /atelier
+      route: atelier
+      resource: main
   confluence:contentAction:
     - key: gammes-page-action
-      resource: main
       title: Gammes
-  confluence:macro:
-    - key: gammes-macro
       resource: main
+  macro:
+    - key: gammes-macro
       title: État de la gamme
       description: Version, état, exécutions et fraîcheur de la gamme compilée depuis cette page.
-      icon: ""
-  confluence:spaceSettingsPage:
-    - key: gammes-settings
       resource: main
+  confluence:spaceSettings:
+    - key: gammes-settings
       title: Gammes — Réglages
-      route: /reglages
+      route: reglages
+      resource: main
 
   # --- Surfaces Jira ---
   jira:issuePanel:
     - key: gammes-issue-panel
-      resource: main
       title: Gammes
+      icon: https://baptistefaisy.github.io/gammes/icon.png
+      resource: main
   jira:globalPage:
     - key: gammes-registre-jira
-      resource: main
       title: Gammes — Registre
-      route: /registre
+      resource: main
   jira:workflowValidator:
     - key: gammes-trace-validator
       name: Gammes trace required
-      description: Refuse la transition tant qu'aucune trace d'exécution n'est liée au ticket.
-      validator:
-        type: gammes-trace-required
+      description: Refuse la transition tant qu'aucune trace d'exécution close n'est liée au ticket.
+      function: gammes-validator-fn
+      errorMessage: >-
+        Gammes : cette transition exige une trace d'exécution close liée au
+        ticket. Déroulez la gamme applicable, liez la trace, puis rejouez.
 
   # --- Événements, planifications, traitements longs, entrée externe signée ---
   trigger:
@@ -98,29 +229,31 @@ modules:
     - key: gammes-nightly
       function: gammes-fn
       interval: day
-      handler: nightly
   consumer:
-    - key: gammes-long-jobs
+    - key: gammes-consumer-compile
+      queue: gammes-compile
       function: gammes-fn
-      maxDuration: 900
-      triggers:
-        - compile
-        - recompute-stats
-        - detect-ghosts
-        - detect-conflicts
+    - key: gammes-consumer-stats
+      queue: gammes-recompute-stats
+      function: gammes-fn
+    - key: gammes-consumer-ghosts
+      queue: gammes-detect-ghosts
+      function: gammes-fn
+    - key: gammes-consumer-conflicts
+      queue: gammes-detect-conflicts
+      function: gammes-fn
   webtrigger:
     - key: gammes-hook
       function: gammes-fn
 
   sql:
-    queries:
-      - key: gammes-scope-query
-        query: ""
+    - key: gammes-sql
+      engine: mysql
 
   llm:
     - key: gammes-llm
-      models:
-        - claude-3-5-haiku
+      model:
+        - claude
 
 resources:
   - key: main

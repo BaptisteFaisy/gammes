@@ -1,3 +1,8 @@
+---
+name: derouler-une-gamme
+description: Chercher une gamme avant d'agir, respecter les verrous, declarer les deviations, ne jamais improviser une etape a risque.
+---
+
 # Skill : dérouler une gamme
 
 > Skill générique, publié en source ouverte (bonus MCP du Codegeist 2026).
