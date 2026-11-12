@@ -8,7 +8,7 @@ d'un humain.
 |---|---|---|
 | Quoi | deux gammes prescrivent l'incompatible pour la même action | deux branches modifient le même code |
 | Qui détecte | `src/core/conflicts/` — déterministe, cité | `git` pendant le rebase/merge |
-| Qui prépare | le conciliateur hermes (`src/core/conciliation/`) | un agent hermes d'intégration (`CONTRIBUTING.md`) |
+| Qui prépare | le conciliateur hermes (`src/core/conciliation/`) | l'agent hermes de fusion (`.github/inferhub/`) |
 | Qui décide | un humain, daté et nommé (`decideConciliation`, `resolveConflict`) | l'intégrateur, sous la contrainte du contrat (`docs/CONTRATS.md`) et de `npm run verify` |
 | Ce qui est interdit | appliquer une option, modifier une gamme, réécrire une citation | garder deux implémentations d'une même logique, supprimer un comportement en silence |
 
@@ -69,8 +69,44 @@ dossier (résumé + options, chacune marquée « décision humaine requise »).
 ## 2. Les agents hermes d'intégration
 
 Le dépôt est écrit en parallèle par plusieurs agents, chacun sur sa branche
-(`docs/CONTRATS.md` fixe qui possède quoi). L'intégration est confiée à des agents
-**hermes** (agent ZeroClaw `hermes`, modèle `combo/cheap` servi par InferHub) :
-rebase/merge, résolution des conflits **en respectant le contrat**, factorisation des
-duplications apparues, et `npm run verify` vert avant fusion. La procédure complète
-est dans [`CONTRIBUTING.md`](../CONTRIBUTING.md) § « Agents hermes ».
+(`docs/CONTRATS.md` fixe qui possède quoi). Personne ne merge à la main : la file
+Mergify merge, un balayeur embarque, et un agent hermes résout les conflits avec
+**InferHub** (`combo/cheap`). Le détail du système et de ses garde-fous est dans
+[`.github/inferhub/README.md`](../.github/inferhub/README.md).
+
+### Qui fait quoi
+
+| Rôle | Acteur | Fichier |
+|---|---|---|
+| Mettre en file, mettre à jour, merger | la file Mergify | `.mergify.yml` |
+| Embarquer une PR dont les trois checks sont verts | le balayeur | `.github/workflows/file-de-merge.yml` |
+| Résoudre une PR en conflit, hunk par hunk | l'agent hermes | `.github/workflows/conflict-resolver.yml` → `.github/inferhub/conflict_agent.py` |
+| Refuser une résolution qui ne tient pas debout | la porte de compilation | `.github/inferhub/compilation_gate.py` |
+| Borner les saisines du modèle | le quota | `.github/inferhub/quota.py` |
+| Vérifier le périmètre déclaré et les motifs interdits | couche0 | `.github/couche0/check_couche0.py` |
+| Vérifier le budget de 5 minutes par job | ci-budget | `.github/ci-budget/check_timeouts.py` |
+
+Un seul runner auto-hébergé (r630, étiquette `gammes-worker`) exécute les gardes et
+les agents ; `ci` et `web` restent sur les runners GitHub pour ne pas l'affamer.
+
+### La même discipline des deux côtés
+
+L'agent de fusion obéit aux règles du conciliateur de procédures : il **garde les
+deux apports** au lieu de choisir un camp, il ne réécrit pas ce qui n'est pas en
+conflit (le modèle ne voit qu'un hunk à la fois, le reste du fichier est recopié),
+il **cite** ce qu'il a fait dans un commentaire de PR, il pousse avec bail
+(`--force-with-lease`), et il s'interdit de toucher à `.github/` et `.mergify.yml` —
+un agent ne modifie pas son propre garde. Une résolution qui fait sauter une règle
+de la maison (fichier hors plafond, helper dupliqué) n'est pas poussée : la porte de
+compilation lance `scripts/check-limits.mjs` avant le push.
+
+### Preuve mesurée
+
+Sonde du 2026-11-12, PR #19 et #20 : deux branches réécrivent **le même paragraphe**
+de `CONTRIBUTING.md` avec deux intentions différentes (l'une nomme les cinq
+workflows du dépôt, l'autre remet la règle des 5 minutes en tête). La première merge,
+la seconde passe en `CONFLICTING`. Le balayeur de conflits, réveillé par la fin de
+`ci`, délègue le hunk à InferHub : en 23 secondes l'agent rend une phrase qui porte
+**les deux apports**, passe la porte, pousse avec bail et commente la PR. Les trois
+checks repassent verts et la file merge. Rien n'a été perdu, rien n'a été tranché à
+la place de l'auteur.
