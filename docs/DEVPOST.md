@@ -67,14 +67,14 @@ approval, desync, stats, export), no network. Live site: `https://baptistefaisy.
 
 - Repository: `https://github.com/BaptisteFaisy/gammes`
 - Demo site: `https://baptistefaisy.github.io/gammes/`
-- Video: `[à renseigner]` · Marketplace listing: `[à renseigner (soumission dès le 16 décembre)]`
+- Video: `[à renseigner]` · Marketplace listing: `[à renseigner (soumission avant le 22 décembre)]`
 
 ## Bonuses targeted
 
 - **Rovo agents / skills** (primary): `le-compagnon` + the generic skill + one exported
   `SKILL.md` per approved gamme.
 - **MCP**: the 16 `rovo:mcp` tools, one generic toolset for all gammes.
-- **Marketplace**: listing submitted from 16 December (`docs/MARKETPLACE.md`).
+- **Marketplace**: listing submitted before 22 December (`docs/MARKETPLACE.md`).
 - **Teamwork Graph** (supporting): scope and owner read from the graph; a twin app engraves
   gammes as connected documents.
 

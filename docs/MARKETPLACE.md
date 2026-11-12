@@ -1,6 +1,6 @@
 # Atlassian Marketplace listing — Gammes
 
-> Texte de soumission au listing (§ 28 : soumission dès le 16 décembre, ticket de revue fourni comme
+> Texte de soumission au listing (§ 28 : soumission avant le 22 décembre — délai Devpost —, ticket de revue fourni comme
 > preuve). Tous les champs sont prêts à coller dans le formulaire Marketplace.
 
 ## Name
@@ -89,7 +89,7 @@ External fetch: `api.inferhub.dev` (optional off-platform LLM for the local harn
 
 ## Pricing
 
-Free during Codegeist 2026. (Listing submitted from 16 December; review ticket provided as proof.)
+Free during Codegeist 2026. (Listing submitted before 22 December — Devpost deadline; review ticket provided as proof.)
 
 ## Support
 
