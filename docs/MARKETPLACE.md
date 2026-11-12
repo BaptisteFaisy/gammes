@@ -65,13 +65,13 @@ size.
 |---|---|
 | `read:confluence-content.all` | read procedure pages to compile |
 | `write:confluence-content` | propose (never auto-apply) page edits from amendments |
-| `read:confluence-space`, `read:confluence-user` | scope, ownership, attribution |
+| `read:space:confluence`, `read:confluence-user` | scope, ownership, attribution |
 | `storage:app` | store gammes, versions, runs, traces, findings |
 | `read:attachment:confluence` | evidence references |
-| `read:issue-details:jira`, `write:issue-details:jira`, `read:jira-work`, `write:jira-work` | the Jira issue panel, ghost detection from ticket history, workflow validator |
-| `read:graph:document`, `read:graph:project`, `read:graph:software-service`, `read:rovo:teamwork-graph` | scope and owner from the Teamwork Graph |
-| `execute:rovo:actions` | the MCP tools |
-| `llm:public-models` | extraction of ambiguous prose, qualification, conciliation — cached by content fingerprint |
+| `read:issue-details:jira`, `write:issue:jira`, `read:jira-work`, `write:jira-work` | the Jira issue panel, ghost detection from ticket history, workflow validator |
+| `read:graph:page:confluence`, `read:graph:project:atlassian` | scope and owner from the Teamwork Graph |
+| `execute:rovo:actions` *(demandé, non accordé sur le site de dev)* | the MCP tools |
+| `llm:public-models` *(demandé, non accordé sur le site de dev)* | extraction of ambiguous prose, qualification, conciliation — cached by content fingerprint |
 
 External fetch: `api.inferhub.dev` (optional off-platform LLM for the local harness / conciliator).
 
