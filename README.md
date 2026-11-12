@@ -5,12 +5,20 @@
 
 ## 🔗 Démo en ligne (accessible à tous)
 
-**https://baptistefaisy.github.io/gammes/** — le produit complet qui tourne dans le navigateur :
-détection des pages, compilation en gamme, approbation, exécution pas à pas avec les verrous
-(humain / permis / secret) et les refus, trace citable, statistiques, amendements, conciliateur
-de conflits, gammes fantômes, export `SKILL.md`. Aucun réseau, aucune donnée réelle : le vrai
-cœur TypeScript sur un magasin en mémoire. Source dans [`web/`](web/), déployé par GitHub Pages
-([`.github/workflows/web.yml`](.github/workflows/web.yml)).
+**https://baptistefaisy.github.io/gammes/** — le produit complet qui tourne dans le navigateur,
+en **16 écrans** : vue d'ensemble de l'atelier, détection des candidates (scores et raisons),
+compilation (étapes citant leur passage source, verrous, secrets écartés, étapes non falsifiables,
+diff), fiche de gamme (toute la structure du § 7, versions immuables, cycle de vie, effet réel des
+verrous sur un humain et sur un agent), « avant d'agir » (le verdict rendu à un agent ou à un CI),
+déroulé pas à pas (preuves, refus, déviations, reprise, mode urgence, trace citable fr/en), liaison
+page ↔ gamme (désynchronisation, âge de l'écart, recompilation, page disparue), mesures (taux avec
+effectif et fourchette, comparaison de versions, étapes délégables), amendements, conflits et
+conciliateur hermes, gammes fantômes et adoption, les 16 outils MCP avec un appelant interactif,
+export `SKILL.md` téléchargeable, encarts Jira et macro Confluence, journal d'audit append-only,
+réglages d'espace.
+
+Aucun réseau, aucune donnée réelle : le vrai cœur TypeScript (`src/core`) sur un magasin en mémoire.
+Source dans [`web/`](web/), déployé par GitHub Pages ([`.github/workflows/web.yml`](.github/workflows/web.yml)).
 
 Une page de procédure Confluence est de la prose : les humains la survolent, les agents ne la lisent
 pas, et personne ne sait quelle version a été suivie le jour de l'incident. **Gammes compile cette

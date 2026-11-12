@@ -21,7 +21,7 @@ export const h = (tag: string, attrs: Record<string, unknown> = {}, ...children:
   for (const [key, value] of Object.entries(attrs)) {
     if (value === undefined || value === null) continue;
     if (key === "class") node.className = String(value);
-    else if (key === "onclick") node.addEventListener("click", value as EventListener);
+    else if (key.startsWith("on") && typeof value === "function") node.addEventListener(key.slice(2), value as EventListener);
     else node.setAttribute(key, String(value));
   }
   append(node, children);
@@ -70,3 +70,48 @@ export const select = (
 };
 
 export const line = (...children: Child[]): HTMLElement => h("div", { class: "line" }, ...children);
+
+/** Champ de saisie : libellé visible, valeur lisible par un lecteur d'écran. */
+export const field = (label: string, value: string, onChange: (value: string) => void, placeholder?: string): HTMLElement =>
+  h(
+    "label",
+    { class: "field" },
+    h("span", { class: "k" }, label),
+    h("input", {
+      class: "input",
+      value,
+      ...(placeholder ? { placeholder } : {}),
+      oninput: (e: Event) => onChange((e.target as HTMLInputElement).value),
+    }),
+  );
+
+export const area = (label: string, value: string, onChange: (value: string) => void, rows = 3): HTMLElement =>
+  h(
+    "label",
+    { class: "field" },
+    h("span", { class: "k" }, label),
+    h("textarea", {
+      class: "input area",
+      rows: String(rows),
+      oninput: (e: Event) => onChange((e.target as HTMLTextAreaElement).value),
+    }, value),
+  );
+
+/** Un message daté : succès, refus ou information. Le refus est dit, jamais masqué. */
+export const note = (text: string, tone: "ok" | "ko" | "info" = "info"): HTMLElement =>
+  h("p", { class: `note ${tone}` }, text);
+
+/** Tableau accessible : le registre porte la même information que l'atelier visuel. */
+export const table = (headers: readonly string[], rows: readonly (readonly Child[])[]): HTMLElement => {
+  const head = h("tr", {}, ...headers.map((title) => h("th", {}, title)));
+  const body = rows.map((cells) => h("tr", {}, ...cells.map((cell) => h("td", {}, cell))));
+  return h("div", { class: "tablewrap" }, h("table", { class: "table" }, h("thead", {}, head), h("tbody", {}, ...body)));
+};
+
+/** Bloc repliable : utile pour les détails longs (diff, JSON, prompts). */
+export const details = (summary: string, ...children: Child[]): HTMLElement =>
+  h("details", { class: "details" }, h("summary", {}, summary), ...children);
+
+/** Une liste de puces simple. */
+export const list = (items: readonly Child[]): HTMLElement =>
+  h("ul", { class: "list" }, ...items.map((item) => h("li", {}, item)));
