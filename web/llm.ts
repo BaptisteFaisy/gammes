@@ -23,7 +23,14 @@ import { inferHubLlm } from "../src/platform/llm/inferhub-llm";
 import { scriptedLlm } from "../src/platform/llm/fake-llm";
 import type { LlmBudget, LlmClient, LlmRequest, LlmResponse, LlmTask } from "../src/core/ports";
 
-export type ProviderKey = "scripted" | "opencode" | "inferhub" | "openrouter" | "custom";
+export type ProviderKey = "auto" | "scripted" | "opencode" | "inferhub" | "openrouter" | "custom";
+
+/**
+ * Proxys connus, sondés au démarrage. Si l'un répond, le site passe **tout seul** sur un vrai
+ * modèle, sans que le visiteur ait une clé à coller. La réponse doit se présenter
+ * (`service: "gammes-llm-proxy"`) : un 200 HTML quelconque n'est pas un proxy.
+ */
+export const PROXY_CANDIDATES: readonly string[] = ["https://r630-debian.tail3a8bdf.ts.net/gammes-llm/v1"];
 
 export type Provider = {
   readonly key: ProviderKey;
@@ -37,6 +44,15 @@ export type Provider = {
 };
 
 export const PROVIDERS: readonly Provider[] = [
+  {
+    key: "auto",
+    label: "Automatique (proxy du dépôt s'il répond, sinon scripté)",
+    baseUrl: "",
+    models: [],
+    needsKey: false,
+    browserDirect: true,
+    note: "Sonde les proxys connus au démarrage : s'il y en a un, le modèle est réel et aucune clé n'est demandée.",
+  },
   {
     key: "scripted",
     label: "Modèle scripté (défaut, hors ligne)",
@@ -106,9 +122,9 @@ export type ModelCall = {
 const STORAGE_KEY = "gammes.modele.v1";
 
 export const defaultSettings = (): ModelSettings => ({
-  provider: "scripted",
+  provider: "auto",
   baseUrl: "",
-  model: "fake/gammes-deterministic",
+  model: "",
   apiKey: "",
   proxyUrl: "",
 });
@@ -147,7 +163,44 @@ export const forgetSettings = (): void => {
   }
 };
 
-export const isLive = (settings: ModelSettings): boolean => settings.provider !== "scripted";
+export const isLive = (settings: ModelSettings): boolean =>
+  settings.provider !== "scripted" && settings.provider !== "auto";
+
+export type ProxyProbe = { readonly url: string; readonly model: string };
+
+/** Sonde un proxy : il doit se nommer, sinon ce n'est pas lui (un 200 HTML ne suffit pas). */
+export const probeProxy = async (baseUrl: string, timeoutMs = 6000): Promise<ProxyProbe | undefined> => {
+  const url = `${baseUrl.replace(/\/+$/, "")}/../healthz`;
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    const res = await fetch(new URL(url).toString(), { signal: controller.signal });
+    clearTimeout(timer);
+    if (!res.ok) return undefined;
+    const body = (await res.json()) as { service?: string; modele_impose?: string; ok?: boolean };
+    return body.service === "gammes-llm-proxy" && body.ok
+      ? { url: baseUrl.replace(/\/+$/, ""), model: body.modele_impose ?? "" }
+      : undefined;
+  } catch {
+    return undefined;
+  }
+};
+
+/** Résout « auto » en un réglage concret : proxy trouvé, sinon modèle scripté. */
+export const resolveSettings = async (settings: ModelSettings): Promise<{ settings: ModelSettings; detected?: string }> => {
+  if (settings.provider !== "auto") return { settings };
+  const candidates = settings.proxyUrl ? [settings.proxyUrl, ...PROXY_CANDIDATES] : [...PROXY_CANDIDATES];
+  for (const candidate of candidates) {
+    const found = await probeProxy(candidate);
+    if (found) {
+      return {
+        settings: { provider: "custom", baseUrl: "", model: found.model, apiKey: "", proxyUrl: found.url },
+        detected: `${found.url} · modèle imposé ${found.model || "(libre)"}`,
+      };
+    }
+  }
+  return { settings: { ...defaultSettings(), provider: "scripted", model: "fake/gammes-deterministic" } };
+};
 
 /** L'URL réellement appelée : le proxy gagne, sinon l'endpoint du fournisseur. */
 export const effectiveBaseUrl = (settings: ModelSettings): string => {
@@ -217,6 +270,12 @@ export type ProbeResult = { readonly ok: boolean; readonly detail: string; reado
 
 /** Test de connexion : une seule invite minuscule, et le diagnostic réel (CORS, clé, modèle). */
 export const testConnection = async (settings: ModelSettings): Promise<ProbeResult> => {
+  if (settings.provider === "auto") {
+    const resolved = await resolveSettings(settings);
+    return resolved.detected
+      ? { ok: true, detail: `Proxy détecté : ${resolved.detected}` }
+      : { ok: false, detail: "Aucun proxy connu ne répond : le site resterait sur le modèle scripté. Colle ta clé (InferHub/OpenRouter) ou l'URL d'un proxy." };
+  }
   if (!isLive(settings)) return { ok: true, detail: "Modèle scripté : aucun réseau, aucune clé. La démo est déterministe." };
   const url = `${effectiveBaseUrl(settings)}/chat/completions`;
   try {

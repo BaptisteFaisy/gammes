@@ -1,28 +1,28 @@
 #!/usr/bin/env python3
 """
-Gammes — proxy LLM pour le site public.
+Gammes — proxy LLM du site public.
 
 Pourquoi ce proxy existe : le site est statique (GitHub Pages), donc il tourne dans un
-navigateur. Or un navigateur ne peut pas appeler n'importe quel fournisseur de modèle :
+navigateur. Or un navigateur ne peut pas appeler n'importe quel fournisseur :
 
 - **OpenCode Zen** (`https://opencode.ai/zen/v1`) ne renvoie AUCUN en-tête
-  `Access-Control-Allow-*` sur POST (vérifié : 401/400/429 sans ACAO, et le preflight
-  OPTIONS répond 404). Le navigateur bloque donc la réponse. Ses modèles `-free` renvoient
-  en plus 429 `FreeUsageLimitError` (« Free models work in OpenCode »).
-- Une clé embarquée dans un site public est une clé perdue.
+  `Access-Control-Allow-*` sur POST (mesuré sur 401/400/429, preflight OPTIONS = 404), et ses
+  modèles `-free` renvoient 429 `FreeUsageLimitError`.
+- Une clé embarquée dans un bundle public est une clé perdue.
 
-Ce proxy résout les deux : il tient la clé **côté serveur**, ajoute les en-têtes CORS,
-borne les jetons, limite le débit, et relaie vers un endpoint OpenAI-compatible.
+Ce proxy tient donc la clé **côté serveur**, ajoute les en-têtes CORS, et borne strictement ce
+qu'un inconnu peut lui demander : modèle imposé, jetons plafonnés, débit limité, budget quotidien
+global, corps de requête borné, origines sur liste blanche. Rien de tout cela n'est optionnel :
+un proxy LLM public sans plafond est une pompe à crédits.
 
 Usage
-    export GAMMES_LLM_KEY=...                      # jamais commité, jamais journalisé
-    export GAMMES_LLM_UPSTREAM=https://opencode.ai/zen/v1   # ou https://api.inferhub.dev/v1
-    export GAMMES_LLM_MODEL=claude-haiku-4-5
-    python3 scripts/llm-proxy.py                   # écoute sur 127.0.0.1:8899
+    export GAMMES_LLM_KEY=…                       # jamais commité, jamais journalisé
+    export GAMMES_LLM_UPSTREAM=https://api.inferhub.dev/v1
+    export GAMMES_LLM_MODEL=combo/cheap
+    python3 scripts/llm-proxy.py --port 8901      # écoute sur 127.0.0.1
 
-Exposition publique (au choix, et seulement avec accord explicite) :
-    tailscale funnel 8899 on            # déjà actif sur r630 → https://r630-debian.tail3a8bdf.ts.net
-    python3 scripts/llm-proxy.py --host 0.0.0.0
+En pratique sur r630 : `gammes-llm-proxy-ctl start` (clé dans ~/.config/gammes/llm-proxy.env,
+mode 600), puis exposition HTTPS par `tailscale funnel --bg --set-path=/gammes-llm 8901`.
 
 Aucune dépendance : stdlib Python 3 uniquement.
 """
@@ -40,11 +40,15 @@ import urllib.request
 from collections import deque
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-UPSTREAM = os.environ.get("GAMMES_LLM_UPSTREAM", "https://opencode.ai/zen/v1").rstrip("/")
+UPSTREAM = os.environ.get("GAMMES_LLM_UPSTREAM", "https://api.inferhub.dev/v1").rstrip("/")
 API_KEY = os.environ.get("GAMMES_LLM_KEY", "")
-MODEL = os.environ.get("GAMMES_LLM_MODEL", "")
+# Le modèle est IMPOSÉ : un appelant public ne choisit pas ce qu'il fait tourner.
+FORCED_MODEL = os.environ.get("GAMMES_LLM_MODEL", "combo/cheap")
 MAX_TOKENS_CAP = int(os.environ.get("GAMMES_LLM_MAX_TOKENS", "2048"))
-RATE_LIMIT = int(os.environ.get("GAMMES_LLM_RATE_PER_MIN", "20"))
+RATE_LIMIT = int(os.environ.get("GAMMES_LLM_RATE_PER_MIN", "12"))
+DAILY_REQUEST_CAP = int(os.environ.get("GAMMES_LLM_DAILY_REQUESTS", "400"))
+DAILY_TOKEN_CAP = int(os.environ.get("GAMMES_LLM_DAILY_TOKENS", "400000"))
+MAX_BODY_BYTES = int(os.environ.get("GAMMES_LLM_MAX_BODY", "65536"))
 ALLOWED_ORIGINS = [
     o.strip()
     for o in os.environ.get(
@@ -56,13 +60,13 @@ ALLOWED_ORIGINS = [
 
 _hits: dict[str, deque] = {}
 _lock = threading.Lock()
+_day = {"date": time.strftime("%Y-%m-%d"), "requests": 0, "tokens": 0}
 
 
 def origin_allowed(origin: str) -> bool:
-    """Origine inconnue ⇒ refus. Un proxy public sans contrôle d'origine est une pompe à crédits."""
     if not origin:
         return False
-    return any(origin == allowed or origin.startswith(allowed + ":") or origin.startswith(allowed + "/") for allowed in ALLOWED_ORIGINS)
+    return any(origin == a or origin.startswith(a + ":") or origin.startswith(a + "/") for a in ALLOWED_ORIGINS)
 
 
 def rate_limited(client: str) -> bool:
@@ -77,39 +81,67 @@ def rate_limited(client: str) -> bool:
         return False
 
 
-def forward(payload: dict) -> tuple[int, bytes, str]:
-    """Relaie vers l'amont. La clé reste ici : elle n'est jamais renvoyée ni journalisée."""
+def budget_exhausted() -> bool:
+    """Budget quotidien global : les compteurs repartent à zéro à minuit (et au redémarrage)."""
+    today = time.strftime("%Y-%m-%d")
+    with _lock:
+        if _day["date"] != today:
+            _day.update(date=today, requests=0, tokens=0)
+        return _day["requests"] >= DAILY_REQUEST_CAP or _day["tokens"] >= DAILY_TOKEN_CAP
+
+
+def account(tokens: int) -> None:
+    with _lock:
+        _day["requests"] += 1
+        _day["tokens"] += max(0, tokens)
+
+
+def budget_left() -> dict[str, int]:
+    with _lock:
+        return {"requests": DAILY_REQUEST_CAP - _day["requests"], "tokens": DAILY_TOKEN_CAP - _day["tokens"]}
+
+
+def forward(payload: dict) -> tuple[int, bytes, int]:
+    """Relaie vers l'amont. La clé reste ici : jamais renvoyée, jamais journalisée."""
     body = dict(payload)
-    if MODEL and not body.get("model"):
-        body["model"] = MODEL
+    body["model"] = FORCED_MODEL
+    body["stream"] = False
     requested = body.get("max_tokens") or body.get("max_completion_tokens") or MAX_TOKENS_CAP
-    capped = min(int(requested), MAX_TOKENS_CAP)
-    body["max_tokens"] = capped
+    try:
+        body["max_tokens"] = min(int(requested), MAX_TOKENS_CAP)
+    except (TypeError, ValueError):
+        body["max_tokens"] = MAX_TOKENS_CAP
     body.pop("max_completion_tokens", None)
-    data = json.dumps(body).encode("utf-8")
     req = urllib.request.Request(
         f"{UPSTREAM}/chat/completions",
-        data=data,
-        headers={
-            "content-type": "application/json",
-            **({"authorization": f"Bearer {API_KEY}"} if API_KEY else {}),
-        },
+        data=json.dumps(body).encode("utf-8"),
+        headers={"content-type": "application/json", **({"authorization": f"Bearer {API_KEY}"} if API_KEY else {})},
         method="POST",
     )
     try:
-        with urllib.request.urlopen(req, timeout=120) as res:
-            return res.status, res.read(), body.get("model", "?")
+        with urllib.request.urlopen(req, timeout=180) as res:
+            raw = res.read()
+            return res.status, raw, used_tokens(raw)
     except urllib.error.HTTPError as err:
-        return err.code, err.read()[:800], body.get("model", "?")
-    except Exception as err:  # noqa: BLE001 - un proxy ne doit jamais remonter une pile brute
-        return 502, json.dumps({"error": {"message": f"amont injoignable : {err}"}}).encode(), "?"
+        return err.code, err.read()[:800], 0
+    except Exception as err:  # noqa: BLE001 - un proxy public ne remonte jamais une pile brute
+        return 502, json.dumps({"error": {"message": f"amont injoignable : {err}"}}).encode(), 0
+
+
+def used_tokens(raw: bytes) -> int:
+    try:
+        usage = json.loads(raw).get("usage") or {}
+        return int(usage.get("total_tokens") or 0)
+    except (ValueError, AttributeError, TypeError):
+        return 0
 
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = "GammesLlmProxy/1.0"
+    server_version = "GammesLlmProxy/2.0"
+    protocol_version = "HTTP/1.1"
 
-    def log_message(self, fmt: str, *args) -> None:  # noqa: D102 - journal maison
-        sys.stderr.write("[proxy] " + (fmt % args) + "\n")
+    def log_message(self, fmt: str, *args) -> None:  # noqa: D102 - journal maison sur stderr
+        sys.stderr.write(f"[{time.strftime('%H:%M:%S')}] " + (fmt % args) + "\n")
 
     def _cors(self) -> None:
         origin = self.headers.get("Origin", "")
@@ -128,18 +160,22 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(payload)
 
-    def do_OPTIONS(self) -> None:  # noqa: N802 - prévol CORS
+    def do_OPTIONS(self) -> None:  # noqa: N802 - preflight CORS
         self._send(204, b"")
 
     def do_GET(self) -> None:  # noqa: N802
-        if self.path.rstrip("/") in ("/healthz", "/sante", ""):
+        path = self.path.split("?")[0].rstrip("/")
+        if path.endswith("/healthz") or path in ("", "/gammes-llm"):
+            left = budget_left()
             info = {
                 "ok": True,
+                "service": "gammes-llm-proxy",
                 "upstream": UPSTREAM,
-                "model": MODEL or "(celui de la requête)",
+                "modele_impose": FORCED_MODEL,
                 "cle_configurée": bool(API_KEY),
-                "plafond_jetons": MAX_TOKENS_CAP,
-                "limite_par_minute": RATE_LIMIT,
+                "plafond_jetons_par_appel": MAX_TOKENS_CAP,
+                "requete_par_minute_par_client": RATE_LIMIT,
+                "budget_restant": left,
                 "origines_autorisées": ALLOWED_ORIGINS,
             }
             self._send(200, json.dumps(info, ensure_ascii=False).encode("utf-8"))
@@ -147,37 +183,53 @@ class Handler(BaseHTTPRequestHandler):
         self._send(404, b'{"error":"chemin inconnu"}')
 
     def do_POST(self) -> None:  # noqa: N802
-        if self.path.rstrip("/") not in ("/v1/chat/completions", "/chat/completions"):
+        if not self.path.split("?")[0].rstrip("/").endswith("/chat/completions"):
             self._send(404, b'{"error":"chemin inconnu"}')
             return
         origin = self.headers.get("Origin", "")
         if not origin_allowed(origin):
             self._send(403, b'{"error":{"message":"origine non autoris\xc3\xa9e"}}')
             return
-        client = self.client_address[0] if self.client_address else "?"
+        if budget_exhausted():
+            self._send(429, b'{"error":{"message":"budget quotidien du proxy \xc3\xa9puis\xc3\xa9"}}')
+            return
+        client = self.headers.get("X-Forwarded-For", "").split(",")[0].strip() or (
+            self.client_address[0] if self.client_address else "?"
+        )
         if rate_limited(client):
             self._send(429, b'{"error":{"message":"limite de d\xc3\xa9bit atteinte"}}')
             return
         try:
             length = int(self.headers.get("Content-Length", "0"))
+            if length > MAX_BODY_BYTES:
+                self._send(413, b'{"error":{"message":"corps de requ\xc3\xaate trop volumineux"}}')
+                return
             payload = json.loads(self.rfile.read(length) or b"{}")
+            if not isinstance(payload, dict) or not isinstance(payload.get("messages"), list):
+                raise ValueError("messages manquants")
         except (ValueError, json.JSONDecodeError):
-            self._send(400, b'{"error":{"message":"JSON invalide"}}')
+            self._send(400, b'{"error":{"message":"JSON invalide ou messages manquants"}}')
             return
-        status, body, model = forward(payload)
-        self.log_message("POST %s → %s (%s)", self.path, status, model)
+        status, body, tokens = forward(payload)
+        account(tokens)
+        left = budget_left()
+        self.log_message("POST %s → %s · %s · %d jetons · reste %d req / %d jetons", self.path, status, FORCED_MODEL, tokens, left["requests"], left["tokens"])
         self._send(status, body)
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Proxy LLM du site Gammes")
-    parser.add_argument("--host", default="127.0.0.1", help="adresse d'écoute (défaut : 127.0.0.1)")
-    parser.add_argument("--port", type=int, default=int(os.environ.get("GAMMES_PROXY_PORT", "8899")))
+    parser.add_argument("--host", default="127.0.0.1")
+    parser.add_argument("--port", type=int, default=int(os.environ.get("GAMMES_PROXY_PORT", "8901")))
     args = parser.parse_args()
     if not API_KEY:
         print("⚠ aucune clé dans GAMMES_LLM_KEY — l'amont refusera les modèles payants.", file=sys.stderr)
-    print(f"proxy Gammes → {UPSTREAM} · modèle {MODEL or '(libre)'} · {args.host}:{args.port}", file=sys.stderr)
-    print(f"origines autorisées : {', '.join(ALLOWED_ORIGINS)} · {RATE_LIMIT} req/min · plafond {MAX_TOKENS_CAP} jetons", file=sys.stderr)
+    print(f"proxy Gammes → {UPSTREAM} · modèle imposé {FORCED_MODEL} · {args.host}:{args.port}", file=sys.stderr)
+    print(
+        f"origines : {', '.join(ALLOWED_ORIGINS)} · {RATE_LIMIT} req/min/client · "
+        f"{DAILY_REQUEST_CAP} req/jour · {DAILY_TOKEN_CAP} jetons/jour · {MAX_TOKENS_CAP} jetons/appel",
+        file=sys.stderr,
+    )
     ThreadingHTTPServer((args.host, args.port), Handler).serve_forever()
     return 0
 

@@ -11,7 +11,7 @@ import type { Deps, LlmBudget } from "../src/core/ports";
 import type { ActorKind, ActorRef, EvidenceStrength, Gamme, RunOutcome } from "../src/core/types";
 import { agent, human } from "../test/helpers";
 import { memoryBudget } from "../src/platform/llm/budget";
-import { buildLlm, loadSettings, saveSettings, type ModelCall, type ModelSettings } from "./llm";
+import { buildLlm, loadSettings, resolveSettings, saveSettings, type ModelCall, type ModelSettings } from "./llm";
 
 export const OWNER = "ari:cloud:aaid:demo:ana";
 export const AGENT_ID = "ari:cloud:rovo:agent:compagnon";
@@ -22,6 +22,8 @@ export type AppState = {
   readonly budget: LlmBudget;
   readonly modelLog: ModelCall[];
   model: ModelSettings;
+  /** Proxy détecté au démarrage, s'il y en a un. */
+  detectedProxy?: string;
   /** Page Confluence choisie (ARI). */
   page: string;
   /** Gamme choisie (code). */
@@ -57,9 +59,11 @@ export type AppState = {
 };
 
 export const createState = async (): Promise<AppState> => {
-  const model = loadSettings();
   const budget = memoryBudget(new Date().toISOString().slice(0, 10));
   const modelLog: ModelCall[] = [];
+  // « auto » : on cherche un proxy connu avant de retomber sur le modèle scripté.
+  const resolved = await resolveSettings(loadSettings());
+  const model = resolved.settings;
   const { deps } = seedAtelier({ llm: buildLlm(model, budget, modelLog) });
   await seedSettings(deps);
   return {
@@ -67,6 +71,7 @@ export const createState = async (): Promise<AppState> => {
     budget,
     modelLog,
     model,
+    detectedProxy: resolved.detected,
     page: Object.keys(PAGES)[0] ?? "",
     actorKind: "agent",
     intendedAction: "déployer le service paiements en production",

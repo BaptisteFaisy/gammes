@@ -9,7 +9,7 @@
 import type { AppState } from "./state";
 import { applyModel, say } from "./state";
 import { badge, button, code, details, field, h, kv, line, note, panel, select, table } from "./dom";
-import { effectiveBaseUrl, forgetSettings, isLive, PROVIDERS, providerOf, testConnection, type ModelSettings, type ProviderKey } from "./llm";
+import { effectiveBaseUrl, forgetSettings, isLive, PROVIDERS, providerOf, PROXY_CANDIDATES, resolveSettings, testConnection, type ModelSettings, type ProviderKey } from "./llm";
 import type { Rerender } from "./types";
 
 const STORAGE_NOTE =
@@ -26,6 +26,7 @@ export const modelePanel = (state: AppState, rerender: Rerender): HTMLElement =>
         "non falsifiables et la conciliation des conflits. Tout le reste est déterministe — et le reste " +
         "fonctionne donc sans aucun modèle.",
     ),
+    detectionNote(state),
     note(STORAGE_NOTE, "info"),
     line(
       select(
@@ -47,6 +48,7 @@ export const modelePanel = (state: AppState, rerender: Rerender): HTMLElement =>
     line(
       button("Tester la connexion", () => void probe(draft, out), "primary"),
       button("Appliquer à l'atelier", () => { applyModel(state, draft); say(state, `Moteur appliqué : ${describe(draft)}`); rerender(); }),
+      button("Re-détecter un proxy", () => void redetect(state, out), "warn"),
       button("Revenir au modèle scripté", () => { applyModel(state, { provider: "scripted", baseUrl: "", model: "fake/gammes-deterministic", apiKey: "", proxyUrl: "" }); forgetSettings(); rerender(); }, "warn"),
     ),
     out,
@@ -54,6 +56,28 @@ export const modelePanel = (state: AppState, rerender: Rerender): HTMLElement =>
   showProviderNote(out, draft);
   root.append(statusBlock(state), callsBlock(state), proxyHowTo());
   return root;
+};
+
+/** Ce que le démarrage a trouvé : un proxy réel, ou rien (donc modèle scripté). */
+const detectionNote = (state: AppState) =>
+  state.detectedProxy
+    ? note(`Proxy détecté au démarrage : ${state.detectedProxy} — le modèle est réel, aucune clé demandée.`, "ok")
+    : note(
+        `Aucun proxy connu ne répond (${PROXY_CANDIDATES.join(", ")}). Le site tourne sur le modèle scripté. ` +
+          "Deux façons de passer sur du réel : coller TA clé InferHub ou OpenRouter (CORS ouvert, appel direct), " +
+          "ou renseigner l'URL d'un proxy lancé avec scripts/llm-proxy.py.",
+        "info",
+      );
+
+const redetect = async (state: AppState, out: HTMLElement): Promise<void> => {
+  const resolved = await resolveSettings({ ...state.model, provider: "auto" });
+  if (!resolved.detected) {
+    out.append(note("Aucun proxy n'a répondu : le site reste sur le modèle scripté.", "ko"));
+    return;
+  }
+  applyModel(state, resolved.settings);
+  say(state, `Proxy détecté et appliqué : ${resolved.detected}`);
+  out.append(note(`Proxy détecté : ${resolved.detected}`, "ok"));
 };
 
 const describe = (settings: ModelSettings): string =>
