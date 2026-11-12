@@ -25,6 +25,24 @@ un test, un fichier), **la vérification** est la commande qui le confirme.
 | 12 | **GA-31 — connecteur de graphe** : l'app lit (GA-27), l'app jumelle grave ; proposition humaine, gravure datée avec récépissé | ce lot · `src/core/graph-connect/graph-connector.ts` | `npx vitest run test/graph-connect/graph-connector.test.ts` |
 | 13 | **GA-32 — gammes composées** : une étape `subGamme` acquittée par la trace close de son enfant, jamais à la main | ce lot · `src/core/composite/composite.ts` | `npx vitest run test/composite/composite.test.ts` |
 
+## Les dix idées de consolidation : ce qui a été fait
+
+Les 1169 idées sont dans [`IDEES-1000.md`](IDEES-1000.md) ; voici ce qui a été
+**réalisé** depuis, avec l'élément de preuve de chacune.
+
+| Idée | Ce qui a été fait | Preuve | État |
+|---|---|---|---|
+| 2 · Confluence réel | Le client API v2 (format `storage`, version figée, labels, espace), la recherche CQL paginée | PR #47 · `test/platform/atlassian-clients.test.ts` | ✅ |
+| 3 · Jira réel | Le client API v3 (résumé, composants, étiquettes, dates, commentaires, affectations) et les transitions réelles | PR #47 · idem | ✅ |
+| 4 · Preuve du Teamwork Graph | Le client GraphQL : services, projets, propriétaire ; un droit manquant donne un résultat **vide**, jamais une erreur | PR #49 · `test/platform/graph-client.test.ts` | ✅ |
+| 5 · La page est une donnée | Deux remparts de prompt : la règle dans **chaque** invite système, l'encadrement du contenu aux quatre points d'entrée | PR #40 · `test/securite/prompt-shield.test.ts` | ✅ |
+| 6 · Scellement de l'audit | Chaîne d'empreintes sur le journal append-only : altérer, réordonner, retirer ou insérer une entrée brise la chaîne | PR #41 · `test/securite/journal-seal.test.ts` | ✅ |
+| 7 · Provenance des preuves | `Evidence.origin` : « réelle » ou « fixture » ; l'app ne fait jamais passer l'une pour l'autre | PR #42 · `test/seed/preuves.test.ts` | ✅ |
+| 9 · Paquet portable | Le paquet scellé (format, version, entrées, étapes, `SKILL.md`) et la **CLI** : `compile` et `verify` hors Forge | PR #45 · `test/export/gamme-bundle.test.ts` | ✅ |
+| 10 · Catalogue de gestes | Publication inter-espaces, connecteur de graphe, gammes composées (GA-30/31/32) | PR #39 · `test/publication/`, `test/graph-connect/`, `test/composite/` | ✅ |
+| 1 · Déploiement dans un vrai tenant | — | compte Atlassian et ressources facturées (SQL, LLM) : hors de portée ici | ⏸ |
+| 8 · La démo en 30 s / la vidéo | — | la vidéo demandée est exclue ; le tableau de preuves (écran « 14 · Preuves ») reste en place | ⏸ |
+
 ## Les trois preuves qui ne se réinventent pas
 
 ### 1. La preuve de l'agent de conflits — jouée, pas décrite
