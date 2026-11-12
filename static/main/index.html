@@ -6,7 +6,14 @@
     <title>Gammes — Atelier</title>
   </head>
   <body>
-    <!-- Forge UI Kit 2 monte l'application dans #root ; le bundler Forge injecte le script. -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/@atlaskit/css-reset@2.0.0/dist/bundle.css"
+      media="all"
+    />
+    <!-- Forge UI Kit 2 monte l'application dans #root ; le bundler Forge compile
+         l'entrée TypeScript ci-dessous (une seule ressource pour six modules). -->
     <div id="root"></div>
+    <script src="../../src/frontend/index.tsx" type="module"></script>
   </body>
 </html>

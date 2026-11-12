@@ -17,8 +17,10 @@ import { coverageDetail } from "../core/coverage/coverage";
 import { detectConflicts } from "../core/conflicts/detect";
 import { detectGhosts } from "../core/ghosts/ghosts";
 import { getCurrentStep } from "../core/run/runs";
+import { panelActions, type PanelActions } from "./panel";
+import { macroActions, type MacroActions } from "./macro";
+import { jiraActions, type JiraActions } from "./jira";
 import { checkSync, markSourceGone } from "../core/binding/binding";
-import { findProcedure } from "../core/mcp/search";
 import { persistStepStats } from "../core/stats/step-stats";
 import { proposeFromTraces } from "../core/amendments/amendments";
 
@@ -39,6 +41,9 @@ export const createActions = (deps: Deps) => ({
   ...readActions(deps),
   ...runActions(deps),
   ...eventActions(deps),
+  ...panelActions(deps),
+  ...macroActions(deps),
+  ...jiraActions(deps),
 });
 
 /** Lectures : atelier, fiche de gamme, statistiques, conflits, fantômes, encart Jira. */
@@ -57,8 +62,6 @@ const readActions = (deps: Deps) => ({
   conflicts: async (p: ActionPayload): Promise<Result<unknown>> => ok(await detectConflicts(deps, p.service ? { service: String(p.service) } : {})),
   ghosts: async (p: ActionPayload): Promise<Result<unknown>> =>
     ok(await detectGhosts(deps, { ...(p.projectKey ? { projectKey: String(p.projectKey) } : {}), limit: Number(p.limit ?? 20) })),
-  issuePanel: async (p: ActionPayload): Promise<Result<unknown>> =>
-    ok(await findProcedure(deps, { query: String(p.summary ?? p.issueKey ?? ""), context: { service: p.service ? String(p.service) : undefined } })),
 });
 
 /** Exécutions et outils MCP : le relais vers le cœur, sans logique propre. */
@@ -95,6 +98,9 @@ const eventActions = (deps: Deps) => ({
     return ok({ handled: true, ...(report.ok ? { sync: report.value.sync, ageDays: report.value.ageDays } : {}) });
   },
 });
+
+/** Les trois groupes d'actions des surfaces, pour que chaque lot n'édite que le sien. */
+export type SurfaceActions = PanelActions & MacroActions & JiraActions;
 
 export type Actions = ReturnType<typeof createActions>;
 export type ActionKey = keyof Actions;

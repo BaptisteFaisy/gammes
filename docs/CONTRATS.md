@@ -326,3 +326,74 @@ Dossiers : `seed/`, `scripts/seed.ts`, `scripts/demo.ts`, `test/recette/`, `docs
 Dossiers : `docs/SPEC-EN.md`, `docs/GLOSSARY.md`, `docs/VIDEO-SCRIPT.md`, `docs/MARKETPLACE.md`.
 Soumission en anglais (§ 23) : le pitch, le vocabulaire, le scénario de la vidéo de moins de cinq
 minutes et le texte du listing Marketplace.
+
+## Socle UI Kit 2 (posé sur `main`) — ce que les lots K, L et M ne touchent plus
+
+`@forge/react` et `@forge/bridge` sont les seules dépendances ajoutées : React et
+ses types viennent de `@forge/react`, donc la règle « aucune dépendance runtime
+hors `@forge/*` » tient. `@forge/manifest`, `ajv` et `ajv-formats` sont en
+`devDependencies` pour le garde de manifeste du lot M.
+
+| Fichier | Rôle | Qui y touche |
+|---|---|---|
+| `src/frontend/index.tsx` | entrée unique : contexte → surface → rendu | personne (gelé) |
+| `src/frontend/route.ts` | route **pure** (`routeSurface`, `extensionFacts`) | personne (gelé) |
+| `src/frontend/surfaces/issue-panel.tsx` | rendu de l'encart Jira | **lot K** |
+| `src/frontend/surfaces/macro.tsx` | rendu de la macro Confluence | **lot L** |
+| `src/frontend/surfaces/autres.tsx` | atelier, registre, réglages, action de page | personne (sacrifiables § 28) |
+| `src/resolver/actions.ts` | point de montage : étend les trois groupes | personne (gelé) |
+| `src/resolver/index.ts` | clés d'actions du resolver | personne (gelé) |
+| `src/resolver/panel.ts` | actions de l'encart (`issuePanel`, `issuePanelTraces`) | **lot K** |
+| `src/resolver/macro.ts` | actions de la macro (`macroState`, `macroFreshness`) | **lot L** |
+| `src/resolver/jira.ts` | actions Jira hors encart (`issueTraces`) | **lot M** |
+| `static/main/index.html` | ressource unique des six modules | personne (gelé) |
+
+Règle d'or des trois lots : **une clé d'action nouvelle se déclare dans son propre
+module** (`panel.ts`, `macro.ts`, `jira.ts`). Ajouter une clé au resolver exige
+d'éditer `src/resolver/index.ts` — c'est un fichier gelé : passer par
+`docs/DEMANDES/<branche>.md`, l'intégrateur l'applique.
+
+## Lot K — `feat/encart-jira` (GA-16) — vague 3
+
+Dossiers possédés : `src/ui/issue-panel/`, `src/frontend/surfaces/issue-panel.tsx`,
+`src/resolver/panel.ts`, `test/surfaces/issue-panel*.test.ts`.
+
+L'encart répond à trois questions, dans cet ordre : **quelle gamme s'applique à ce
+ticket**, **la démarrer** (entrées typées pré-remplies depuis le ticket), **voir les
+traces** déjà liées. Tout ce qui se calcule vit dans `src/ui/issue-panel/` en
+fonctions pures `(deps, args) => …` testées avec `makeDeps()` ; le `.tsx` ne fait
+que mettre en forme. Un refus de verrou se rend comme un refus lisible, jamais
+comme une erreur technique.
+
+## Lot L — `feat/macro-confluence` (GA-17) — vague 3
+
+Dossiers possédés : `src/ui/macro/`, `src/frontend/surfaces/macro.tsx`,
+`src/resolver/macro.ts`, `test/surfaces/macro*.test.ts`.
+
+La macro réinsère dans la page source : l'état de la gamme, sa version, le nombre
+d'exécutions et la fraîcheur (âge de l'écart, `sync`). Trois cas à rendre
+explicitement : page liée et synchronisée, page liée et **désynchronisée** (avec
+l'âge), page **non liée** (aucune gamme compilée) — et le cas « source disparue »
+ne peut pas se produire ici, c'est la page qui porte la macro. Aucune écriture
+dans la page : la macro lit, elle ne corrige pas.
+
+## Lot M — `feat/flux-jira-manifeste` (GA-25 + manifeste conforme) — vague 3
+
+Dossiers possédés : `src/jira/`, `src/resolver/jira.ts`, `src/validator.ts`,
+`tools/`, `manifest.yml`, `test/surfaces/jira*.test.ts`, `test/tools/`,
+`.github/workflows/ci.yml` (fichier de garde : la PR porte la mention
+`SAMVISION_ALLOW_GUARD_BUMP`).
+
+Deux chantiers :
+
+1. **GA-25** — le flux Jira de la version humaine d'une gamme et son validateur de
+   transition : une transition vers « Terminé » est refusée tant qu'aucune trace
+   d'exécution close n'est liée au ticket. Le validateur Forge est une fonction à
+   part (`src/validator.ts`, clé `gammes-validator-fn` au manifeste) : ce n'est pas
+   une action du resolver. Le refus est motivé et cite ce qui manque.
+2. **Le manifeste conforme** — `manifest.yml` est validé contre le schéma officiel
+   `@forge/manifest` par `tools/check-manifest.mjs`, lancé en CI. Écart connu à
+   corriger : `jira:workflowValidator` n'admet pas de bloc `validator:` — le
+   schéma veut `name`, `description`, `key` et `function`. Toute clé de fonction
+   référencée doit exister dans `modules.function`, et tout handler doit exister
+   dans `src/`.
