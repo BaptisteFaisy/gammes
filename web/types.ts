@@ -5,3 +5,6 @@
 
 /** Redessine l'écran courant (après une action qui a changé l'état). */
 export type Rerender = () => void;
+
+/** Demande à l'application d'afficher un autre écran. */
+export type Navigate = (screen: string) => void;

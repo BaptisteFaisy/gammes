@@ -3,10 +3,8 @@
  *
  * Un démonstrateur interactif du produit **complet**, qui tourne dans le navigateur sur le
  * vrai cœur TypeScript (`src/core`) avec le magasin en mémoire : exactement ce que fait
- * l'app dans Forge, sans Forge, sans réseau, sans donnée réelle.
- *
- * Les écrans suivent le parcours du produit : repérer → compiler → approuver → dérouler →
- * relier → mesurer → amender → outiller les agents.
+ * l'app dans Forge, sans Forge. Les données sont semées, ou **les tiennes** (écran
+ * « Données réelles ») ; le modèle est scripté par défaut, ou **le tien** (écran « Modèle réel »).
  */
 
 import { createState, type AppState } from "./state";
@@ -22,12 +20,15 @@ import { conflitsPanel, fantomesPanel } from "./panels-conflicts";
 import { mcpPanel } from "./panels-tools";
 import { skillPanel } from "./panels-skill";
 import { encartsPanel, journalPanel, reglagesPanel } from "./panels-surfaces";
-import type { Rerender } from "./types";
+import { modelePanel } from "./panels-model";
+import { realDataPanel } from "./panels-realdata";
+import { describeEngine } from "./engine";
+import type { Navigate, Rerender } from "./types";
 
 type Screen =
   | "atelier" | "detecter" | "compiler" | "gamme" | "avant-agir" | "derouler"
   | "liaison" | "mesures" | "amendements" | "conflits" | "fantomes"
-  | "mcp" | "skill" | "encarts" | "journal" | "reglages";
+  | "mcp" | "skill" | "encarts" | "journal" | "reglages" | "modele" | "donnees";
 
 type Group = { readonly title: string; readonly items: readonly { id: Screen; label: string }[] };
 
@@ -73,10 +74,24 @@ const GROUPS: readonly Group[] = [
       { id: "reglages", label: "15 · Réglages" },
     ],
   },
+  {
+    title: "Brancher du réel",
+    items: [
+      { id: "modele", label: "16 · Modèle réel (OpenCode…)" },
+      { id: "donnees", label: "17 · Tes données réelles" },
+    ],
+  },
 ];
 
-const header = (): HTMLElement =>
-  h(
+let state: AppState | undefined;
+let current: Screen = "atelier";
+let navNode: HTMLElement | undefined;
+let mainNode: HTMLElement | undefined;
+let engineNode: HTMLElement | undefined;
+
+const header = (): HTMLElement => {
+  engineNode = h("p", { class: "engine" }, "moteur : …");
+  return h(
     "header",
     { class: "head" },
     h("h1", {}, "Gammes", h("span", { class: "sub" }, " — your runbooks, as tools")),
@@ -84,54 +99,70 @@ const header = (): HTMLElement =>
     h(
       "p",
       { class: "note" },
-      "Démonstration publique : le vrai cœur du produit tourne dans votre navigateur, sur un magasin en mémoire. Aucun réseau, aucun secret, aucune donnée réelle. ",
-      h("a", { href: "https://github.com/BaptisteFaisy/gammes" }, "Code source"),
+      "Le cœur du produit tourne dans votre navigateur. Données semées ou ",
+      h("a", { href: "#", onclick: (e: Event) => { e.preventDefault(); goTo("donnees"); } }, "les vôtres"),
+      " · modèle scripté ou ",
+      h("a", { href: "#", onclick: (e: Event) => { e.preventDefault(); goTo("modele"); } }, "un vrai modèle"),
       " · ",
-      h("a", { href: "https://github.com/BaptisteFaisy/gammes/blob/main/docs/SPEC-EN.md" }, "Spec (EN)"),
+      h("a", { href: "https://github.com/BaptisteFaisy/gammes" }, "code source"),
     ),
+    engineNode,
   );
+};
 
-const build = async (state: AppState, screen: Screen): Promise<HTMLElement> => {
-  const rerender: Rerender = () => void mount(state, screen);
+const build = async (screen: Screen, go: Navigate): Promise<HTMLElement> => {
+  if (!state) return h("p", {}, "État non initialisé.");
+  const app = state;
+  const rerender: Rerender = () => void mount();
   switch (screen) {
-    case "atelier": return atelierPanel(state);
-    case "detecter": return detectPanel(state, rerender);
-    case "compiler": return compilePanel(state, rerender);
-    case "gamme": return gammePanel(state, rerender);
-    case "avant-agir": return beforeActingPanel(state, rerender);
-    case "derouler": return runPanel(state, rerender);
-    case "liaison": return bindingPanel(state, rerender);
-    case "mesures": return mesuresPanel(state, rerender);
-    case "amendements": return amendementsPanel(state, rerender);
-    case "conflits": return conflitsPanel(state, rerender);
-    case "fantomes": return fantomesPanel(state, rerender);
-    case "mcp": return mcpPanel(state, rerender);
-    case "skill": return skillPanel(state, rerender);
-    case "encarts": return encartsPanel(state, rerender);
-    case "journal": return journalPanel(state, rerender);
-    default: return reglagesPanel(state, rerender);
+    case "atelier": return atelierPanel(app);
+    case "detecter": return detectPanel(app, rerender);
+    case "compiler": return compilePanel(app, rerender);
+    case "gamme": return gammePanel(app, rerender);
+    case "avant-agir": return beforeActingPanel(app, rerender);
+    case "derouler": return runPanel(app, rerender);
+    case "liaison": return bindingPanel(app, rerender);
+    case "mesures": return mesuresPanel(app, rerender);
+    case "amendements": return amendementsPanel(app, rerender);
+    case "conflits": return conflitsPanel(app, rerender);
+    case "fantomes": return fantomesPanel(app, rerender);
+    case "mcp": return mcpPanel(app, rerender);
+    case "skill": return skillPanel(app, rerender);
+    case "encarts": return encartsPanel(app, rerender);
+    case "journal": return journalPanel(app, rerender);
+    case "reglages": return reglagesPanel(app, rerender);
+    case "modele": return modelePanel(app, rerender);
+    default: return realDataPanel(app, rerender, go);
   }
 };
 
-let navNode: HTMLElement | undefined;
-let mainNode: HTMLElement | undefined;
-let stateRef: AppState | undefined;
-
-const mount = async (state: AppState, screen: Screen): Promise<void> => {
-  if (!mainNode) return;
-  for (const child of Array.from(navNode?.children ?? [])) {
-    for (const button of Array.from(child.children)) {
-      button.classList.toggle("active", (button as HTMLElement).dataset["screen"] === screen);
+const paintNav = (): void => {
+  for (const group of Array.from(navNode?.children ?? [])) {
+    for (const item of Array.from(group.children)) {
+      if ((item as HTMLElement).dataset["screen"]) {
+        item.classList.toggle("active", (item as HTMLElement).dataset["screen"] === current);
+      }
     }
   }
+};
+
+const mount = async (): Promise<void> => {
+  if (!mainNode || !state) return;
+  paintNav();
+  if (engineNode) engineNode.textContent = describeEngine(state);
   mainNode.replaceChildren(h("p", { class: "loading" }, "Chargement…"));
-  const view = await build(state, screen);
+  const view = await build(current, (screen) => goTo(screen as Screen));
+  if (!mainNode || !state) return;
   mainNode.replaceChildren(...(state.message ? [h("p", { class: "note info" }, state.message)] : []), view);
 };
 
+const goTo = (screen: Screen): void => {
+  current = screen;
+  void mount();
+};
+
 const boot = async (): Promise<void> => {
-  const state = await createState();
-  stateRef = state;
+  state = await createState();
   const app = document.getElementById("app");
   if (!app) return;
   clear(app);
@@ -141,13 +172,11 @@ const boot = async (): Promise<void> => {
   for (const group of GROUPS) {
     const block = h("div", { class: "navgroup" }, h("h3", {}, group.title));
     for (const item of group.items) {
-      block.append(h("button", { class: "tab", "data-screen": item.id, onclick: () => void mount(state, item.id) }, item.label));
+      block.append(h("button", { class: "tab", "data-screen": item.id, onclick: () => goTo(item.id) }, item.label));
     }
     navNode.append(block);
   }
-  void mount(state, "atelier");
+  await mount();
 };
 
 void boot();
-
-export const appState = (): AppState | undefined => stateRef;

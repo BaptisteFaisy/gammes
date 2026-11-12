@@ -27,6 +27,12 @@ body {
 .head .pitch { margin: 6px 0; }
 .head .note { color: var(--muted); font-size: 13px; margin: 4px 0 18px; }
 .head a { color: var(--accent); }
+.engine {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12px; color: var(--muted); background: var(--panel2);
+  border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; margin: 0 0 14px;
+  word-break: break-all;
+}
 
 .layout { display: grid; grid-template-columns: 232px 1fr; gap: 18px; align-items: start; }
 @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }

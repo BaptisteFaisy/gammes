@@ -65,13 +65,24 @@ const postChat = async (req: LlmRequest, ctx: Ctx): Promise<LlmResponse> => {
   };
 };
 
+/**
+ * Lecture d'environnement sûre : le même adaptateur sert dans Forge, dans le harness Node
+ * et dans le navigateur (site public), où `process` n'existe pas.
+ */
+const env = (name: string): string | undefined => {
+  const holder = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process;
+  return holder?.env?.[name];
+};
+
 export const inferHubLlm = (options: InferHubOptions = {}): LlmClient & {
   readonly cacheSize: () => number;
 } => {
-  const baseUrl = options.baseUrl ?? process.env["LLM_BASE_URL"] ?? "https://api.inferhub.dev/v1";
-  const model = options.model ?? process.env["LLM_MODEL"] ?? "combo/cheap";
-  const apiKey = options.apiKey ?? process.env["INFERHUB_API_KEY"] ?? "";
-  const doFetch = options.fetchImpl ?? fetch;
+  const baseUrl = options.baseUrl ?? env("LLM_BASE_URL") ?? "https://api.inferhub.dev/v1";
+  const model = options.model ?? env("LLM_MODEL") ?? "combo/cheap";
+  const apiKey = options.apiKey ?? env("INFERHUB_API_KEY") ?? "";
+  // `fetch` détaché de son hôte perd son `this` et lève « Illegal invocation » dans un
+  // navigateur : on passe par une flèche, pas par la référence nue.
+  const doFetch = options.fetchImpl ?? ((...args: Parameters<typeof fetch>) => fetch(...args));
   const cache = new Map<string, LlmResponse>();
 
   return {

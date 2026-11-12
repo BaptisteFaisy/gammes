@@ -7,7 +7,7 @@
  * statistiques). Tout est en mémoire, aucun réseau : `seedAtelier()` rend un `Deps` prêt.
  */
 
-import type { ConfluencePort, Deps, GraphPort, JiraPort, PermitRegistry } from "../src/core/ports";
+import type { ConfluencePort, Deps, GraphPort, JiraPort, LlmClient, PermitRegistry } from "../src/core/ports";
 import type { IssueDigest, PageDigest, Run, RunStep } from "../src/core/types";
 import { fakeAwsKey, makeDeps, makePage, T0 } from "../test/helpers";
 import { fixedClock } from "../src/platform/clock";
@@ -89,7 +89,7 @@ export const PAGES: Record<string, PageDigest> = {
 
 const comment = "Ouvrir le coffre et générer une nouvelle clé.\nAttendre le rechargement.\nRévoquer l'ancienne clé.";
 
-export const TICKETS: readonly IssueDigest[] = [
+export const TICKETS: IssueDigest[] = [
   ...Array.from({ length: 40 }, (_, i) => ({
     id: `${30000 + i}`,
     key: `PAY-${200 + i}`,
@@ -134,7 +134,12 @@ export const demoGraph = (): GraphPort => ({
   readable: async () => true,
 });
 
-export type AtelierOptions = { readonly permitsGranted?: boolean; readonly clock?: ReturnType<typeof fixedClock> };
+export type AtelierOptions = {
+  readonly permitsGranted?: boolean;
+  readonly clock?: ReturnType<typeof fixedClock>;
+  /** Modèle injecté : le site public y branche un vrai modèle (OpenCode Zen, InferHub, proxy). */
+  readonly llm?: LlmClient;
+};
 
 export type Atelier = { readonly deps: Deps; readonly clock: ReturnType<typeof fixedClock> };
 
@@ -146,7 +151,7 @@ export const seedAtelier = (options: AtelierOptions = {}): Atelier => {
     clock,
     ids: seqIds(),
     hasher: makeHasher(),
-    llm: scriptedLlm({
+    llm: options.llm ?? scriptedLlm({
       conciliate_conflict: JSON.stringify({
         summary: "Deux gammes déploient paiements avec un nombre d'approbations différent.",
         options: [
@@ -208,4 +213,20 @@ export const seedTraces = async (
     };
     await deps.store.runs.insert(run);
   }
+};
+
+/**
+ * Remplace le jeu de tickets par celui du visiteur : la détection de fantômes tourne alors
+ * sur des données réelles. Le tableau est muté sur place, les ports bouchonnés le lisent en direct.
+ */
+export const setTickets = (issues: readonly IssueDigest[]): void => {
+  TICKETS.length = 0;
+  TICKETS.push(...issues);
+};
+
+/** Page collée par le visiteur : elle entre dans le catalogue comme n'importe quelle page. */
+export const addPastedPage = (ari: string, title: string, storageBody: string): PageDigest => {
+  const page = makePage({ ari, id: ari.split("/").pop() ?? ari, title, storageBody, labels: ["collee"] });
+  PAGES[ari] = page;
+  return page;
 };

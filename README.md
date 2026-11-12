@@ -17,8 +17,21 @@ conciliateur hermes, gammes fantômes et adoption, les 16 outils MCP avec un app
 export `SKILL.md` téléchargeable, encarts Jira et macro Confluence, journal d'audit append-only,
 réglages d'espace.
 
-Aucun réseau, aucune donnée réelle : le vrai cœur TypeScript (`src/core`) sur un magasin en mémoire.
+Le vrai cœur TypeScript (`src/core`) tourne dans le navigateur, sur un magasin en mémoire.
 Source dans [`web/`](web/), déployé par GitHub Pages ([`.github/workflows/web.yml`](.github/workflows/web.yml)).
+
+**Deux façons de passer sur du réel** (écran « 16 · Modèle réel » et « 17 · Tes données réelles »,
+détails dans [`docs/MODELE-REEL.md`](docs/MODELE-REEL.md)) :
+
+- **un vrai modèle** — ta propre clé (InferHub, OpenRouter : CORS ouvert, appel direct) ou le proxy
+  du dépôt (`scripts/llm-proxy.py`, la clé reste côté serveur). **OpenCode Zen exige le proxy** : il ne
+  renvoie aucun en-tête CORS sur POST, et ses modèles `-free` répondent `429 FreeUsageLimitError`.
+  Aucune clé de l'équipe n'est embarquée dans le site. Sans modèle, tout ce qui est déterministe
+  fonctionne quand même — le modèle ne sert qu'à la prose ambiguë, à la qualification fine, à la
+  reformulation et à la conciliation.
+- **tes vraies données** — colle ta page Confluence (format storage, HTML ou texte) et le compilateur
+  tourne dessus ; colle tes tickets Jira (JSON ou lignes) et la détection de fantômes tourne dessus ;
+  l'atelier entier s'exporte et se réimporte en JSON. Rien ne quitte ton navigateur.
 
 Une page de procédure Confluence est de la prose : les humains la survolent, les agents ne la lisent
 pas, et personne ne sait quelle version a été suivie le jour de l'incident. **Gammes compile cette
