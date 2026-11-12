@@ -50,7 +50,9 @@ stops: the refusal is explicit, and the attempt is recorded as a deviation, not 
 ## 2:05 – 2:35 · The trace
 
 **On screen:** `finish-run` → a citable trace: `GAM-deploy-01@v7 · run_3`, actor and its nature, steps,
-evidence, outcome. The March-3rd question answered in one line.
+evidence, outcome. The March-3rd question answered in one line. Then the **evidence board** (screen
+« 14 · Preuves »): for every step of the gamme, the proof that was expected and the proof that was
+actually left — the command output, the CI line, the sign-off — **openable, not just a reference**.
 
 **VO:** "At the end, a citable trace: which version, who, how far, with what proof. 'On March 3rd, when
 we deployed in a hurry, which procedure was followed?' becomes a query, not an archaeology dig."
@@ -111,6 +113,7 @@ Gammes turns it into tools your agents can actually call — and refuses to let 
 | Locks: human / permit / secret | `npm run demo` (phase 4) + `test/mcp` |
 | Agent runs via MCP, refusal | `handleTool("start-run"/"record-step")` |
 | Citable trace | `finish-run` → `renderTraceMarkdown` |
+| Evidence board (proof of every step, openable) | demo site → screen « 14 · Preuves » |
 | Desync + diff | `npm run demo` (phase 5) |
 | Statistics + amendment | `npm run demo` (phase 6) |
 | Ghosts | `npm run demo` (phase 8) |
