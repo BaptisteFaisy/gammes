@@ -10,6 +10,7 @@
 import type { Deps } from "../ports";
 import type { Gamme, RiskLevel, StepLock } from "../types";
 import { getVersion } from "../version/versioning";
+import { tokensOf } from "../text/tokens";
 
 export type ProcedureMatch = {
   readonly code: string;
@@ -31,17 +32,6 @@ export type BeforeActingVerdict = {
   readonly messageFr: string;
   readonly messageEn: string;
 };
-
-const STOP = new Set(["le", "la", "les", "de", "du", "des", "un", "une", "et", "sur", "pour", "the", "of", "and", "to", "in", "on"]);
-
-export const tokensOf = (text: string): readonly string[] =>
-  text
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, " ")
-    .split(" ")
-    .filter((w) => w.length > 2 && !STOP.has(w));
 
 const overlap = (a: readonly string[], b: readonly string[]): number => {
   const set = new Set(b);
