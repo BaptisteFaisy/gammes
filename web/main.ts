@@ -169,6 +169,10 @@ const boot = async (): Promise<void> => {
   navNode = h("nav", { class: "nav" });
   mainNode = h("main", { class: "main" });
   app.append(header(), h("div", { class: "layout" }, navNode, mainNode));
+  // Le budget et le moteur sont des compteurs vivants : rafraîchis sans redessiner l'écran.
+  setInterval(() => {
+    if (engineNode && state) engineNode.textContent = describeEngine(state);
+  }, 3000);
   for (const group of GROUPS) {
     const block = h("div", { class: "navgroup" }, h("h3", {}, group.title));
     for (const item of group.items) {
