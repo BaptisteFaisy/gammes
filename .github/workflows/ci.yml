@@ -1,23 +1,43 @@
 name: ci
 
+# La porte unique du dépôt : lint (règles de la maison) + typecheck + tests,
+# plus les tests des gardes de la CI elles-mêmes (couche0, agent de conflits
+# InferHub). Le check publié s'appelle `ci` (c'est `name:` qui nomme le check) :
+# il est exigé par le ruleset de `main` et par la file Mergify, comme
+# `ci-budget` et `couche0`.
+#
+# `merge_group` est indispensable : la file Mergify rejoue les checks sur
+# l'arbre fusionné du lot, et sans ce déclencheur le check `ci` n'existerait
+# pas sur ce commit — le lot resterait bloqué.
 on:
   push:
     branches: [main]
   pull_request:
+  merge_group:
+  workflow_dispatch: {}
 
 # Règle maison : verdict en 5 min maximum, jamais plus.
+# La clé porte sur la tête de PR (et sur le SHA pour les branches de file) :
+# sur une branche de file, le `push` de Mergify et la PR ouverte dessus rejouent
+# le même contrôle sur le même arbre, et une annulation publierait un check
+# `cancelled` que la file lirait comme un échec.
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ (startsWith(github.ref_name, 'gh-readonly-queue/') || startsWith(github.event.pull_request.head.ref || '', 'gh-readonly-queue/')) && (github.event.pull_request.head.sha || github.sha) || github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   verify:
+    name: ci
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
+          persist-credentials: false
 
       - uses: actions/setup-node@v4
         with:
@@ -35,3 +55,14 @@ jobs:
 
       - name: Tests
         run: npm run test
+
+      # Les gardes de la CI se testent elles-mêmes : bibliothèque standard,
+      # aucun réseau, quelques secondes. Une garde cassée est une porte
+      # grande ouverte — elle ne doit jamais passer inaperçue.
+      - name: Tests des gardes (couche0, agent de conflits InferHub)
+        run: |
+          python3 .github/couche0/test_check_couche0.py
+          cd .github/inferhub
+          python3 test_conflict_agent.py
+          python3 test_quota.py
+          python3 test_union_journal.py
