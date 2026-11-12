@@ -96,7 +96,8 @@ class ForbiddenTest(unittest.TestCase):
                       ".github/workflows/ci-native.yml",
                       ".github/workflows/pr-auto-merge.yml",
                       ".github/workflows/conflict-resolver.yml",
-                      ".github/inferhub/conflict_agent.py"):
+                      ".github/inferhub/conflict_agent.py",
+                      ".github/workflows/file-de-merge.yml"):
             erreurs = []
             check_couche0.check_forbidden(
                 [fichier(garde)], "## Scope\n\n- `%s` — x\n" % garde, erreurs)

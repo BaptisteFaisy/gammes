@@ -1,0 +1,116 @@
+name: file-de-merge
+
+# La file Mergify est le SEUL pilote de merge de ce dépôt : ce balayeur ne merge
+# jamais, il ne fait qu'embarquer.
+#
+# Pourquoi il existe : l'auto-embarquement natif (`merge_protections_settings`)
+# s'est révélé muet sur ce dépôt — mesuré sur la PR qui installe le pipeline :
+# les trois checks requis verts, `mergeStateStatus: CLEAN`, et le check
+# « Mergify Merge Queue » en `skipping` (« does not match any conditions »)
+# parce que Mergify avait évalué la PR avant la fin de `couche0` et ne s'est pas
+# réveillé. Le même `@mergifyio queue` posté à la main a embarqué la PR dans la
+# seconde. Ce workflow fait donc uniquement le geste qui manque, au bon moment.
+#
+#   1. il liste les PR ouvertes, non brouillons, vers `main` ;
+#   2. il laisse de côté celles en conflit (`CONFLICTING`) : c'est le travail de
+#      `conflict-resolver.yml` et de son agent InferHub, pas le sien ;
+#   3. il exige les trois checks du ruleset (`ci`, `ci-budget`, `couche0`) au
+#      verdict `success` sur la tête courante ;
+#   4. il poste `@mergifyio queue`, une fois par tête (marqueur HTML : jamais
+#      deux commandes pour le même SHA, donc jamais de boucle).
+#
+# Réveils : fin du workflow `ci` (la voie rapide), cron de filet, manuel.
+# Budget CI : 5 minutes (règle maison), 8 PR au plus par run.
+
+on:
+  workflow_run:
+    workflows: ["ci"]
+    types: [completed]
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: "Numéro de PR à embarquer (vide = toutes les PR prêtes)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: read
+
+concurrency:
+  group: file-de-merge-${{ github.repository }}
+  cancel-in-progress: false
+
+env:
+  REPO: ${{ github.repository }}
+  # Jeton du propriétaire : un commentaire signé `github-actions[bot]` n'a pas
+  # toujours le droit de commander la file. Sans secret, repli sur le jeton du run.
+  GH_TOKEN: ${{ secrets.AUTOMERGE_PAT || github.token }}
+
+jobs:
+  queue:
+    name: file-de-merge
+    runs-on: ${{ fromJSON(vars.CI_RUNNER || '["self-hosted","gammes-worker"]') }}
+    timeout-minutes: 5
+    steps:
+      - name: Embarquer les PR prêtes dans la file Mergify
+        env:
+          MANUEL: ${{ github.event.inputs.pr }}
+        run: |
+          set -uo pipefail
+          export PATH="$HOME/bin:$HOME/.local/bin:/usr/local/bin:/usr/bin:/bin:$PATH"
+          command -v gh >/dev/null 2>&1 || { echo "gh absent du runner : saut"; exit 0; }
+          REQUIS='["ci","ci-budget","couche0"]'
+
+          if [ -n "$MANUEL" ]; then
+            LIGNES=$(gh pr view "$MANUEL" --repo "$REPO" \
+              --json number,headRefOid,isDraft,mergeable,baseRefName \
+              --jq '[.number,.headRefOid,(.isDraft|tostring),.mergeable,.baseRefName]|@tsv' 2>/dev/null || true)
+          else
+            LIGNES=$(gh pr list --repo "$REPO" --state open --limit 20 \
+              --json number,headRefOid,isDraft,mergeable,baseRefName \
+              --jq '.[] | select(.isDraft|not) | select(.baseRefName=="main") | [.number,.headRefOid,(.isDraft|tostring),.mergeable,.baseRefName] | @tsv' 2>/dev/null || true)
+          fi
+          [ -n "$LIGNES" ] || { echo "aucune PR ouverte vers main"; exit 0; }
+
+          TRAITES=0
+          while IFS=$'\t' read -r PR SHA BROUILLON FUSIONNABLE BASE; do
+            [ -n "$PR" ] || continue
+            [ "$TRAITES" -ge 8 ] && { echo "plafond de 8 PR par run atteint"; break; }
+            if [ "$FUSIONNABLE" = "CONFLICTING" ]; then
+              echo "PR #$PR en conflit : laissée à l'agent InferHub"; continue
+            fi
+            # Un check absent compte comme manquant : une PR sans aucun check n'est
+            # pas une PR verte, c'est une PR qui n'a pas encore tourné.
+            if ! MANQUANTS=$(gh api "repos/$REPO/commits/$SHA/check-runs" \
+                --jq "([.check_runs[] | select(.conclusion==\"success\") | .name]) as \$v | $REQUIS | map(select(. as \$r | (\$v | index(\$r)) == null)) | join(\",\")" 2>/dev/null); then
+              echo "PR #$PR : checks illisibles — prochain passage"; continue
+            fi
+            # Liste vide = les trois checks requis sont au verdict `success`.
+            if [ -n "$MANQUANTS" ]; then
+              echo "PR #$PR : checks pas encore verts ($MANQUANTS) — prochain passage"; continue
+            fi
+            # Déjà en file ? Le check « Mergify Merge Queue » passe en `pending`
+            # dès que la commande est prise : inutile de la répéter.
+            EN_FILE=$(gh api "repos/$REPO/commits/$SHA/check-runs" \
+              --jq '[.check_runs[] | select(.name=="Mergify Merge Queue") | select(.status!="completed")] | length' 2>/dev/null || echo 0)
+            if [ "${EN_FILE:-0}" != "0" ]; then
+              echo "PR #$PR : déjà en file"; continue
+            fi
+            MARQUE="<!-- file-de-merge sha=$SHA -->"
+            if gh api "repos/$REPO/issues/$PR/comments" --paginate \
+                --jq '.[].body' 2>/dev/null | grep -qF "$MARQUE"; then
+              echo "PR #$PR : commande déjà postée pour cette tête"; continue
+            fi
+            CORPS=$(printf '@mergifyio queue\n\n%s' "$MARQUE")
+            if gh pr comment "$PR" --repo "$REPO" --body "$CORPS" >/dev/null 2>&1; then
+              echo "PR #$PR embarquée dans la file (tête ${SHA:0:7})"
+            else
+              echo "PR #$PR : commande de file refusée — prochain passage"
+            fi
+            TRAITES=$((TRAITES + 1))
+          done <<< "$LIGNES"
+          echo "$TRAITES PR(s) traitée(s)"
