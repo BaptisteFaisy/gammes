@@ -33,10 +33,16 @@ const extrait = (preuve: Evidence): HTMLElement =>
   preuve.note ? code(preuve.note) : note(`aucun extrait — référence ${preuve.ref}`, "info");
 
 /** Le bloc d'une preuve : ce qu'elle est, où elle est, ce qu'elle dit. */
+/** « réelle » ou « fixture » : l'app ne fait pas passer l'une pour l'autre. */
+const badgeOrigine = (evidence: Evidence): HTMLElement =>
+  evidence.origin === "fixture"
+    ? badge("fixture (démo)", "idle")
+    : badge("preuve réelle", "ok");
+
 const blocPreuve = (laissee: PreuveLaissee): HTMLElement =>
   details(
     `${laissee.evidence.kind} · force ${laissee.evidence.strength} — ${laissee.code}`,
-    h("div", { class: "out" }, extrait(laissee.evidence)),
+    h("div", { class: "out" }, badgeOrigine(laissee.evidence), extrait(laissee.evidence)),
   );
 
 export const preuvesPanel = (state: AppState, rerender: Rerender): HTMLElement => {

@@ -152,7 +152,9 @@ const acceptStep = async (deps: Deps, args: RecordStepArgs, ctx: Ctx): Promise<R
     doneAt: now,
     refusedReason: undefined,
     ...(startedAt ? { durationS: durationSeconds(startedAt, now) } : {}),
-    ...(args.evidence ? { evidence: args.evidence } : {}),
+    ...(args.evidence
+      ? { evidence: { ...args.evidence, ...(args.evidence.origin ? {} : { origin: "real" as const }) } }
+      : {}),
   });
   const moved = advance(done, ctx.version, now, args.stepId);
   await persist(deps, moved);

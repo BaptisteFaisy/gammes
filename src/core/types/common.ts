@@ -105,6 +105,12 @@ export type Evidence = {
   readonly ref: string;
   readonly capturedAt: string;
   readonly note?: string;
+  /**
+   * D'où vient la preuve : `real` (produite par l'exécution qui la porte) ou
+   * `fixture` (posée d'avance pour la démo). L'app l'affiche : elle ne fait
+   * jamais passer une fixture pour une preuve réelle.
+   */
+  readonly origin?: "real" | "fixture";
 };
 
 /** Emplacement proposé à la place d'un secret détecté (§ 9, verrou de secret). */

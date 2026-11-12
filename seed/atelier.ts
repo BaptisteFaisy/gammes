@@ -220,6 +220,7 @@ const preuveDe = (spec: EvidenceSpec | undefined, step: Step | undefined, index:
       ? `attestation:${OWNER}`
       : `https://ci.example.internal/build/${42 + index}`,
   capturedAt: T0,
+  origin: "fixture",
   ...(step ? { note: excerptFor(step, index) } : {}),
 });
 
