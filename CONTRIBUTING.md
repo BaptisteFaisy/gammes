@@ -33,8 +33,10 @@ npm run verify        # lint (règles de la maison) + typecheck + tests
 
 ## CI
 
-Cinq workflows, une seule porte applicative : `ci.yml` rend le verdict (lint, typecheck,
-tests, gardes Python), `ci-budget.yml` et `couche0.yml` gardent le dépôt, `file-de-merge.yml`
+La CI tient en **5 minutes maximum** par job (`timeout-minutes: 5`, `concurrency`,
+`fetch-depth: 1`, cache npm) : cinq workflows, une seule porte applicative —
+`ci.yml` tranche (lint, typecheck, tests, gardes Python), tandis que
+`ci-budget.yml` et `couche0.yml` gardent le dépôt, `file-de-merge.yml`
 embarque les PR vertes et `conflict-resolver.yml` réconcilie les conflits.
 Aucun build natif ni E2E dans la CI de PR. On n'allonge jamais un timeout : on découpe le travail.
 
