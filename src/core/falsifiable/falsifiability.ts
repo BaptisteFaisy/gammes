@@ -26,7 +26,11 @@ const MEASURABLE_PATTERNS: readonly RegExp[] = [
   /\b(?:200|201|204|404|500)\b/,
   /\b(?:vert|green|rouge|red|succès|success|échec|failed|healthz|ready)\b/i,
   /\bhttps?:\/\/\S+/i,
-  /\b(?:kubectl|curl|grep|tail|journalctl|docker|helm|git|psql|mysql|aws|gh)\b/i,
+  /\b(?:kubectl|curl|wget|grep|tail|journalctl|docker|helm|git|psql|mysql|aws|gcloud|gh|openssl|systemctl|dig|nslookup|ping|nc|ssh|redis-cli|mongosh|jq|crictl|argocd|vault|certbot|npm|make)\b/i,
+  /\b[a-z0-9-]+\.(?:fr|com|net|org|io|eu|local|internal|lan)(?::\d+)?\b/i,
+  /:\d{2,5}\b/,
+  /\b\d+\s*(?:jours?|days?|heures?|hours?|minutes?|secondes?|seconds?)\b/i,
+  /\b(?:expiration|expire|échoit|date de fin|validit[ée])\b/i,
   /\b(?:logs?|métriques?|metrics?|tableau de bord|dashboard|sonde|probe|healthz|ready)\b/i,
   /\b\d+\s*(?:fois|fois\/|par\s+minute|req\/s|rps)/i,
 ];

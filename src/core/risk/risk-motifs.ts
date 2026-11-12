@@ -71,7 +71,7 @@ export const DEFAULT_RISK_MOTIFS: readonly RiskMotif[] = [
   {
     class: "secret-rotation",
     pattern:
-      /(?:rotation|révocation|revocation|reset|regenerat\w*|réinitialis\w*)[^\n]{0,40}(?:clé|cle|key|secret|token|certificat|credential)/i,
+      /(?:rotation|révocation|revocation|reset|regenerat\w*|réinitialis\w*|supprim\w+|r[ée]voqu\w+|retir\w+|renouvel\w+|revoke|remove|renew)[^\n]{0,40}(?:clé|cle|key|secret|token|certificat|certificate|credential)/i,
     level: "high",
     label: "rotation ou révocation de secret",
   },

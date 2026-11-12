@@ -177,7 +177,7 @@ const draftOf = (page: PageDigest, block: ParsedBlock, ord: number): DraftStep =
 const STEPABLE: readonly BlockKind[] = ["list_item", "checkbox", "code", "table_row"];
 
 const IMPERATIVE_RE =
-  /^\s*(?:on|vous|il\s+faudra|il\s+faut|ensuite|puis|enfin|d'abord|then|next)?\s*(?:ex[ée]cut\w+|lanc\w+|v[ée]rif\w+|d[ée]ploy\w+|contr[ôo]l\w+|ouvr\w+|appliqu\w+|attend\w+|not\w+|pr[ée]ven\w+|valid\w+|sais\w+|copi\w+|red[ée]marr\w+|run|execute|verify|deploy|ensure)\b/i;
+  /^\s*(?:on|vous|il\s+faudra|il\s+faut|ensuite|puis|enfin|d'abord|alors|then|next|finally)?\s*(?:s'?assurer|assur\w+|ex[ée]cut\w+|lanc\w+|v[ée]rif\w+|d[ée]ploy\w+|contr[ôo]l\w+|ouvr\w+|appliqu\w+|attend\w+|not\w+|pr[ée]ven\w+|valid\w+|sais\w+|copi\w+|red[ée]marr\w+|supprim\w+|r[ée]voqu\w+|renouvel\w+|install\w+|configur\w+|sauvegard\w+|restaur\w+|g[ée]n[ée]r\w+|test\w+|rempla\w+|met\w+|run|execute|verify|deploy|ensure|remove|revoke|renew|install|configure)\b/i;
 
 const isAmbiguousProse = (block: ParsedBlock): boolean =>
   block.kind === "paragraph" && block.text.length >= 60 && IMPERATIVE_RE.test(block.text);

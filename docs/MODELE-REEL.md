@@ -85,20 +85,61 @@ Dans l'app Forge, les mêmes fonctions lisent Confluence, Jira et le graphe **c�
 l'utilisateur connecté : `src/platform/forge/atlassian-ports.ts` (`asUser()`, droit manquant = résultat
 vide sans erreur).
 
-## 3. Recette vérifiée
+## 3. Contrôle sur données et modèle réels
 
-Sur un proxy local relayant InferHub (`combo/cheap` → `ali/qwen3.8-max-0902`), la prose réelle
+```bash
+INFERHUB_API_KEY=… npm run real-check     # scripts/real-check.ts
+```
 
-> « Exécuter la rotation en deux temps : d'abord générer la nouvelle clé dans le coffre, puis attendre
-> que tous les services l'aient rechargée avant de révoquer l'ancienne clé de signature. »
+Même chemin de code que le site et que l'app Forge : le vrai compilateur, le vrai adaptateur
+OpenAI-compatible, une vraie procédure (renouvellement d'un certificat TLS), un vrai modèle.
+**Sans clé, le script s'arrête** : il ne retombe pas sur un bouchon pour faire joli.
 
-a été compilée en trois étapes, chacune citant son passage source avec ses décalages :
+### Ce qui est sorti (InferHub `combo/cheap` → `ali/qwen3.8-max-0902`)
 
-| # | Nature | Étape | Preuve exigée |
-|---|---|---|---|
-| 1 | manual | Générer la nouvelle clé dans le coffre | attestation / attestée |
-| 2 | check | Attendre que tous les services aient rechargé la nouvelle clé | sortie de commande / machine |
-| 3 | manual | Révoquer l'ancienne clé de signature | attestation / attestée |
+6 étapes, dont 3 extraites par le modèle à partir d'un paragraphe de prose, chacune citant son
+passage source avec ses décalages (`794-985`) :
 
-Le paragraphe suivant (« s'assurer que tout va bien ») a été signalé **non falsifiable** et une
-reformulation a été demandée au même modèle. Journal : 5 appels, 5 322 jetons, dont un servi du cache.
+| # | Nature | Étape | Preuve | Risque / verrou |
+|---|---|---|---|---|
+| 1 | check | Vérifier la date d'expiration avec `openssl s_client -connect portail.example.fr:443` | sortie machine, exigée | — |
+| 2 | command | Déployer le nouveau certificat sur le frontal | sortie machine, exigée | — |
+| 3 | manual | Faire valider la fin d'intervention par le responsable d'astreinte | attestation, exigée | **humain** |
+| 4 | check | S'assurer que tout fonctionne *(extrait par le modèle)* | sortie machine, exigée | — |
+| 5 | notification | Prévenir les équipes concernées *(extrait par le modèle)* | référence de journal | — |
+| 6 | manual | Supprimer l'ancien certificat du frontal *(extrait par le modèle)* | attestation, exigée | **high / `secret-rotation` → permis** |
+
+Préconditions et repli reconnus comme tels (pas mélangés avec les étapes). Quatre étapes non
+falsifiables signalées, chacune avec une reformulation **réellement proposée par le modèle**, par
+exemple : « S'assurer que tout fonctionne » → « Exécuter la commande de vérification disponible et
+vérifier qu'elle se termine avec un code de retour nul. »
+
+### Les trois défauts que ce contrôle a fait tomber
+
+Un test sur du réel ne vaut que s'il casse quelque chose. Ici, trois défauts — corrigés, et
+verrouillés par `test/compilateur-front/reel.test.ts` :
+
+1. **Prose perdue.** Un paragraphe commençant par « Ensuite s'assurer que… » n'était pas reconnu
+   comme ambigu : il disparaissait de la gamme sans trace. Le motif impératif a été élargi
+   (s'assurer, supprimer, révoquer, renouveler, installer, configurer, sauvegarder…).
+2. **Faux positif de non-falsifiabilité.** « Vérifier la date d'expiration avec `openssl s_client
+   -connect portail.example.fr:443` » était déclaré invérifiable alors qu'il cite un outil, un hôte,
+   un port et un objet mesurable. Les marqueurs observables ont été élargis (outils, hôte:port,
+   domaines, durées en toutes lettres, vocabulaire d'expiration).
+3. **Risque non détecté.** « Supprimer l'ancien certificat du frontal » ne remontait rien : le motif
+   `secret-rotation` couvre désormais supprimer / révoquer / retirer / renouveler un certificat ou
+   une clé. L'étape ressort en risque `high` avec un verrou de permis — ce que le contrôle réel a
+   confirmé.
+
+### État de l'exposition publique du proxy
+
+`tailscale funnel` exige root sur r630 (`no_new_privs` ⇒ `sudo` impossible), donc le proxy n'est pas
+exposé publiquement pour l'instant. Deux conséquences assumées :
+
+- le site public fonctionne **en direct avec InferHub ou OpenRouter** (CORS ouvert) dès que le
+  visiteur colle sa propre clé — vérifié en conditions réelles depuis
+  `https://baptistefaisy.github.io/gammes/` : test de connexion « Connexion établie. Réponse : « ok »
+  (modèle annoncé : ali/qwen3.8-max-0902) » ;
+- dès qu'un proxy est joignable sur l'une des adresses de `PROXY_CANDIDATES` (`web/llm.ts`), le site
+  passe **tout seul** sur le modèle réel, sans rien demander au visiteur. La commande manquante :
+  `sudo tailscale funnel --bg --yes --set-path=/gammes-llm 8901`.
