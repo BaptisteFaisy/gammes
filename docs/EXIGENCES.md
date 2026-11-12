@@ -20,8 +20,8 @@ Lot : voir [`CONTRATS.md`](CONTRATS.md). État mis à jour par l'intégrateur à
 | GA-13 | Export `SKILL.md` par gamme approuvée, et skill générique côté Forge | M | G | ✅ faite | `src/core/export/skill-md.ts` + `skills/derouler-une-gamme/SKILL.md`, recette 17 testée |
 | GA-14 | Outils MCP du § 18 | M | G | ✅ faite | `src/core/mcp/{tools,search}.ts` (16 outils), `test/mcp/tools.test.ts` |
 | GA-15 | Agent Rovo « Le compagnon » | M | H | ✅ faite | `agents/le-compagnon.md` (les 7 questions du § 18) + `rovo:agent` au manifeste |
-| GA-16 | Encart sur le ticket Jira : quelle gamme s'applique, la démarrer, voir les traces | M | H | ⬜ à faire | — |
-| GA-17 | Macro Confluence dans la page source : état, version, exécutions, fraîcheur | M | H | ⬜ à faire | — |
+| GA-16 | Encart sur le ticket Jira : quelle gamme s'applique, la démarrer, voir les traces | M | K | 🟨 en cours | socle UI Kit 2 posé (`src/frontend/`, `src/resolver/panel.ts`) |
+| GA-17 | Macro Confluence dans la page source : état, version, exécutions, fraîcheur | M | L | 🟨 en cours | socle UI Kit 2 posé (`src/frontend/surfaces/macro.tsx`, `src/resolver/macro.ts`) |
 | GA-18 | L'atelier : registre des gammes, états, poussières, couverture | M | C | ✅ faite | `src/core/coverage/coverage.ts`, `src/core/stats/workshop.ts` + atelier du site public |
 | GA-19 | Statistiques d'atelier par étape, avec effectif et « pas assez de recul » | M | C | ✅ faite | `src/core/stats/step-stats.ts`, recette 14/15 testées |
 | GA-20 | Amendement proposé depuis les traces, avec ses preuves, jamais appliqué seul | M | C | ✅ faite | `src/core/amendments/amendments.ts`, recette 14 testée |
@@ -29,7 +29,7 @@ Lot : voir [`CONTRATS.md`](CONTRATS.md). État mis à jour par l'intégrateur à
 | GA-22 | Détection des gammes fantômes depuis l'historique Jira/JSM, avec preuves et coût | S | C | ✅ faite | `src/core/ghosts/ghosts.ts`, recette 18 testée |
 | GA-23 | Détection des conflits entre gammes et avec les pages de politique | S | D | ✅ faite | `test/conflits/` (16 tests), `src/core/conflicts/`, conciliateur `src/core/conciliation/hermes.ts` |
 | GA-24 | Comparaison de versions (un amendement a-t-il amélioré quelque chose ?) | S | C | ✅ faite | `compareVersions`, recette 16 testée |
-| GA-25 | Flux Jira pour la version humaine d'une gamme, et validateur de transition exigeant une trace | S | H | ⬜ à faire | — |
+| GA-25 | Flux Jira pour la version humaine d'une gamme, et validateur de transition exigeant une trace | S | M | 🟨 en cours | `src/resolver/jira.ts` (ébauche), validateur et manifeste conforme au lot M |
 | GA-26 | Point d'entrée externe signé (`webtrigger`) pour les hooks d'agents et le CI | S | G | ✅ faite | `src/platform/webtrigger.ts` (HMAC-SHA256, échec fermé sans secret) |
 | GA-27 | Lecture du graphe pour le périmètre et le propriétaire (`document`, `software-service`, `project`) | S | E | ✅ faite | `src/integrations/graph.ts` (droit manquant = vide sans erreur) |
 | GA-28 | Étapes non falsifiables détectées, avec reformulation proposée | S | A | ✅ faite | `src/core/falsifiable/falsifiability.ts` |
