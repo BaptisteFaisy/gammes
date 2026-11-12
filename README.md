@@ -130,22 +130,25 @@ docs/             contrats, architecture, démo, juges, anglais, vidéo, Marketp
 - [`CAHIER-DES-CHARGES.md`](CAHIER-DES-CHARGES.md) — le cahier des charges complet (français).
 - [`docs/SPEC-EN.md`](docs/SPEC-EN.md) — English summary for the judges.
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — règles de la maison, branches, agents hermes.
+- [`docs/PREUVES.md`](docs/PREUVES.md) — une preuve par étape : l'élément à regarder et la commande qui le vérifie.
 
 ## État (v0.1.0)
 
 | | |
 |---|---|
-| **26 exigences** | faites et testées (GA-01 à GA-14, GA-18 à GA-24, GA-26, GA-27, GA-29) |
-| **3 exigences** | couche données servie, rendu à câbler sur un site Forge (GA-16, GA-17, GA-18) |
-| **1 exigence** | non commencée (GA-25, flux Jira et validateur de transition) |
-| **3 exigences** | après le hackathon (GA-30, GA-31, GA-32) |
-| **189 tests** | `npm run verify` : garde-fous + typecheck + tests, en moins de 2 minutes |
+| **30 exigences** | faites et testées (GA-01 à GA-29, sauf les trois « C ») |
+| **3 exigences** | après le hackathon (GA-30 publication, GA-31 connecteur de graphe, GA-32 composition) |
+| **236 tests** | `npm run verify` : garde-fous + typecheck + tests, en moins de 2 minutes |
 | **recette § 25** | les 21 points sont automatisés (`test/recette/`) |
+| **manifeste Forge** | conforme au schéma officiel `@forge/manifest` 13.9.0, sous garde en CI |
 
 Matrice détaillée et à jour : [`docs/EXIGENCES.md`](docs/EXIGENCES.md).
+**Un élément de preuve par étape** : [`docs/PREUVES.md`](docs/PREUVES.md) — ce qui
+prouve que chaque étape a fonctionné, et la commande qui le vérifie.
 
 ```bash
-npm ci && npm run verify   # 189 tests, vert
+npm ci && npm run verify   # 236 tests, vert
+node tools/check-manifest.mjs   # le manifeste est conforme au schéma Forge
 npm run demo               # le scénario complet, en mémoire, sans réseau
 npm run seed               # l'espace de démonstration des juges
 ```

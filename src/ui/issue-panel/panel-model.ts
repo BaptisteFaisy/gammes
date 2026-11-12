@@ -42,6 +42,25 @@ export type PanelCandidate = {
   readonly inputs: readonly PanelInput[];
 };
 
+/** La preuve attendue par une étape : ce qu'elle doit laisser derrière elle. */
+export type PanelProof = {
+  readonly kind: string;
+  readonly strength: string;
+  readonly required: boolean;
+  readonly hint?: string;
+};
+
+/** Une étape de la gamme, avec la preuve attendue et la preuve acquittée. */
+export type PanelStep = {
+  readonly stepId: string;
+  readonly ord: number;
+  readonly text: string;
+  readonly proofExpected: PanelProof;
+  readonly locks: readonly { readonly kind: string; readonly reason: string }[];
+  /** La preuve réellement laissée par l'exécution, si l'étape a été franchie. */
+  readonly proof?: { readonly kind: string; readonly strength: string; readonly ref: string };
+};
+
 /** L'état de l'encart pour un ticket. */
 export type PanelState = {
   readonly issueKey: string;
@@ -119,3 +138,39 @@ export const panelState = async (
 /** Les traces liées au ticket, en Alleyes de citation. */
 export const panelTraces = async (deps: Deps, issueKey: string): Promise<readonly TraceRef[]> =>
   tracesOfIssue(deps, issueKey);
+
+/**
+ * Les étapes d'une gamme avec, pour chacune, **la preuve attendue** et **la
+ * preuve acquittée**.
+ *
+ * C'est la règle du produit, appliquée au premier écran : on ne dit jamais
+ * qu'une étape est faite sans montrer ce qui l'atteste. Une étape franchie sans
+ * preuve reste sans preuve — l'écran la signale, il ne l'arrange pas.
+ */
+export const panelSteps = async (
+  deps: Deps,
+  args: { readonly code: string; readonly runId?: string },
+): Promise<readonly PanelStep[]> => {
+  const version = await getVersion(deps, args.code);
+  if (!version.ok) return [];
+  const run = args.runId ? await deps.store.runs.get(args.runId) : undefined;
+  const preuves = new Map((run?.steps ?? []).map((s) => [s.stepId, s.evidence]));
+  return [...version.value.steps]
+    .sort((a, b) => a.ord - b.ord)
+    .map((step) => {
+      const preuve = preuves.get(step.id);
+      return {
+        stepId: step.id,
+        ord: step.ord,
+        text: step.text,
+        proofExpected: {
+          kind: step.evidence.kind,
+          strength: step.evidence.strength,
+          required: step.evidence.required,
+          ...(step.evidence.hint ? { hint: step.evidence.hint } : {}),
+        },
+        locks: step.locks.map((l) => ({ kind: l.kind, reason: l.reason })),
+        ...(preuve ? { proof: { kind: preuve.kind, strength: preuve.strength, ref: preuve.ref } } : {}),
+      };
+    });
+};

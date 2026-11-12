@@ -12,7 +12,7 @@ import { append, badge, button, code, details, field, h, kv, line, list, note, p
 import { finishRun, getCurrentStep, recordStep, reportDeviation, resumeRun, startRun } from "../src/core/run/runs";
 import { citeRun, renderTraceMarkdown } from "../src/core/trace/trace";
 import { evidenceRule, STRENGTH_ORDER } from "../src/integrations/preuve-a-l-appui";
-import type { Evidence, EvidenceStrength, RunOutcome, StepOutcome } from "../src/core/types";
+import type { Evidence, EvidenceStrength, Run, RunOutcome, StepOutcome } from "../src/core/types";
 import type { Rerender } from "./types";
 
 const EVIDENCE_REFS: Record<EvidenceStrength, string> = {
@@ -109,6 +109,29 @@ const resume = async (state: AppState, out: HTMLElement, rerender: Rerender): Pr
   await renderCurrent(state, out, rerender);
 };
 
+/**
+ * Les étapes déjà franchies, avec **la preuve** qui atteste leur passage.
+ *
+ * C'est la règle du produit appliquée à l'écran : une étape close sans preuve
+ * est signalée en rouge, jamais comptée comme acquittée. Le lecteur voit ce qui
+ * a été fait ET ce qui le prouve.
+ */
+const etapesFranchies = (run: Run): HTMLElement => {
+  const franchies = run.steps.filter((s) => s.state === "done" || s.state === "failed" || s.state === "skipped");
+  if (!franchies.length) return h("div", {});
+  const lignes = franchies.map((s) => [
+    s.stepId,
+    s.state,
+    s.evidence
+      ? `${s.evidence.kind} · force ${s.evidence.strength} · ${s.evidence.ref}`
+      : badge("AUCUNE PREUVE", "ko"),
+  ]);
+  return details(
+    `Preuves des étapes franchies (${franchies.length})`,
+    table(["Étape", "État", "Preuve"], lignes),
+  );
+};
+
 const renderCurrent = async (state: AppState, out: HTMLElement, rerender: Rerender): Promise<void> => {
   if (!state.runId) return;
   const res = await getCurrentStep(state.deps, state.runId);
@@ -145,6 +168,7 @@ const renderCurrent = async (state: AppState, out: HTMLElement, rerender: Rerend
       button("Sauter", () => void record(state, "skipped", true, out, rerender)),
       button("Déclarer une déviation", () => void deviate(state, step.id, out)),
     ),
+    etapesFranchies(run),
     run.deviations.length
       ? details(`Déviations de cette exécution (${run.deviations.length})`, table(["Origine", "Étape", "Ce qui a été fait", "Pourquoi"], run.deviations.map((d) => [d.origin, d.stepId ?? "—", d.whatHappened, d.why])))
       : null,

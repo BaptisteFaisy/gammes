@@ -9,7 +9,7 @@ import { ok, type Result } from "../core/result";
 import { buildTrace } from "../core/trace/trace";
 import { startRun } from "../core/run/runs";
 import { findProcedure } from "../core/mcp/search";
-import { panelState, panelTraces } from "../ui/issue-panel/panel-model";
+import { panelState, panelSteps, panelTraces } from "../ui/issue-panel/panel-model";
 import type { ActorKind } from "../core/types";
 import type { ActionPayload } from "./actions";
 
@@ -38,6 +38,10 @@ export const panelActions = (deps: Deps) => ({
     return ok({ issueKey: p.issueKey, traces });
   },
 
+  /** Les étapes de la gamme : preuve attendue et preuve acquittée, étape par étape. */
+  issuePanelSteps: async (p: ActionPayload & { code: string }): Promise<Result<unknown>> =>
+    ok({ code: p.code, steps: await panelSteps(deps, { code: p.code, runId: p.runId ? String(p.runId) : undefined }) }),
+
   /** Les traces résumées (sans identité d'acteur) : la liste courte de l'encart. */
   issuePanelHistory: async (p: ActionPayload & { issueKey: string }): Promise<Result<unknown>> =>
     ok({ issueKey: p.issueKey, traces: await panelTraces(deps, p.issueKey) }),
@@ -62,6 +66,7 @@ export const panelActions = (deps: Deps) => ({
 export const panelKeys = [
   "issuePanel",
   "issuePanelState",
+  "issuePanelSteps",
   "issuePanelTraces",
   "issuePanelHistory",
   "issuePanelStart",
