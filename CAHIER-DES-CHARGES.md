@@ -514,7 +514,7 @@ Sacrifiables dans l'ordre : l'atelier visuel (le registre porte la même informa
 | Secret publié par une gamme | Détecteurs avant publication, verrou bloquant, aucun secret en base ni dans les exports |
 | Statistiques lues comme un classement | Aucune donnée par personne, seuils d'effectif, déviations qualifiant les étapes |
 | Conflit avec les outils d'automatisation existants | Le produit ne remplace pas un moteur d'exécution : il structure, verrouille et trace — il peut outiller n'importe lequel |
-| Délai de revue Marketplace | Soumission au listing dès le 16 décembre, ticket de revue fourni comme preuve |
+| Délai de revue Marketplace | Soumission au listing avant le 22 décembre (délai Devpost), ticket de revue fourni comme preuve |
 
 ## 30. La vision poussée à l'extrême
 
