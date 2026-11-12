@@ -20,6 +20,7 @@ un test, un fichier), **la vérification** est la commande qui le confirme.
 | 7 | **GA-16** : l'encart Jira — gamme applicable, démarrage lié au ticket, traces | [PR #30](https://github.com/BaptisteFaisy/gammes/pull/30) · [run `ci`](https://github.com/BaptisteFaisy/gammes/actions/runs/43241975889) | `npx vitest run test/surfaces/issue-panel.test.ts` |
 | 8 | **GA-17** : la macro Confluence — les trois situations du § 10, l'âge de l'écart | [PR #32](https://github.com/BaptisteFaisy/gammes/pull/32) · [run `ci`](https://github.com/BaptisteFaisy/gammes/actions/runs/43243053935) | `npx vitest run test/surfaces/macro.test.ts` |
 | 9 | **Une preuve par étape** : la démo et l'encart montrent la preuve attendue et la preuve laissée | ce PR · `test/seed/preuves.test.ts` | `npx vitest run test/seed/preuves.test.ts` |
+| 10 | **La preuve à l'écran de la démo** : chaque étape affiche sa carte de preuve (à regarder / constaté) et met en avant l'élément qui la prouve | ce PR · `web/proof.ts` · `web/tour.ts` | `npm run demo` puis lire l'encart, ou `npx vitest run test/demo/preuve.test.ts` |
 
 ## Les trois preuves qui ne se réinventent pas
 
