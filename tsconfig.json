@@ -16,8 +16,7 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
-    "types": ["node"],
-    "noEmit": true
+    "types": ["node"]
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "test/**/*.ts", "scripts/**/*.ts", "web/**/*.ts"],
   "exclude": ["node_modules", "dist", "web/dist", "web/vite.config.ts"]

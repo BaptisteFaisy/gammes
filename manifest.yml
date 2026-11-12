@@ -20,7 +20,7 @@ modules:
     - key: gammes-validator-fn
       handler: validator.handler
 
-  resolver:
+  remote:
     - key: gammes-resolver
       function: gammes-fn
 
@@ -257,10 +257,10 @@ modules:
 
 resources:
   - key: main
-    path: static/main/index.html
+    path: static/main
 
 app:
-  id: ari:cloud:ecosystem::app/00000000-0000-0000-0000-000000000000
+  id: ari:cloud:ecosystem::app/0af99e1d-b8f8-494e-85c2-e51cd20cad4a
   runtime:
     name: nodejs22.x
 
@@ -269,27 +269,23 @@ permissions:
     - read:confluence-content.all
     - write:confluence-content
     - read:confluence-props
+    - read:space:confluence
     - write:confluence-props
-    - read:confluence-space
     - read:confluence-user
     - read:confluence-content.permission
     - storage:app
     - read:attachment:confluence
+    - read:graph:page:confluence
+    - read:graph:project:atlassian
     - read:issue-details:jira
-    - write:issue-details:jira
     - read:jira-work
     - write:jira-work
+    - write:issue:jira
     - manage:jira-configuration
-    - read:graph:document
-    - read:graph:project
-    - read:graph:software-service
-    - read:rovo:teamwork-graph
-    - execute:rovo:actions
-    - llm:public-models
   content:
     styles:
       - unsafe-inline
   external:
     fetch:
       client:
-        - api.inferhub.dev
+        - address: api.inferhub.dev
