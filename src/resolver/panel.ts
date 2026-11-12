@@ -27,4 +27,7 @@ export const panelActions = (deps: Deps) => ({
   },
 });
 
+/** Clés d'actions de ce groupe : le lot propriétaire n'édite que ce fichier. */
+export const panelKeys = ["issuePanel", "issuePanelTraces"] as const;
+
 export type PanelActions = ReturnType<typeof panelActions>;

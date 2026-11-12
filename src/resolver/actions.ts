@@ -17,9 +17,9 @@ import { coverageDetail } from "../core/coverage/coverage";
 import { detectConflicts } from "../core/conflicts/detect";
 import { detectGhosts } from "../core/ghosts/ghosts";
 import { getCurrentStep } from "../core/run/runs";
-import { panelActions, type PanelActions } from "./panel";
-import { macroActions, type MacroActions } from "./macro";
-import { jiraActions, type JiraActions } from "./jira";
+import { panelActions, panelKeys, type PanelActions } from "./panel";
+import { macroActions, macroKeys, type MacroActions } from "./macro";
+import { jiraActions, jiraKeys, type JiraActions } from "./jira";
 import { checkSync, markSourceGone } from "../core/binding/binding";
 import { persistStepStats } from "../core/stats/step-stats";
 import { proposeFromTraces } from "../core/amendments/amendments";
@@ -104,6 +104,24 @@ export type SurfaceActions = PanelActions & MacroActions & JiraActions;
 
 export type Actions = ReturnType<typeof createActions>;
 export type ActionKey = keyof Actions;
+
+/** Clés du cœur (atelier, gamme, MCP, exécutions, déclencheurs). */
+export const CORE_KEYS = [
+  "mcp", "atelier", "gamme", "run", "stats", "conflicts", "ghosts", "nightly", "pageEvent",
+] as const;
+
+/**
+ * Toutes les clés d'actions du resolver, composées depuis les groupes : un lot
+ * qui ajoute une action n'édite que son propre module (`panel.ts`, `macro.ts`,
+ * `jira.ts`) — jamais ce fichier ni `index.ts`. La cohérence entre cette liste
+ * et `createActions` est vérifiée par `test/surfaces/action-keys.test.ts`.
+ */
+export const ACTION_KEYS: readonly ActionKey[] = [
+  ...CORE_KEYS,
+  ...panelKeys,
+  ...macroKeys,
+  ...jiraKeys,
+];
 
 /** Langue demandée par l'appelant (les rendus sont bilingues). */
 export const requestedLang = (p: ActionPayload): Lang => langOf(p);
