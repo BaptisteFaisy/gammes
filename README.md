@@ -6,7 +6,7 @@
 ## 🔗 Démo en ligne (accessible à tous)
 
 **https://baptistefaisy.github.io/gammes/** — le produit complet qui tourne dans le navigateur,
-en **16 écrans** : vue d'ensemble de l'atelier, détection des candidates (scores et raisons),
+en **20 écrans** : vue d'ensemble de l'atelier, détection des candidates (scores et raisons),
 compilation (étapes citant leur passage source, verrous, secrets écartés, étapes non falsifiables,
 diff), fiche de gamme (toute la structure du § 7, versions immuables, cycle de vie, effet réel des
 verrous sur un humain et sur un agent), « avant d'agir » (le verdict rendu à un agent ou à un CI),
@@ -14,13 +14,14 @@ déroulé pas à pas (preuves, refus, déviations, reprise, mode urgence, trace 
 page ↔ gamme (désynchronisation, âge de l'écart, recompilation, page disparue), mesures (taux avec
 effectif et fourchette, comparaison de versions, étapes délégables), amendements, conflits et
 conciliateur hermes, gammes fantômes et adoption, les 16 outils MCP avec un appelant interactif,
-export `SKILL.md` téléchargeable, encarts Jira et macro Confluence, journal d'audit append-only,
-réglages d'espace.
+export `SKILL.md` téléchargeable, encarts Jira et macro Confluence, **le tableau de preuves**
+(pour chaque étape : la preuve attendue, les preuves réellement laissées, et l'extrait que le
+juge peut lire), journal d'audit append-only, réglages d'espace.
 
 Le vrai cœur TypeScript (`src/core`) tourne dans le navigateur, sur un magasin en mémoire.
 Source dans [`web/`](web/), déployé par GitHub Pages ([`.github/workflows/web.yml`](.github/workflows/web.yml)).
 
-**Deux façons de passer sur du réel** (écran « 16 · Modèle réel » et « 17 · Tes données réelles »,
+**Deux façons de passer sur du réel** (écran « 17 · Modèle réel » et « 18 · Tes données réelles »,
 détails dans [`docs/MODELE-REEL.md`](docs/MODELE-REEL.md)) :
 
 - **un vrai modèle** — ta propre clé (InferHub, OpenRouter : CORS ouvert, appel direct) ou le proxy

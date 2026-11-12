@@ -123,7 +123,10 @@ const etapesFranchies = (run: Run): HTMLElement => {
     s.stepId,
     s.state,
     s.evidence
-      ? `${s.evidence.kind} · force ${s.evidence.strength} · ${s.evidence.ref}`
+      ? details(
+          `${s.evidence.kind} · force ${s.evidence.strength} · ${s.evidence.ref}`,
+          h("div", { class: "out" }, s.evidence.note ? code(s.evidence.note) : note("aucun extrait", "info")),
+        )
       : badge("AUCUNE PREUVE", "ko"),
   ]);
   return details(
