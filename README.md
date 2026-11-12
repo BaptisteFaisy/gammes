@@ -3,6 +3,15 @@
 > **Procédures packagées** · Atlassian Forge (Confluence + Jira) · Codegeist 2026, catégorie *Apps for Software Teams*
 > **Your wiki already knows how to do everything. Your agents don't.**
 
+## 🔗 Démo en ligne (accessible à tous)
+
+**https://baptistefaisy.github.io/gammes/** — le produit complet qui tourne dans le navigateur :
+détection des pages, compilation en gamme, approbation, exécution pas à pas avec les verrous
+(humain / permis / secret) et les refus, trace citable, statistiques, amendements, conciliateur
+de conflits, gammes fantômes, export `SKILL.md`. Aucun réseau, aucune donnée réelle : le vrai
+cœur TypeScript sur un magasin en mémoire. Source dans [`web/`](web/), déployé par GitHub Pages
+([`.github/workflows/web.yml`](.github/workflows/web.yml)).
+
 Une page de procédure Confluence est de la prose : les humains la survolent, les agents ne la lisent
 pas, et personne ne sait quelle version a été suivie le jour de l'incident. **Gammes compile cette
 page en gamme exécutable** — étapes, entrées typées, preuves attendues, verrous, version immuable —
