@@ -16,7 +16,7 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, extname } from "node:path";
 
 const ROOT = process.cwd();
-const SCAN_DIRS = ["src", "test", "scripts"];
+const SCAN_DIRS = ["src", "test", "scripts", "web"];
 const SOURCE_EXT = new Set([".ts", ".tsx", ".mjs"]);
 const MAX_FILE_LINES = 500;
 const MAX_FUNC_LINES = 50;
