@@ -64,6 +64,15 @@ export type Step = {
   /** Ajout du modèle sur prose ambiguë : la raison est toujours visible. */
   readonly inferredBy?: "rule" | "model";
   readonly inferredReason?: string;
+  /** Une étape composée appelle une autre gamme (GA-32), acquittée par sa trace. */
+  readonly subGamme?: SubGammeRef;
+};
+
+/** Référence vers une gamme appelée par une étape composée (GA-32). */
+export type SubGammeRef = {
+  readonly code: string;
+  /** Version précise, ou la version courante au lancement. */
+  readonly version?: number;
 };
 
 export type InputType = "string" | "number" | "boolean" | "enum" | "date" | "ref";

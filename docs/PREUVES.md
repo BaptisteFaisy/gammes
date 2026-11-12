@@ -21,6 +21,9 @@ un test, un fichier), **la vérification** est la commande qui le confirme.
 | 8 | **GA-17** : la macro Confluence — les trois situations du § 10, l'âge de l'écart | [PR #32](https://github.com/BaptisteFaisy/gammes/pull/32) · [run `ci`](https://github.com/BaptisteFaisy/gammes/actions/runs/43243053935) | `npx vitest run test/surfaces/macro.test.ts` |
 | 9 | **Une preuve par étape** : la démo et l'encart montrent la preuve attendue et la preuve laissée | ce PR · `test/seed/preuves.test.ts` | `npx vitest run test/seed/preuves.test.ts` |
 | 10 | **La preuve à l'écran de la démo** : chaque étape affiche sa carte de preuve (à regarder / constaté) et met en avant l'élément qui la prouve | ce PR · `web/proof.ts` · `web/tour.ts` | `npm run demo` puis lire l'encart, ou `npx vitest run test/demo/preuve.test.ts` |
+| 11 | **GA-30 — publication inter-espaces** : instantané d'une version immuable vers un autre espace/org, acte humain daté, réversible sans suppression | ce lot · `src/core/publish/publish.ts` | `npx vitest run test/publication/publication.test.ts` |
+| 12 | **GA-31 — connecteur de graphe** : l'app lit (GA-27), l'app jumelle grave ; proposition humaine, gravure datée avec récépissé | ce lot · `src/core/graph-connect/graph-connector.ts` | `npx vitest run test/graph-connect/graph-connector.test.ts` |
+| 13 | **GA-32 — gammes composées** : une étape `subGamme` acquittée par la trace close de son enfant, jamais à la main | ce lot · `src/core/composite/composite.ts` | `npx vitest run test/composite/composite.test.ts` |
 
 ## Les trois preuves qui ne se réinventent pas
 

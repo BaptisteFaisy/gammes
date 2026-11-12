@@ -27,7 +27,9 @@ import type {
   Gamme,
   GammeVersion,
   GhostCandidate,
+  GraphLinkProposal,
   PermitCheck,
+  Publication,
   Run,
   SecretFinding,
   SpaceSettings,
@@ -55,6 +57,8 @@ const TABLES = {
   candidates: "candidate_page",
   settings: "space_settings",
   deviations: "deviation",
+  publications: "publication",
+  graphLinks: "graph_link",
 } as const;
 
 const query = async <T>(statement: string, params: readonly unknown[] = []): Promise<T> => {
@@ -154,6 +158,8 @@ export const forgeSqlStore = (): Store => ({
   candidates: sqlCollection<CandidatePage>(TABLES.candidates, (c) => c.id),
   settings: sqlCollection<SpaceSettings>(TABLES.settings, (s) => s.spaceKey),
   deviations: sqlCollection<Deviation>(TABLES.deviations, (d) => d.id),
+  publications: sqlCollection<Publication>(TABLES.publications, (p) => p.id),
+  graphLinks: sqlCollection<GraphLinkProposal>(TABLES.graphLinks, (l) => l.id),
   appendEvent: async (event) => {
     const at = event.at;
     const full: DomainEvent = { ...event, id: eventId(event.kind, at) };

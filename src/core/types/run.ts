@@ -47,6 +47,8 @@ export type RunStep = {
   readonly evidence?: Evidence;
   readonly refusedReason?: string;
   readonly attempts: number;
+  /** Quand l'étape est une gamme composée : l'exécution enfant qui l'acquitte. */
+  readonly subRunId?: string;
   readonly durationS?: number;
 };
 
@@ -88,6 +90,9 @@ export type Run = {
   readonly emergencyReason?: string;
   readonly emergencyReviewDueAt?: string;
   readonly resumedCount: number;
+  /** Exécution enfant d'une étape composée : elle pointe vers son parent. */
+  readonly parentRunId?: string;
+  readonly parentStepId?: string;
   readonly steps: readonly RunStep[];
   readonly deviations: readonly Deviation[];
   readonly links: readonly TraceLink[];

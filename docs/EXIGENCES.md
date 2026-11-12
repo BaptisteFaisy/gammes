@@ -34,9 +34,9 @@ Lot : voir [`CONTRATS.md`](CONTRATS.md). État mis à jour par l'intégrateur à
 | GA-27 | Lecture du graphe pour le périmètre et le propriétaire (`document`, `software-service`, `project`) | S | E | ✅ faite | `src/integrations/graph.ts` (droit manquant = vide sans erreur) |
 | GA-28 | Étapes non falsifiables détectées, avec reformulation proposée | S | A | ✅ faite | `src/core/falsifiable/falsifiability.ts` |
 | GA-29 | Exécution en mode dégradé d'urgence, avec raison et revue différée obligatoire | S | B | ✅ faite | mode `emergency` : raison écrite + revue différée à 7 jours |
-| GA-30 | Publication de gammes vers d'autres espaces ou organisations | C | — | ⬜ à faire | — |
-| GA-31 | Connecteur de graphe (app jumelle) pour graver les gammes comme documents reliés | C | F | ⬜ à faire | — |
-| GA-32 | Ordonnancement de gammes composées (une gamme qui appelle une gamme) | C | — | ⬜ à faire | — |
+| GA-30 | Publication de gammes vers d'autres espaces ou organisations | C | — | ✅ faite | `src/core/publish/publish.ts` + 6 tests : instantané d'une version immuable, acte humain daté |
+| GA-31 | Connecteur de graphe (app jumelle) pour graver les gammes comme documents reliés | C | F | ✅ faite | `src/core/graph-connect/graph-connector.ts` + 5 tests : l'app lit (GA-27), l'app jumelle grave (récépissé daté) |
+| GA-32 | Ordonnancement de gammes composées (une gamme qui appelle une gamme) | C | — | ✅ faite | `src/core/composite/composite.ts` + 5 tests : sous-exécution épinglée, acquittée par la trace close de l'enfant |
 
 Légende des états : ⬜ à faire · 🟨 en cours (PR ouverte) · ✅ faite et testée · ⛔ sacrifiée (assumé).
 

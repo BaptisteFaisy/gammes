@@ -171,6 +171,28 @@ CREATE TABLE IF NOT EXISTS space_settings (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS publication (
+  id text PRIMARY KEY,
+  doc jsonb NOT NULL,
+  gamme_id text GENERATED ALWAYS AS (doc ->> 'gammeId') STORED,
+  code text GENERATED ALWAYS AS (doc ->> 'code') STORED,
+  state text GENERATED ALWAYS AS (doc ->> 'state') STORED,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_publication_gamme ON publication (gamme_id);
+CREATE INDEX IF NOT EXISTS idx_publication_state ON publication (state);
+
+CREATE TABLE IF NOT EXISTS graph_link (
+  id text PRIMARY KEY,
+  doc jsonb NOT NULL,
+  gamme_id text GENERATED ALWAYS AS (doc ->> 'gammeId') STORED,
+  link_kind text GENERATED ALWAYS AS (doc ->> 'linkKind') STORED,
+  state text GENERATED ALWAYS AS (doc ->> 'state') STORED,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_graph_link_gamme ON graph_link (gamme_id);
+CREATE INDEX IF NOT EXISTS idx_graph_link_state ON graph_link (state);
+
 -- Journal append-only : aucun UPDATE, aucun DELETE (les traces ne s'effacent pas).
 CREATE TABLE IF NOT EXISTS domain_event (
   id text PRIMARY KEY,

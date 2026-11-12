@@ -21,7 +21,9 @@ import type {
   Gamme,
   GammeVersion,
   GhostCandidate,
+  GraphLinkProposal,
   PermitCheck,
+  Publication,
   Run,
   SecretFinding,
   SpaceSettings,
@@ -78,6 +80,8 @@ export const memoryStore = (): Store => {
     candidates: makeCollection<CandidatePage>(),
     settings,
     deviations: makeCollection<Deviation>(),
+    publications: makeCollection<Publication>(),
+    graphLinks: makeCollection<GraphLinkProposal>(),
     appendEvent: async (event) => {
       eventSeq += 1;
       const full: DomainEvent = { ...event, id: `evt_${eventSeq.toString(36)}` };
