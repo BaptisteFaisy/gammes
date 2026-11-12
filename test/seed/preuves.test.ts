@@ -45,6 +45,7 @@ describe("la démo : une preuve par étape franchie", () => {
       for (const etape of run.steps.filter((s) => s.state === "done" || s.state === "failed")) {
         expect(etape.evidence, `${run.id}/${etape.stepId}`).toBeDefined();
         expect(etape.evidence?.ref).toBeTruthy();
+        expect(etape.evidence?.origin).toBe("fixture");
       }
     }
   });
@@ -130,6 +131,9 @@ describe("l'encart : la preuve attendue et la preuve laissée", () => {
     const etapes = await panelSteps(deps, { code: compiled.value.gamme.code, runId: started.value.run.id });
     const franchie = etapes.find((e) => e.stepId === premiere.id);
     expect(franchie?.proof?.ref).toBe("https://ci.example.internal/build/4242");
+    // La preuve vient d'une vraie exécution : elle est « réelle », pas une fixture.
+    const enregistree = (await deps.store.runs.get(started.value.run.id))!.steps.find((st) => st.stepId === premiere.id);
+    expect(enregistree?.evidence?.origin).toBe("real");
     const suivante = etapes.find((e) => e.stepId !== premiere.id);
     expect(suivante?.proof).toBeUndefined();
   });
