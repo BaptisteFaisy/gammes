@@ -186,13 +186,26 @@ export const seedSettings = async (deps: Deps): Promise<void> => {
 /** Trace synthétique : `n` exécutions dont `failures` en échec sur `stepId`. */
 export const seedTraces = async (
   deps: Deps,
-  args: { gammeId: string; code: string; versionId: string; n: number; failures: number; stepId: string; startedAt?: string },
+  args: {
+    gammeId: string; code: string; versionId: string; n: number; failures: number; stepId: string;
+    startedAt?: string;
+    /** Ordre des étapes de la version : les étapes après un échec ne sont pas atteintes. */
+    stepIds?: readonly string[];
+  },
 ): Promise<void> => {
+  const order = args.stepIds ?? [args.stepId];
+  const failIndex = order.indexOf(args.stepId);
   for (let i = 0; i < args.n; i += 1) {
     const failed = i < args.failures;
-    const steps: RunStep[] = [
-      { stepId: args.stepId, state: failed ? "failed" : "done", attempts: 1, startedAt: args.startedAt ?? T0, ...(failed ? {} : { durationS: 120 }) },
-    ];
+    const steps: RunStep[] = order.map((stepId, index) => {
+      if (stepId === args.stepId) {
+        return { stepId, state: failed ? "failed" : "done", attempts: 1, startedAt: args.startedAt ?? T0, ...(failed ? {} : { durationS: 120 }) };
+      }
+      if (failed && failIndex >= 0 && index > failIndex) {
+        return { stepId, state: "pending", attempts: 0 };
+      }
+      return { stepId, state: "done", attempts: 1, startedAt: args.startedAt ?? T0, durationS: 120 };
+    });
     const run: Run = {
       id: `run_seed_${args.versionId}_${i}`,
       gammeId: args.gammeId,

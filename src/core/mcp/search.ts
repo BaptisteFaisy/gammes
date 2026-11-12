@@ -56,7 +56,9 @@ const scoreGamme = (gamme: Gamme, queryTokens: readonly string[], service?: stri
     confidence += 0.2;
     reasons.push("le code de gamme correspond");
   }
-  if (gamme.state === "approved") {
+  // Le bonus « approuvée » ne vaut que si la gamme a vraiment Correspondence :
+  // sinon toute gamme approuvée remonterait comme candidate, même sans rapport.
+  if (confidence > 0 && gamme.state === "approved") {
     confidence += 0.1;
     reasons.push("gamme approuvée");
   }

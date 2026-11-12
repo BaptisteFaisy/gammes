@@ -105,3 +105,35 @@ body {
 .loading { color: var(--muted); }
 strong { color: var(--ink); }
 code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px; color: #cdd3df; }
+
+/* ---- Démo guidée ---- */
+.notebarun { display: flex; align-items: center; gap: 10px; margin: 6px 0 14px; }
+.notebarun .muted { font-size: 13px; }
+
+.tour {
+  position: fixed; right: 16px; bottom: 16px; width: 390px; max-width: calc(100vw - 32px);
+  background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, .45); z-index: 40; overflow: hidden;
+}
+.tourhead { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+.tourstatus { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.tourstatus.ok { color: var(--ok); }
+.tourstatus.ko { color: var(--ko); }
+.tourstatus.run { color: var(--accent); }
+.tourprogress { padding: 10px 12px 0; }
+.tourbar { height: 4px; background: #232833; border-radius: 999px; overflow: hidden; }
+.tourfill { display: block; height: 100%; background: var(--accent); transition: width .4s ease; }
+.tourstep { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 13.5px; }
+.tourexpect { color: var(--muted); font-size: 12px; margin-top: 2px; }
+.tourlog { max-height: 240px; overflow-y: auto; padding: 8px 12px 12px; }
+.tourline { display: flex; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--line); font-size: 12.5px; }
+.tourline:last-child { border-bottom: 0; }
+.tourline.ko .tourmark { color: var(--ko); }
+.tourmark { color: var(--ok); font-weight: 700; }
+.tourproof { display: block; color: var(--muted); }
+
+.tourcat { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.tourcat:last-child { border-bottom: 0; }
+.tourcatnum { color: var(--accent); font-weight: 700; min-width: 24px; font-variant-numeric: tabular-nums; }
+.tourcatbody { flex: 1; }
+.tourgachips { display: flex; gap: 5px; margin-top: 4px; flex-wrap: wrap; }
