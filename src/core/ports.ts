@@ -20,6 +20,8 @@ import type {
   IssueDigest,
   PageDigest,
   PermitCheck,
+  Publication,
+  GraphLinkProposal,
   Run,
   SecretFinding,
   SpaceSettings,
@@ -172,7 +174,13 @@ export type DomainEventKind =
   | "ghost.proposed"
   | "secret.found"
   | "skill.exported"
-  | "stats.computed";
+  | "stats.computed"
+  | "publication.proposed"
+  | "publication.decided"
+  | "graph.link_proposed"
+  | "graph.link_engraved"
+  | "run.subrun_started"
+  | "run.subrun_completed";
 
 export type DomainEvent = {
   readonly id: string;
@@ -202,6 +210,10 @@ export interface Store {
   readonly settings: Collection<SpaceSettings>;
   /** Déviations : table à part, comme au § 21. */
   readonly deviations: Collection<Deviation>;
+  /** Publications inter-espaces (GA-30). */
+  readonly publications: Collection<Publication>;
+  /** Liens de graphe proposés/gravés par l'app jumelle (GA-31). */
+  readonly graphLinks: Collection<GraphLinkProposal>;
   appendEvent(event: Omit<DomainEvent, "id">): Promise<DomainEvent>;
   events(filter?: (e: DomainEvent) => boolean): Promise<readonly DomainEvent[]>;
 }

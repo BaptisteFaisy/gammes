@@ -33,6 +33,8 @@ export type StartRunArgs = {
   readonly ticketRef?: string;
   readonly mode?: RunMode;
   readonly emergencyReason?: string;
+  /** Version précise à épingler (gammes composées, GA-32). */
+  readonly version?: number;
 };
 
 export type RunStart = {
@@ -138,7 +140,7 @@ export const startRun = async (deps: Deps, args: StartRunArgs): Promise<Result<R
     return fail("unknown_gamme", `Gamme ${args.code} introuvable.`, `Gammes ${args.code} not found.`, { code: args.code });
   }
   if (!isInvocable(gamme)) return refusals.notApproved(gamme.code, gamme.state);
-  const versionRes = await getVersion(deps, args.code);
+  const versionRes = await getVersion(deps, args.code, args.version);
   if (!versionRes.ok) return versionRes;
   const version = versionRes.value;
   if (version.steps.length === 0) {

@@ -282,3 +282,53 @@ export type IssueDigest = {
   readonly commentBodies: readonly string[];
   readonly assigneeCount: number;
 };
+
+// ---------------------------------------------------------------------------
+// Publication inter-espaces (GA-30) et connecteur de graphe (GA-31)
+// ---------------------------------------------------------------------------
+
+/** Destination d'une publication : un espace, éventuellement d'une autre org. */
+export type PublicationTarget = {
+  readonly siteAri: string;
+  readonly spaceKey: string;
+  readonly organization?: string;
+};
+
+export type PublicationState = "proposed" | "accepted" | "rejected" | "revoked";
+
+/** Une gamme publiée : un instantané d'une version immuable, jamais un lien vivant. */
+export type Publication = {
+  readonly id: string;
+  readonly gammeId: string;
+  readonly versionId: string;
+  readonly code: string;
+  readonly target: PublicationTarget;
+  readonly reason: string;
+  readonly requestedBy: ActorRef;
+  readonly state: PublicationState;
+  readonly requestedAt: string;
+  readonly decidedAt?: string;
+  readonly decidedByRef?: string;
+  /** Référence de la copie reçue côté destinataire. */
+  readonly receiptRef?: string;
+};
+
+/** Ce que grave le connecteur de graphe : une gamme reliée à un objet. */
+export type GraphLinkKind = "software-service" | "project" | "parent-gamme";
+
+export type GraphLinkProposal = {
+  readonly id: string;
+  readonly gammeId: string;
+  readonly code: string;
+  readonly linkKind: GraphLinkKind;
+  readonly targetRef: string;
+  readonly reason: string;
+  readonly state: "proposed" | "engraved" | "dismissed";
+  readonly proposedAt: string;
+  readonly proposedByRef: string;
+  readonly engravedAt?: string;
+  /** L'app jumelle qui a gravé le lien dans le graphe (§ 16, GA-31). */
+  readonly engravedBy?: string;
+  /** Preuve de gravure : l'identifiant du lien reçu en retour. */
+  readonly receiptRef?: string;
+};

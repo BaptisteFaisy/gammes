@@ -30,6 +30,13 @@ export type ErrorCode =
   | "not_enough_history"
   | "conflict_unresolved"
   | "approval_requires_human"
+  | "unknown_publication"
+  | "unknown_graph_link"
+  | "publication_state"
+  | "graph_link_state"
+  | "composite_requires_subrun"
+  | "subrun_not_started"
+  | "subrun_not_finished"
   | "internal";
 
 export type AppError = {

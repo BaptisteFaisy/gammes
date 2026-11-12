@@ -108,6 +108,14 @@ export const recordStep = async (deps: Deps, args: RecordStepArgs): Promise<Resu
     const refusal = refusals.stepNotCurrent(args.stepId, current.stepId);
     return ok({ accepted: false, refusal: refusal.error });
   }
+  if (step.subGamme) {
+    return fail(
+      "composite_requires_subrun",
+      `Étape ${step.id} est une gamme composée : elle s'acquitte par la trace de sa sous-exécution, pas à la main.`,
+      `Step ${step.id} is a composite gamme: it is completed by its sub-run trace, not by hand.`,
+      { stepId: step.id },
+    );
+  }
   if (args.outcome === "skipped" && !args.reason?.trim()) {
     return fail(
       "input_missing",

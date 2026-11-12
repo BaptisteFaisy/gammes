@@ -14,12 +14,14 @@ import type {
   Gamme,
   GammeScope,
   GammeVersion,
+  GraphLinkProposal,
   InputSpec,
+  IssueDigest,
   PageDigest,
+  Publication,
   SourceSpan,
   Step,
   StepLock,
-  IssueDigest,
 } from "../src/core/types";
 import { memoryStore } from "../src/platform/memory-store";
 import { fixedClock } from "../src/platform/clock";
@@ -104,6 +106,7 @@ export const makeStep = (over: Partial<Step> = {}): Step => ({
   ...(over.rewording !== undefined ? { rewording: over.rewording } : {}),
   ...(over.inferredBy !== undefined ? { inferredBy: over.inferredBy } : {}),
   ...(over.inferredReason !== undefined ? { inferredReason: over.inferredReason } : {}),
+  ...(over.subGamme !== undefined ? { subGamme: over.subGamme } : {}),
 });
 
 export const makeInput = (over: Partial<InputSpec> = {}): InputSpec => ({
@@ -166,6 +169,36 @@ export const makeGamme = (over: Partial<Gamme> = {}): Gamme => ({
   ...(over.reviewDueAt !== undefined ? { reviewDueAt: over.reviewDueAt } : {}),
   ...(over.deprecatedAt !== undefined ? { deprecatedAt: over.deprecatedAt } : {}),
   ...(over.replacedBy !== undefined ? { replacedBy: over.replacedBy } : {}),
+});
+
+export const makePublication = (over: Partial<Publication> = {}): Publication => ({
+  id: over.id ?? "pub_1",
+  gammeId: over.gammeId ?? "gam_1",
+  versionId: over.versionId ?? "ver_1",
+  code: over.code ?? "GAM-deploy-01",
+  target: over.target ?? { siteAri: "ari:cloud:confluence:site/2", spaceKey: "ALLO" },
+  reason: over.reason ?? "Harmoniser la gamme dans la zone de service.",
+  requestedBy: over.requestedBy ?? human(),
+  state: over.state ?? "proposed",
+  requestedAt: over.requestedAt ?? T0,
+  ...(over.decidedAt !== undefined ? { decidedAt: over.decidedAt } : {}),
+  ...(over.decidedByRef !== undefined ? { decidedByRef: over.decidedByRef } : {}),
+  ...(over.receiptRef !== undefined ? { receiptRef: over.receiptRef } : {}),
+});
+
+export const makeGraphLink = (over: Partial<GraphLinkProposal> = {}): GraphLinkProposal => ({
+  id: over.id ?? "gl_1",
+  gammeId: over.gammeId ?? "gam_1",
+  code: over.code ?? "GAM-deploy-01",
+  linkKind: over.linkKind ?? "software-service",
+  targetRef: over.targetRef ?? "ari:cloud:graph:software-service/paiements",
+  reason: over.reason ?? "Relier la gamme à son service.",
+  state: over.state ?? "proposed",
+  proposedAt: over.proposedAt ?? T0,
+  proposedByRef: over.proposedByRef ?? "ari:cloud:aaid:demo:ana",
+  ...(over.engravedAt !== undefined ? { engravedAt: over.engravedAt } : {}),
+  ...(over.engravedBy !== undefined ? { engravedBy: over.engravedBy } : {}),
+  ...(over.receiptRef !== undefined ? { receiptRef: over.receiptRef } : {}),
 });
 
 // ---------------------------------------------------------------------------
