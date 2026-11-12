@@ -56,25 +56,71 @@ export const buildPrompt = (conflict: Conflict): string => {
   ].join("\n");
 };
 
+/** Un modèle peut nommer les champs autrement : on accepte les variantes usuelles. */
+const pickText = (o: RawOption, keys: readonly string[]): string | undefined => {
+  for (const key of keys) {
+    const value = asText((o as Record<string, unknown>)[key]);
+    if (value) return value;
+  }
+  return undefined;
+};
+
 const parseOptions = (raw: readonly RawOption[], ids: Deps["ids"]): readonly ConciliationOption[] =>
   raw.slice(0, MAX_OPTIONS).flatMap((o) => {
-    const title = asText(o.title);
-    const detail = asText(o.detail);
+    const title = pickText(o, ["title", "option", "nom", "label"]);
+    const detail = pickText(o, ["detail", "description", "explication"]);
     if (!title || !detail) return [];
     const affects = Array.isArray(o.affects) ? o.affects.flatMap((a) => (asText(a) ? [a as string] : [])) : [];
     return [{ id: ids.next("opt"), title, detail, affects, requiresHuman: true as const }];
   });
 
 /** Analyse défensive : une réponse invalide produit un échec propre, jamais une option inventée. */
+const TITLE_KEYS = ["title", "option", "nom", "label", "intitule", "intitulé"] as const;
+const DETAIL_KEYS = ["detail", "description", "explication", "consequence", "conséquence"] as const;
+
+/**
+ * Le dossier peut être imbriqué, ou nommer ses champs autrement : on ramasse tout objet
+ * qui ressemble à une option (un titre ET un détail), où qu'il soit dans l'arbre.
+ */
+const findOptions = (raw: unknown, depth = 0): readonly RawOption[] => {
+  if (depth > 6) return [];
+  if (Array.isArray(raw)) return raw.flatMap((item) => findOptions(item, depth + 1));
+  if (!raw || typeof raw !== "object") return [];
+  const obj = raw as Record<string, unknown>;
+  const hasTitle = TITLE_KEYS.some((key) => asText(obj[key]));
+  const hasDetail = DETAIL_KEYS.some((key) => asText(obj[key]));
+  if (hasTitle && hasDetail) return [obj as RawOption];
+  const found: RawOption[] = [];
+  for (const value of Object.values(obj)) {
+    found.push(...findOptions(value, depth + 1));
+    if (found.length >= MAX_OPTIONS) break;
+  }
+  return found;
+};
+
+const findSummary = (raw: unknown): string | undefined => {
+  if (!raw || typeof raw !== "object") return undefined;
+  const obj = raw as Record<string, unknown>;
+  for (const key of ["summary", "resume", "résumé", "principe_directeur", "conclusion", "description", "contexte"]) {
+    const value = asText(obj[key]);
+    if (value) return value;
+  }
+  for (const value of Object.values(obj)) {
+    const found = findSummary(value);
+    if (found) return found;
+  }
+  return undefined;
+};
+
 export const parseDossier = (
   text: string,
   ids: Deps["ids"],
 ): { summary: string; options: readonly ConciliationOption[] } | undefined => {
   const raw = parseJsonLoose<RawDossier>(text);
   if (!raw) return undefined;
-  const summary = asText(raw.summary);
-  if (!summary || !Array.isArray(raw.options)) return undefined;
-  const options = parseOptions(raw.options as readonly RawOption[], ids);
+  const summary = findSummary(raw);
+  if (!summary) return undefined;
+  const options = parseOptions(findOptions(raw), ids);
   return options.length >= MIN_OPTIONS ? { summary, options } : undefined;
 };
 

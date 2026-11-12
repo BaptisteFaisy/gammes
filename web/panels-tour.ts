@@ -9,7 +9,8 @@
 import { badge, button, h, kv, line, list, note, panel } from "./dom";
 import type { Navigate } from "./types";
 import { tourCoverage, type TourStep } from "./tour";
-import { TOUR_STEPS } from "./tour-steps";
+import { TOUR_STEPS, TOUR_TESTS } from "./tour-steps";
+import { suiteSummary } from "./preuves";
 import type { Rerender } from "./types";
 
 const screenLabels: Record<string, string> = {
@@ -31,8 +32,9 @@ const screenLabels: Record<string, string> = {
   reglages: "Réglages",
 };
 
-const stepLine = (index: number, step: TourStep): HTMLElement =>
-  h(
+const stepLine = (index: number, step: TourStep): HTMLElement => {
+  const test = TOUR_TESTS[step.id];
+  return h(
     "div",
     { class: "tourcat" },
     h("span", { class: "tourcatnum" }, String(index + 1)),
@@ -42,9 +44,13 @@ const stepLine = (index: number, step: TourStep): HTMLElement =>
       h("strong", {}, step.title),
       h("span", { class: "muted" }, ` · écran : ${screenLabels[step.screen] ?? step.screen}`),
       h("div", { class: "muted" }, step.expect),
+      test
+        ? h("div", { class: "tourtest" }, h("span", { class: "preuvecle" }, "prouvé par le test"), h("code", {}, test.name), h("span", { class: "muted" }, ` · ${test.file}`))
+        : null,
       h("div", { class: "tourgachips" }, ...step.ga.map((ga) => badge(ga, "idle"))),
     ),
   );
+};
 
 export const tourPanel = (start: () => void, rerender: Rerender, go?: Navigate): HTMLElement => {
   const coverage = tourCoverage();
@@ -61,6 +67,7 @@ export const tourPanel = (start: () => void, rerender: Rerender, go?: Navigate):
     ),
     kv("étapes", String(coverage.steps)),
     kv("exigences couvertes", coverage.ga.join(", ")),
+    kv("preuves", suiteSummary()),
     line(
       button("Voir les preuves de chaque étape", () => go?.("preuves"), "primary"),
       h("span", { class: "muted" }, "l'écran 14 liste, pour chaque étape, la preuve attendue et l'extrait que vous pouvez lire"),
