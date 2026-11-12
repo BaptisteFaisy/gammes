@@ -101,12 +101,23 @@ docs/             contrats, architecture, démo, juges, anglais, vidéo, Marketp
 - [`docs/SPEC-EN.md`](docs/SPEC-EN.md) — English summary for the judges.
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — règles de la maison, branches, agents hermes.
 
-## État
+## État (v0.1.0)
 
-| Exigence | Statut |
+| | |
 |---|---|
-| GA-01 … GA-21 (indispensables) | voir [`docs/EXIGENCES.md`](docs/EXIGENCES.md) |
-| GA-22 … GA-29 (souhaitables) | voir [`docs/EXIGENCES.md`](docs/EXIGENCES.md) |
-| GA-30 … GA-32 (après le hackathon) | non commencées |
+| **26 exigences** | faites et testées (GA-01 à GA-14, GA-18 à GA-24, GA-26, GA-27, GA-29) |
+| **3 exigences** | couche données servie, rendu à câbler sur un site Forge (GA-16, GA-17, GA-18) |
+| **1 exigence** | non commencée (GA-25, flux Jira et validateur de transition) |
+| **3 exigences** | après le hackathon (GA-30, GA-31, GA-32) |
+| **189 tests** | `npm run verify` : garde-fous + typecheck + tests, en moins de 2 minutes |
+| **recette § 25** | les 21 points sont automatisés (`test/recette/`) |
+
+Matrice détaillée et à jour : [`docs/EXIGENCES.md`](docs/EXIGENCES.md).
+
+```bash
+npm ci && npm run verify   # 189 tests, vert
+npm run demo               # le scénario complet, en mémoire, sans réseau
+npm run seed               # l'espace de démonstration des juges
+```
 
 Licence MIT — le `SKILL.md` générique est publié en source ouverte, comme le prévoit le bonus MCP.

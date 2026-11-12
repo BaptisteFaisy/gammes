@@ -19,7 +19,7 @@ Lot : voir [`CONTRATS.md`](CONTRATS.md). État mis à jour par l'intégrateur à
 | GA-12 | Verrou de permis : une étape à risque par agent exige un permis valide | M | B | ✅ faite | verrou de permis via le port `PermitRegistry`, recette 9 testée |
 | GA-13 | Export `SKILL.md` par gamme approuvée, et skill générique côté Forge | M | G | ✅ faite | `src/core/export/skill-md.ts` + `skills/derouler-une-gamme/SKILL.md`, recette 17 testée |
 | GA-14 | Outils MCP du § 18 | M | G | ✅ faite | `src/core/mcp/{tools,search}.ts` (16 outils), `test/mcp/tools.test.ts` |
-| GA-15 | Agent Rovo « Le compagnon » | M | H | ⬜ à faire | — |
+| GA-15 | Agent Rovo « Le compagnon » | M | H | ✅ faite | `agents/le-compagnon.md` (les 7 questions du § 18) + `rovo:agent` au manifeste |
 | GA-16 | Encart sur le ticket Jira : quelle gamme s'applique, la démarrer, voir les traces | M | H | ⬜ à faire | — |
 | GA-17 | Macro Confluence dans la page source : état, version, exécutions, fraîcheur | M | H | ⬜ à faire | — |
 | GA-18 | L'atelier : registre des gammes, états, poussières, couverture | M | C | ✅ faite | `src/core/coverage/coverage.ts` + `src/core/stats/workshop.ts` (poussière, atelier) |
