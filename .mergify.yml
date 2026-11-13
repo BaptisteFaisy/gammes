@@ -19,8 +19,9 @@ queue_rules:
     batch_size:
       min: 1
       max: 3
-    batch_max_wait_time: "30 seconds"
+    batch_max_wait_time: "10 seconds"
     max_checks_retries: 1
+    checks_timeout: 5 min
     merge_method: rebase
     update_method: rebase
 
@@ -37,7 +38,7 @@ priority_rules:
 merge_queue:
   # 1 worker self-hosted (R630, label gammes-worker) : la
   # spéculation Mergify reste bornée à 1 : un seul runner, rien à affamer.
-  max_parallel_checks: 1
+  max_parallel_checks: 2
 
 # Auto-queue natif (produit Merge Queue) : évite de dépendre du produit
 # « Workflow Automation » (pull_request_rules), constaté désactivé fin octobre.
