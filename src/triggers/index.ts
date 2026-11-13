@@ -14,7 +14,13 @@ import { createActions } from "../resolver/actions";
 let depsPromise: Promise<Deps> | undefined;
 const deps = (): Promise<Deps> => (depsPromise ??= buildForgeDeps());
 
-type PageEvent = { readonly ari?: string; readonly page?: { readonly ari?: string }; readonly kind?: string };
+type PageEvent = {
+  readonly ari?: string;
+  readonly page?: { readonly ari?: string };
+  readonly kind?: string;
+  /** L'accountId de l'auteur de l'événement : c'est lui qui confirme la compilation. */
+  readonly accountId?: string;
+};
 
 /** Page créée/modifiée/supprimée : contrôle de synchronisation de la gamme liée. */
 export const pageEventHandler = async (event: PageEvent): Promise<unknown> => {
@@ -22,7 +28,11 @@ export const pageEventHandler = async (event: PageEvent): Promise<unknown> => {
   if (!ari) return { handled: false, reason: "événement sans ARI de page" };
   const kind = event.kind ?? "updated";
   const d = await deps();
-  return createActions(d).pageEvent({ ari, kind });
+  return createActions(d).pageEvent({
+    ari,
+    kind,
+    ...(event.accountId ? { confirmedById: event.accountId } : {}),
+  });
 };
 
 /** Nuit : fraîcheur, statistiques, amendements, fantômes, conflits. */
