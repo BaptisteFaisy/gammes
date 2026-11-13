@@ -22,14 +22,16 @@ const deps = (): Promise<Deps> => (depsPromise ??= buildForgeDeps());
 // trois groupes de surfaces, donc un lot n'édite jamais ce fichier.
 
 type AnyAction = (payload: ActionPayload, request: ForgeRequest) => Promise<unknown>;
-type ForgeReq = { readonly payload?: unknown; readonly accountId?: string };
+/** La requête du runtime Forge : le compte appelant vit dans `context.accountId`. */
+type ForgeReq = { readonly payload?: unknown; readonly accountId?: string; readonly context?: { readonly accountId?: string } };
 
 const resolver = new Resolver();
 for (const key of ACTION_KEYS) {
   resolver.define(key, async (request: ForgeReq) => {
     const d = await deps();
     const fn = createActions(d)[key] as unknown as AnyAction;
-    return fn((request.payload ?? {}) as ActionPayload, { accountId: request.accountId });
+    const accountId = request.accountId ?? request.context?.accountId;
+    return fn((request.payload ?? {}) as ActionPayload, { accountId });
   });
 }
 

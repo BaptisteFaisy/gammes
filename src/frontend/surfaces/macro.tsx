@@ -4,10 +4,13 @@
  *
  * La macro **lit** : elle n'écrit jamais dans la page. Le rendu reste mince, la
  * donnée vient de l'action `macroState` du resolver (`src/ui/macro/macro-model.ts`).
+ * Une exception : l'**approbation**, action séparée et humaine, que l'auteur de la
+ * procédure déclenche depuis sa page (`src/frontend/surfaces/approbation.tsx`).
  */
 import { useEffect, useState } from "react";
 import { Box, Heading, Lozenge, Stack, Text } from "@forge/react";
 import { appeler } from "../bridge";
+import { Approbation } from "./approbation";
 import type { ExtensionFacts } from "../route";
 
 type Freshness = { readonly syncedPct: number; readonly medianGapDays: number; readonly staleOver90d: number; readonly total: number };
@@ -17,6 +20,8 @@ type MacroState = {
   readonly sync: string;
   readonly code?: string;
   readonly version?: number;
+  /** L'état de la gamme : `draft`, `in_review`, `approved`, `deprecated`. */
+  readonly state?: string;
   readonly runs: number;
   readonly ageDays?: number;
   readonly reviewOverdueDays?: number;
@@ -80,6 +85,14 @@ export const Macro = ({ facts }: { readonly facts: ExtensionFacts }) => {
             {etat.ageDays !== undefined ? ` · écart de ${etat.ageDays} jour(s)` : ""}
             {etat.reviewOverdueDays !== undefined ? ` · révision en retard de ${etat.reviewOverdueDays} jour(s)` : ""}
           </Text>
+        ) : null}
+        {etat.bound && etat.code ? (
+          <Approbation
+            code={etat.code}
+            version={etat.version}
+            state={etat.state}
+            onApprouve={() => void charger()}
+          />
         ) : null}
         <Atelier workshop={etat.workshop} />
       </Stack>
