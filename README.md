@@ -16,7 +16,15 @@ effectif et fourchette, comparaison de versions, étapes délégables), amendeme
 conciliateur hermes, gammes fantômes et adoption, les 16 outils MCP avec un appelant interactif,
 export `SKILL.md` téléchargeable, encarts Jira et macro Confluence, **le tableau de preuves**
 (pour chaque étape : la preuve attendue, les preuves réellement laissées, et l'extrait que le
-juge peut lire), journal d'audit append-only, réglages d'espace.
+juge peut lire), journal d'audit append-only, réglages d'espace, et **« 19 · Déploiement réel »** :
+l'app telle qu'elle est réellement installée dans un tenant Atlassian (ARI, tenant, environnement,
+version déployée, date du relevé, les deux liens d'installation).
+
+L'app est **déployée et installée** dans un tenant Atlassian, dans Confluence et dans Jira :
+[ouvrir l'atelier](https://one-atlas-cndz.atlassian.net/wiki/apps/22debf64-74af-4b39-a652-206d747b69c3/4f32b0c3-8131-457c-8f6d-4f7a180d9c48/atelier) ·
+[ouvrir l'encart Jira](https://one-atlas-cndz.atlassian.net/jira/apps/22debf64-74af-4b39-a652-206d747b69c3/4f32b0c3-8131-457c-8f6d-4f7a180d9c48).
+Cette provenance n'est pas une capture d'écran : un test la compare au `manifest.yml`, donc l'écran
+ne peut pas annoncer une app qui n'existe plus.
 
 Le vrai cœur TypeScript (`src/core`) tourne dans le navigateur, sur un magasin en mémoire.
 Source dans [`web/`](web/), déployé par GitHub Pages ([`.github/workflows/web.yml`](.github/workflows/web.yml)).
@@ -138,18 +146,18 @@ docs/             contrats, architecture, démo, juges, anglais, vidéo, Marketp
 
 | | |
 |---|---|
-| **30 exigences** | faites et testées (GA-01 à GA-29, sauf les trois « C ») |
-| **3 exigences** | après le hackathon (GA-30 publication, GA-31 connecteur de graphe, GA-32 composition) |
-| **236 tests** | `npm run verify` : garde-fous + typecheck + tests, en moins de 2 minutes |
+| **32 exigences** | faites et testées (GA-01 à GA-32 — y compris les trois « C ») |
+| **293 tests** | `npm run verify` : garde-fous + typecheck + tests, en moins de 2 minutes |
 | **recette § 25** | les 21 points sont automatisés (`test/recette/`) |
 | **manifeste Forge** | conforme au schéma officiel `@forge/manifest` 13.9.0, sous garde en CI |
+| **déploiement réel** | app déployée et installée dans Confluence **et** Jira sur un tenant Atlassian — la provenance est dans l'écran « 19 · Déploiement réel », comparée au manifeste par un test |
 
 Matrice détaillée et à jour : [`docs/EXIGENCES.md`](docs/EXIGENCES.md).
 **Un élément de preuve par étape** : [`docs/PREUVES.md`](docs/PREUVES.md) — ce qui
 prouve que chaque étape a fonctionné, et la commande qui le vérifie.
 
 ```bash
-npm ci && npm run verify   # 283 tests, vert
+npm ci && npm run verify   # 293 tests, vert
 node tools/check-manifest.mjs   # le manifeste est conforme au schéma Forge
 npm run cli -- compile procedure.html   # une page de wiki devient un paquet portable
 npm run cli -- verify out/gamme.json   # l'empreinte du paquet est-elle encore bonne ?
