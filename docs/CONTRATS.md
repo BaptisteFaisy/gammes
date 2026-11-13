@@ -272,7 +272,7 @@ export const isRunnableWhileStale: (gamme: Gamme) => boolean;
 // pour éviter l'import circulaire (binding ← compile ← recompile).
 export const proposeRecompile: (deps: Deps, args: { gammeId: string; page: PageDigest; confirmedBy: ActorRef }) => Promise<Result<CompileOutcome>>;
 
-// src/platform/forge/ — schema.sql (DDL § 21), forge-sql.ts (Store sur @forge/sql),
+// src/platform/forge/ — schema.ts (DDL § 21, dialecte MySQL/TiDB), forge-sql.ts (Store sur @forge/sql),
 // forge-hosted-llm.ts (LlmClient sur @forge/llm). Le port Clock exige désormais
 // `plusDays(days, from?)` : les échéances (révision, revue différée) passent par là.
 ```
