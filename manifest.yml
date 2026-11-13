@@ -181,20 +181,32 @@ modules:
       title: Gammes — Atelier
       route: atelier
       resource: main
+      render: native
+      resolver:
+        function: gammes-fn
   confluence:contentAction:
     - key: gammes-page-action
       title: Gammes
       resource: main
+      render: native
+      resolver:
+        function: gammes-fn
   macro:
     - key: gammes-macro
       title: État de la gamme
       description: Version, état, exécutions et fraîcheur de la gamme compilée depuis cette page.
       resource: main
+      render: native
+      resolver:
+        function: gammes-fn
   confluence:spaceSettings:
     - key: gammes-settings
       title: Gammes — Réglages
       route: reglages
       resource: main
+      render: native
+      resolver:
+        function: gammes-fn
 
   # --- Surfaces Jira ---
   jira:issuePanel:
@@ -202,10 +214,16 @@ modules:
       title: Gammes
       icon: https://tradoooo.github.io/gammes/icon.png
       resource: main
+      render: native
+      resolver:
+        function: gammes-fn
   jira:globalPage:
     - key: gammes-registre-jira
       title: Gammes — Registre
       resource: main
+      render: native
+      resolver:
+        function: gammes-fn
   jira:workflowValidator:
     - key: gammes-trace-validator
       name: Gammes trace required
