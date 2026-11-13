@@ -7,8 +7,8 @@
 #   - les modules Rovo passent par des modules `action` (une action par outil
 #     MCP du § 18) ; `rovo:mcp.tools` et `rovo:agent.actions` y renvoient par
 #     clé — une seule source de vérité, la base ;
-#   - les surfaces partagent UNE ressource (le dossier `static/main`, point
-#     d'entrée `static/main/index.html`) et se distinguent par leur clé de
+#   - les surfaces partagent UNE ressource (le point d'entrée UI Kit 2,
+#     `src/frontend/index.tsx`) et se distinguent par leur clé de
 #     module ; le rendu est en UI Kit 2 ;
 #   - les portées sont celles du catalogue Forge (CLI 14.2) : un nom hors
 #     catalogue est refusé par `forge lint`. Il n'y a pas de module `resolver`
@@ -256,8 +256,11 @@ modules:
         - claude
 
 resources:
+  # La ressource est le **point d'entrée UI Kit 2** lui-même : Forge le bundle et le
+  # monte dans la page. Pointer vers un dossier statique (`static/main`) servait un
+  # HTML qui ne chargeait rien : l'app s'affichait blanche dans Atlassian.
   - key: main
-    path: static/main
+    path: src/frontend/index.tsx
 
 app:
   id: ari:cloud:ecosystem::app/22debf64-74af-4b39-a652-206d747b69c3
