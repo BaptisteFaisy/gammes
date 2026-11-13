@@ -12,7 +12,11 @@ import { buildForgeDeps } from "../platform/forge/deps";
 import { createActions } from "../resolver/actions";
 
 let depsPromise: Promise<Deps> | undefined;
-const deps = (): Promise<Deps> => (depsPromise ??= buildForgeDeps());
+
+/** Les `Deps` de production, construites une fois et réutilisées. */
+export const triggerDeps = (): Promise<Deps> => (depsPromise ??= buildForgeDeps());
+
+const deps = triggerDeps;
 
 type PageEvent = {
   readonly ari?: string;
