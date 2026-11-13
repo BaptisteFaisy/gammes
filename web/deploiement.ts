@@ -65,7 +65,7 @@ export const DEPLOIEMENT: Provenance = {
       "https://one-atlas-cndz.atlassian.net/wiki/apps/22debf64-74af-4b39-a652-206d747b69c3/77759b80-9484-4ada-9f50-9ddf9045565c/atelier",
     jira: "https://one-atlas-cndz.atlassian.net/jira/apps/22debf64-74af-4b39-a652-206d747b69c3/77759b80-9484-4ada-9f50-9ddf9045565c",
   },
-  pullRequest: "https://github.com/Tradoooo/gammes/pull/59",
+  pullRequest: "https://github.com/Tradoooo/gammes/pull/61",
   depot: "https://github.com/Tradoooo/gammes",
   demo: "https://tradoooo.github.io/gammes/",
   environnements: [
