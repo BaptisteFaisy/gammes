@@ -24,9 +24,9 @@ const App = () => {
     case "registre":
       return <Registre />;
     case "reglages":
-      return <Reglages />;
+      return <Reglages facts={facts} />;
     case "contentAction":
-      return <ContentAction />;
+      return <ContentAction facts={facts} />;
     default:
       return <Inconnue />;
   }
