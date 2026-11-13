@@ -20,11 +20,12 @@ juge peut lire), journal d'audit append-only, réglages d'espace, et **« 19 · 
 l'app telle qu'elle est réellement installée dans un tenant Atlassian (ARI, tenant, environnement,
 version déployée, date du relevé, les deux liens d'installation).
 
-L'app est **déployée et installée** dans un tenant Atlassian, dans Confluence et dans Jira :
-[ouvrir l'atelier](https://one-atlas-cndz.atlassian.net/wiki/apps/22debf64-74af-4b39-a652-206d747b69c3/4f32b0c3-8131-457c-8f6d-4f7a180d9c48/atelier) ·
-[ouvrir l'encart Jira](https://one-atlas-cndz.atlassian.net/jira/apps/22debf64-74af-4b39-a652-206d747b69c3/4f32b0c3-8131-457c-8f6d-4f7a180d9c48).
-Cette provenance n'est pas une capture d'écran : un test la compare au `manifest.yml`, donc l'écran
-ne peut pas annoncer une app qui n'existe plus.
+L'app est **déployée en `production` et installée** dans un tenant Atlassian, dans Confluence et dans Jira :
+[ouvrir l'atelier](https://one-atlas-cndz.atlassian.net/wiki/apps/22debf64-74af-4b39-a652-206d747b69c3/77759b80-9484-4ada-9f50-9ddf9045565c/atelier) ·
+[ouvrir l'encart Jira](https://one-atlas-cndz.atlassian.net/jira/apps/22debf64-74af-4b39-a652-206d747b69c3/77759b80-9484-4ada-9f50-9ddf9045565c).
+Une version `production` est **visible par tous les utilisateurs du site** — une version de développement
+n'est visible que de son développeur. Cette provenance n'est pas une capture d'écran : un test la compare
+au `manifest.yml`, donc l'écran ne peut pas annoncer une app qui n'existe plus.
 
 Le vrai cœur TypeScript (`src/core`) tourne dans le navigateur, sur un magasin en mémoire.
 Source dans [`web/`](web/), déployé par GitHub Pages ([`.github/workflows/web.yml`](.github/workflows/web.yml)).
