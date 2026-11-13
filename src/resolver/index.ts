@@ -14,6 +14,8 @@ import type { Deps } from "../core/ports";
 import { ACTION_KEYS, createActions, type ActionPayload, type ForgeRequest } from "./actions";
 import { handleTool, MCP_TOOLS, type Args } from "../core/mcp/tools";
 import { buildForgeDeps } from "../platform/forge/deps";
+import { consumerHandler, nightlyHandler, pageEventHandler } from "../triggers/index";
+import { createSignedHook } from "../platform/webtrigger";
 
 let depsPromise: Promise<Deps> | undefined;
 const deps = (): Promise<Deps> => (depsPromise ??= buildForgeDeps());
@@ -42,6 +44,30 @@ for (const tool of MCP_TOOLS) {
     const d = await deps();
     return handleTool(d, tool.key, (request.payload ?? {}) as Args);
   });
+}
+
+// Les événements (déclencheurs, planifié, consommateurs, point d'entrée externe) :
+// le runtime appelle la fonction avec la **clé du module** du manifeste. Sans
+// définition pour cette clé, la plateforme refuse l'appel et l'événement ne produit
+// rien — c'est ce qui rendait l'app incapable de compiler une page toute seule.
+const evenements: Record<string, (payload: unknown) => Promise<unknown>> = {
+  "gammes-page-events": async (payload) => pageEventHandler((payload ?? {}) as Parameters<typeof pageEventHandler>[0]),
+  "gammes-nightly": async () => nightlyHandler(),
+  "gammes-consumer-compile": async (payload) => consumerHandler((payload ?? {}) as Parameters<typeof consumerHandler>[0]),
+  "gammes-consumer-stats": async (payload) => consumerHandler((payload ?? {}) as Parameters<typeof consumerHandler>[0]),
+  "gammes-consumer-ghosts": async (payload) => consumerHandler((payload ?? {}) as Parameters<typeof consumerHandler>[0]),
+  "gammes-consumer-conflicts": async (payload) => consumerHandler((payload ?? {}) as Parameters<typeof consumerHandler>[0]),
+  // Le point d'entrée externe est **signé** : sans secret, il échoue fermé.
+  "gammes-hook": async (payload) => {
+    const signe = (payload ?? {}) as { body?: string; signature?: string };
+    return createSignedHook(await deps(), { secret: process.env.GAMMES_HOOK_SECRET })({
+      body: signe.body ?? "",
+      signature: signe.signature ?? "",
+    });
+  },
+};
+for (const [key, handler] of Object.entries(evenements)) {
+  resolver.define(key, async (request: ForgeReq) => handler(request.payload ?? {}));
 }
 
 /** Le handler exporté au manifeste (`function: gammes-fn` → `index.handler`). */
