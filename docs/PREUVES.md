@@ -25,6 +25,7 @@ un test, un fichier), **la vérification** est la commande qui le confirme.
 | 12 | **GA-31 — connecteur de graphe** : l'app lit (GA-27), l'app jumelle grave ; proposition humaine, gravure datée avec récépissé | ce lot · `src/core/graph-connect/graph-connector.ts` | `npx vitest run test/graph-connect/graph-connector.test.ts` |
 | 13 | **GA-32 — gammes composées** : une étape `subGamme` acquittée par la trace close de son enfant, jamais à la main | ce lot · `src/core/composite/composite.ts` | `npx vitest run test/composite/composite.test.ts` |
 | 14 | **Déploiement Forge réel** : app créée, manifeste conforme, déployée et installée sur un site de dev | app `22debf64-74af-4b39-a652-206d747b69c3` · [atelier](https://one-atlas-cndz.atlassian.net/wiki/apps/22debf64-74af-4b39-a652-206d747b69c3/4f32b0c3-8131-457c-8f6d-4f7a180d9c48/atelier) · [Jira](https://one-atlas-cndz.atlassian.net/jira/apps/22debf64-74af-4b39-a652-206d747b69c3/4f32b0c3-8131-457c-8f6d-4f7a180d9c48) | `forge lint` puis `forge deploy --environment development` puis `forge install --site one-atlas-cndz.atlassian.net --product confluence` puis `--product jira` |
+| 15 | **La provenance du déploiement, visible** : l'écran « 19 · Déploiement réel » de la démo affiche l'ARI, le tenant, la version, la date du relevé et les deux liens d'installation — et un test le compare au `manifest.yml` | ce lot · `web/deploiement.ts` · `web/panels-deploiement.ts` | `npx vitest run test/demo/deploiement.test.ts` |
 
 ## Les dix idées de consolidation : ce qui a été fait
 
@@ -41,7 +42,7 @@ Les 1169 idées sont dans [`IDEES-1000.md`](IDEES-1000.md) ; voici ce qui a ét�
 | 7 · Provenance des preuves | `Evidence.origin` : « réelle » ou « fixture » ; l'app ne fait jamais passer l'une pour l'autre | PR #42 · `test/seed/preuves.test.ts` | ✅ |
 | 9 · Paquet portable | Le paquet scellé (format, version, entrées, étapes, `SKILL.md`) et la **CLI** : `compile` et `verify` hors Forge | PR #45 · `test/export/gamme-bundle.test.ts` | ✅ |
 | 10 · Catalogue de gestes | Publication inter-espaces, connecteur de graphe, gammes composées (GA-30/31/32) | PR #39 · `test/publication/`, `test/graph-connect/`, `test/composite/` | ✅ |
-| 1 · Déploiement dans un vrai tenant | — | compte Atlassian et ressources facturées (SQL, LLM) : hors de portée ici | ⏸ |
+| 1 · Déploiement dans un vrai tenant | App `22debf64…b69c3` créée, manifeste conforme au schéma 13.9.0, `forge deploy` (2.1.0), installée dans Confluence **et** Jira sur `one-atlas-cndz.atlassian.net` | PR #53 + [PR #57](https://github.com/Tradoooo/gammes/pull/57) · étape 14 | ✅ |
 | 8 · La démo en 30 s / la vidéo | — | la vidéo demandée est exclue ; le tableau de preuves (écran « 14 · Preuves ») reste en place | ⏸ |
 
 ## Les trois preuves qui ne se réinventent pas

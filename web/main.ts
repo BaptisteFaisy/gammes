@@ -27,6 +27,7 @@ import { createTourOverlay } from "./tour-ui";
 import { showProof } from "./proof";
 import { realDataPanel } from "./panels-realdata";
 import { preuvesPanel } from "./panels-preuves";
+import { deploiementPanel } from "./panels-deploiement";
 import { describeEngine } from "./engine";
 import type { Navigate, Rerender } from "./types";
 
@@ -35,7 +36,7 @@ type Screen =
   | "atelier" | "detecter" | "compiler" | "gamme" | "avant-agir" | "derouler"
   | "liaison" | "mesures" | "amendements" | "conflits" | "fantomes"
   | "mcp" | "skill" | "encarts" | "journal" | "reglages" | "modele" | "donnees"
-  | "preuves";
+  | "preuves" | "deploiement";
 
 type Group = { readonly title: string; readonly items: readonly { id: Screen; label: string }[] };
 
@@ -91,6 +92,7 @@ const GROUPS: readonly Group[] = [
     items: [
       { id: "modele", label: "17 · Modèle réel (OpenCode…)" },
       { id: "donnees", label: "18 · Tes données réelles" },
+      { id: "deploiement", label: "19 · Déploiement réel" },
     ],
   },
 ];
@@ -136,6 +138,7 @@ const build = async (screen: Screen, go: Navigate): Promise<HTMLElement> => {
   switch (screen) {
     case "demo": return tourPanel(startTour, rerender, go);
     case "preuves": return preuvesPanel(app, rerender);
+    case "deploiement": return deploiementPanel();
     case "atelier": return atelierPanel(app);
     case "detecter": return detectPanel(app, rerender);
     case "compiler": return compilePanel(app, rerender);
