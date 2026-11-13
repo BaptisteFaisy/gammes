@@ -11,7 +11,7 @@
  */
 
 import type { Deps } from "../../core/ports";
-import { forgeSqlStore } from "./forge-sql";
+import { ensureSchema, forgeSqlStore } from "./forge-sql";
 import { forgeHostedLlm } from "./forge-hosted-llm";
 import { confluencePort, graphPort, jiraPort } from "./atlassian-ports";
 import { systemClock } from "../clock";
@@ -22,6 +22,10 @@ import { createReservationRegistry } from "../../integrations/chantiers-en-colli
 import { createFailureSignatures } from "../../integrations/deja-vu-ci";
 
 export const buildForgeDeps = async (): Promise<Deps> => {
+  // Le schéma d'abord : sans table, l'app ne lit rien et affiche « 0
+  // gamme(s) au total ». Le DDL est idempotent et n'est appliqué qu'une fois
+  // par instance (mémoïsé dans `forge-sql.ts`).
+  await ensureSchema();
   const budget = memoryBudget(new Date().toISOString().slice(0, 10));
   return {
     store: forgeSqlStore(),
