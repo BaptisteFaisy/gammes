@@ -20,6 +20,7 @@ import { getCurrentStep } from "../core/run/runs";
 import { panelActions, panelKeys, type PanelActions } from "./panel";
 import { macroActions, macroKeys, type MacroActions } from "./macro";
 import { jiraActions, jiraKeys, type JiraActions } from "./jira";
+import { approveActions, approveKeys, type ApproveActions } from "./approve";
 import { checkSync, markSourceGone } from "../core/binding/binding";
 import { compileIfProcedure } from "../core/compile/auto-compile";
 import { persistStepStats } from "../core/stats/step-stats";
@@ -45,6 +46,7 @@ export const createActions = (deps: Deps) => ({
   ...panelActions(deps),
   ...macroActions(deps),
   ...jiraActions(deps),
+  ...approveActions(deps),
 });
 
 /** Lectures : atelier, fiche de gamme, statistiques, conflits, fantômes, encart Jira. */
@@ -122,8 +124,8 @@ const compileIfNewProcedure = async (
   return ok({ handled: outcome.value.compiled, ...outcome.value });
 };
 
-/** Les trois groupes d'actions des surfaces, pour que chaque lot n'édite que le sien. */
-export type SurfaceActions = PanelActions & MacroActions & JiraActions;
+/** Les groupes d'actions des surfaces, pour que chaque lot n'édite que le sien. */
+export type SurfaceActions = PanelActions & MacroActions & JiraActions & ApproveActions;
 
 export type Actions = ReturnType<typeof createActions>;
 export type ActionKey = keyof Actions;
@@ -136,14 +138,15 @@ export const CORE_KEYS = [
 /**
  * Toutes les clés d'actions du resolver, composées depuis les groupes : un lot
  * qui ajoute une action n'édite que son propre module (`panel.ts`, `macro.ts`,
- * `jira.ts`) — jamais ce fichier ni `index.ts`. La cohérence entre cette liste
- * et `createActions` est vérifiée par `test/surfaces/action-keys.test.ts`.
+ * `jira.ts`, `approve.ts`) — la composition reste ici. La cohérence entre cette
+ * liste et `createActions` est vérifiée par `test/surfaces/action-keys.test.ts`.
  */
 export const ACTION_KEYS: readonly ActionKey[] = [
   ...CORE_KEYS,
   ...panelKeys,
   ...macroKeys,
   ...jiraKeys,
+  ...approveKeys,
 ];
 
 /** Langue demandée par l'appelant (les rendus sont bilingues). */
