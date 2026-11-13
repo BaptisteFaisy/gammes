@@ -21,6 +21,7 @@ import { panelActions, panelKeys, type PanelActions } from "./panel";
 import { macroActions, macroKeys, type MacroActions } from "./macro";
 import { jiraActions, jiraKeys, type JiraActions } from "./jira";
 import { checkSync, markSourceGone } from "../core/binding/binding";
+import { compileIfProcedure } from "../core/compile/auto-compile";
 import { persistStepStats } from "../core/stats/step-stats";
 import { proposeFromTraces } from "../core/amendments/amendments";
 
@@ -87,7 +88,7 @@ const eventActions = (deps: Deps) => ({
   },
   pageEvent: async (p: ActionPayload & { ari: string; kind: string }): Promise<Result<unknown>> => {
     const binding = (await deps.store.bindings.list((b) => b.pageAri === p.ari))[0];
-    if (!binding) return ok({ handled: false, reason: "aucune gamme liée à cette page" });
+    if (!binding) return compileIfNewProcedure(deps, p);
     if (p.kind === "deleted") {
       const gone = await markSourceGone(deps, binding.gammeId);
       return ok({ handled: true, sync: gone.ok ? gone.value.sync : "source_gone" });
@@ -98,6 +99,28 @@ const eventActions = (deps: Deps) => ({
     return ok({ handled: true, ...(report.ok ? { sync: report.value.sync, ageDays: report.value.ageDays } : {}) });
   },
 });
+
+/**
+ * Page sans gamme liée : si son titre annonce une procédure, elle est compilée en
+ * brouillon. Le confirmant est l'auteur de l'événement — la personne qui vient d'écrire
+ * la page — et la compilation ne publie rien.
+ */
+const compileIfNewProcedure = async (
+  deps: Deps,
+  p: ActionPayload & { ari: string; kind: string },
+): Promise<Result<unknown>> => {
+  if (!deps.confluence) return ok({ handled: false, reason: "Confluence indisponible" });
+  let page;
+  try {
+    page = await deps.confluence.getPage(p.ari);
+  } catch {
+    return ok({ handled: false, reason: "page inaccessible" });
+  }
+  const confirmedBy = actorFromRequest({ accountId: p.confirmedById ? String(p.confirmedById) : undefined });
+  const outcome = await compileIfProcedure(deps, { page, confirmedBy });
+  if (!outcome.ok) return outcome;
+  return ok({ handled: outcome.value.compiled, ...outcome.value });
+};
 
 /** Les trois groupes d'actions des surfaces, pour que chaque lot n'édite que le sien. */
 export type SurfaceActions = PanelActions & MacroActions & JiraActions;
