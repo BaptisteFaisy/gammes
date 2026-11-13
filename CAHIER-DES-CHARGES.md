@@ -308,7 +308,8 @@ La carte visuelle est un **atelier** : chaque élément porte une donnée, rien 
 Une app principale sur Confluence, avec des surfaces Jira, et un pont signé vers l'extérieur.
 
 ```yaml
-# Esquisse, à valider avec forge lint et la vérification du § 22
+# Esquisse, validée par `forge lint` (CLI 14.2) le 13/11/2026 : les noms de
+# modules et de portées ci-dessous sont ceux qui passent le linter.
 modules:
   rovo:mcp:                       # les 16 outils du § 18
   rovo:skill:                     # « derouler-une-gamme » (générique, statique)
@@ -316,8 +317,8 @@ modules:
   action:                         # une entrée par outil
   confluence:globalPage:          # l'atelier, les statistiques, les fantômes, la couverture
   confluence:contentAction:       # compiler / voir la gamme depuis la page
-  confluence:macro:               # l'état de la gamme dans la page source
-  confluence:spaceSettingsPage:   # réglages d'espace
+  macro:                          # l'état de la gamme dans la page source
+  confluence:spaceSettings:       # réglages d'espace
   jira:issuePanel:                # quelle gamme s'applique à ce ticket
   jira:globalPage:                # registre côté Jira (même contenu)
   jira:workflowValidator:         # une transition peut exiger une trace d'exécution
@@ -329,8 +330,9 @@ modules:
   llm:                            # extraction de prose, qualification, synthèse d'amendement
 permissions:
   scopes:                         # read/write:confluence-content, pièces jointes, espaces,
-                                  # utilisateurs ; read:issue-details:jira, write:issue-details:jira ;
-                                  # read:graph:document, read:graph:project, read:graph:software-service
+                                  # utilisateurs ; read:issue-details:jira, write:issue:jira ;
+                                  # read:graph:document:external, read:graph:project:jira,
+                                  # read:graph:service:external
 ```
 
 ### Deux couches, une contrainte à respecter

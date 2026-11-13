@@ -1,8 +1,10 @@
 /**
  * Gammes — le resolver Forge (§ 20).
  *
- * Un seul point de montage : chaque clé du manifeste (`resolver`, `rovo:mcp`, les surfaces
- * Confluence/Jira, les déclencheurs) arrive ici et repart vers une action de `createActions`.
+ * Un seul point de montage : chaque clé du manifeste (`rovo:mcp`, les surfaces
+ * Confluence/Jira, les déclencheurs) arrive ici et repart vers une action de
+ * `createActions`. Le manifeste n'a pas de module `resolver` : le `function`
+ * `gammes-fn` appelle ce handler, et lui seul.
  * Aucune logique métier dans ce fichier — seulement le câblage et la construction paresseuse
  * du `Deps` de production. Le callback Forge reçoit une `Request` (payload + accountId).
  */

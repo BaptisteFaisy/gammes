@@ -1,8 +1,9 @@
 /**
  * Route des surfaces Forge — la seule logique de l'UI qui ne soit pas du rendu.
  *
- * Les six modules du manifeste partagent UNE ressource (`static/main/index.html`)
- * et donc un seul bundle React : c'est la clé de module qui dit quoi afficher.
+ * Les six modules du manifeste partagent UNE ressource (le dossier `static/main`,
+ * point d'entrée `static/main/index.html`) et donc un seul bundle React : c'est la
+ * clé de module qui dit quoi afficher.
  * Ce fichier est pur (aucun import de `@forge/*`), donc testable hors navigateur.
  */
 
