@@ -310,7 +310,7 @@ ne contient aucun secret (test automatique).
 
 ## Lot H — `feat/surfaces-forge` (GA-15 … GA-18, GA-25, GA-27) — vague 2
 
-Dossiers : `src/resolver/`, `src/ui/`, `src/jira/`, `src/triggers/`, `static/`, `test/surfaces/`.
+Dossiers : `src/resolver/`, `src/ui/`, `src/jira/`, `src/triggers/`, `src/frontend/`, `test/surfaces/`.
 Le resolver est le **seul** point de montage : il n'importe que des services des lots A–G, aucune
 logique métier n'y vit. Un écran = un fichier ; l'atelier visuel et le registre tableau portent la
 même information (WCAG AA, la poussière et le panneau rouge ne sont jamais les seuls codages).
@@ -346,7 +346,7 @@ hors `@forge/*` » tient. `@forge/manifest`, `ajv` et `ajv-formats` sont en
 | `src/resolver/panel.ts` | actions de l'encart (`issuePanel`, `issuePanelTraces`) | **lot K** |
 | `src/resolver/macro.ts` | actions de la macro (`macroState`, `macroFreshness`) | **lot L** |
 | `src/resolver/jira.ts` | actions Jira hors encart (`issueTraces`) | **lot M** |
-| `static/main` | ressource unique des six modules | personne (gelé) |
+| `src/frontend/index.tsx` | point d'entrée UI Kit 2, ressource unique des six modules | personne (gelé) |
 
 Règle d'or des trois lots : **une clé d'action nouvelle se déclare dans son propre
 module** (`panel.ts`, `macro.ts`, `jira.ts`). Ajouter une clé au resolver exige

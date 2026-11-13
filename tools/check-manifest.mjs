@@ -16,7 +16,7 @@
  * Usage : `node tools/check-manifest.mjs` — code 0 si tout va bien, 1 sinon.
  */
 
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -122,10 +122,44 @@ const controlerUnicite = () => {
   console.log(`✔ ${vues.size} clés de modules uniques, ${(manifest.resources ?? []).length} ressource(s) sur disque`);
 };
 
+/**
+ * 6. La ressource d'un écran est le point d'entrée UI Kit 2.
+ *
+ * Un chemin qui finit par `.html` sert un fichier **statique** : la plateforme y
+ * charge la page, mais le bundle de l'app n'y est jamais monté — l'écran reste
+ * blanc dans Atlassian. C'est arrivé : la ressource `main` pointait vers un dossier
+ * statique, et l'app installée ne montrait rien. Le garde le rend impossible.
+ */
+const controlerRessources = () => {
+  const ressources = new Map((manifest.resources ?? []).map((r) => [r.key, r.path]));
+  const utilisees = new Set();
+  for (const [type, modules] of Object.entries(manifest.modules ?? {})) {
+    for (const module of Array.isArray(modules) ? modules : [modules]) {
+      if (typeof module.resource === "string") utilisees.add(module.resource);
+    }
+  }
+  for (const cle of utilisees) {
+    const chemin = ressources.get(cle);
+    if (!chemin) {
+      ajouter(`écran : ressource « ${cle} » non déclarée dans resources`);
+      continue;
+    }
+    if (/\.html?$/i.test(chemin)) {
+      ajouter(`ressource « ${cle} » : un HTML statique sert une page vide — pointez l'entrée UI Kit 2 (${chemin})`);
+      continue;
+    }
+    if (statSync(join(RACINE, chemin)).isDirectory()) {
+      ajouter(`ressource « ${cle} » : un dossier statique sert une page vide — pointez l'entrée UI Kit 2 (${chemin})`);
+    }
+  }
+  console.log(`✔ ${utilisees.size} ressource(s) d'écran : point d'entrée, pas de HTML statique`);
+};
+
 controlerSchema();
 controlerActions();
 controlerReferences();
 controlerUnicite();
+controlerRessources();
 
 if (erreurs.length === 0) {
   console.log("✔ manifeste conforme");
