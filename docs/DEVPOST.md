@@ -61,12 +61,12 @@ production demands.
 ## Demo
 
 `npm ci && npm run demo` — the whole scenario in memory (detection, diff, steps, locks,
-approval, desync, stats, export), no network. Live site: `https://baptistefaisy.github.io/gammes/`.
+approval, desync, stats, export), no network. Live site: `https://tradoooo.github.io/gammes/`.
 
 ## Project links
 
-- Repository: `https://github.com/BaptisteFaisy/gammes`
-- Demo site: `https://baptistefaisy.github.io/gammes/`
+- Repository: `https://github.com/Tradoooo/gammes`
+- Demo site: `https://tradoooo.github.io/gammes/`
 - Video: `[à renseigner]` · Marketplace listing: `[à renseigner (soumission avant le 22 décembre)]`
 
 ## Bonuses targeted

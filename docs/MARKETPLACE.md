@@ -93,7 +93,7 @@ Free during Codegeist 2026. (Listing submitted before 22 December — Devpost de
 
 ## Support
 
-- Repository: `https://github.com/BaptisteFaisy/gammes` (issues open)
+- Repository: `https://github.com/Tradoooo/gammes` (issues open)
 - Docs: `README.md`, `docs/SPEC-EN.md`, `docs/ARCHITECTURE.md`, `docs/GLOSSARY.md`
 - Demo: `npm ci && npm run demo`
 

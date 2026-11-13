@@ -61,7 +61,7 @@ ALLOWED_ORIGINS = [
     o.strip()
     for o in os.environ.get(
         "GAMMES_ALLOWED_ORIGINS",
-        "https://baptistefaisy.github.io,http://127.0.0.1,http://localhost",
+        "https://tradoooo.github.io,http://127.0.0.1,http://localhost",
     ).split(",")
     if o.strip()
 ]

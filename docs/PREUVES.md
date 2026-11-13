@@ -11,14 +11,14 @@ un test, un fichier), **la vérification** est la commande qui le confirme.
 
 | # | Étape | Élément de preuve | Vérification |
 |---|---|---|---|
-| 1 | **Pipeline hermes** : agent de conflits InferHub, quota, porte de compilation, couche0, ci-budget, file Mergify | [PR #13](https://github.com/BaptisteFaisy/gammes/pull/13) · [run `ci`](https://github.com/BaptisteFaisy/gammes/actions/runs/43221963521) · `.github/inferhub/` | `python3 .github/inferhub/test_conflict_agent.py` |
-| 2 | **Socle UI Kit 2** : une ressource pour six modules, route pure, trois groupes d'actions | [PR #14](https://github.com/BaptisteFaisy/gammes/pull/14) · [run `ci`](https://github.com/BaptisteFaisy/gammes/actions/runs/43223964802) | `npx vitest run test/surfaces/route.test.ts test/surfaces/action-keys.test.ts` |
-| 3 | **Balayeur de file** : une PR verte part en file, une seule commande par tête | [PR #18](https://github.com/BaptisteFaisy/gammes/pull/18) · [PR #21](https://github.com/BaptisteFaisy/gammes/pull/21) · [run `ci`](https://github.com/BaptisteFaisy/gammes/actions/runs/43229987053) | `.github/workflows/file-de-merge.yml` — lire ses logs sur un `workflow_run` |
-| 4 | **Schéma Forge 13.9.0** : la version de `@forge/manifest` qui connaît les modules Rovo | [PR #25](https://github.com/BaptisteFaisy/gammes/pull/25) · [run `ci`](https://github.com/BaptisteFaisy/gammes/actions/runs/43233717806) | `node tools/check-manifest.mjs` |
-| 5 | **GA-25** : le validateur de transition exige une trace close liée au ticket | [PR #26](https://github.com/BaptisteFaisy/gammes/pull/26) · [run `ci`](https://github.com/BaptisteFaisy/gammes/actions/runs/43235995645) | `npx vitest run test/surfaces/jira-trace-gate.test.ts` |
-| 6 | **Manifeste déployable** : 12 modules corrigés, point d'entrée créé, garde en CI | [PR #28](https://github.com/BaptisteFaisy/gammes/pull/28) · [run `ci`](https://github.com/BaptisteFaisy/gammes/actions/runs/43238971170) | `node tools/check-manifest.mjs` → « ✔ manifeste conforme » |
-| 7 | **GA-16** : l'encart Jira — gamme applicable, démarrage lié au ticket, traces | [PR #30](https://github.com/BaptisteFaisy/gammes/pull/30) · [run `ci`](https://github.com/BaptisteFaisy/gammes/actions/runs/43241975889) | `npx vitest run test/surfaces/issue-panel.test.ts` |
-| 8 | **GA-17** : la macro Confluence — les trois situations du § 10, l'âge de l'écart | [PR #32](https://github.com/BaptisteFaisy/gammes/pull/32) · [run `ci`](https://github.com/BaptisteFaisy/gammes/actions/runs/43243053935) | `npx vitest run test/surfaces/macro.test.ts` |
+| 1 | **Pipeline hermes** : agent de conflits InferHub, quota, porte de compilation, couche0, ci-budget, file Mergify | [PR #13](https://github.com/Tradoooo/gammes/pull/13) · [run `ci`](https://github.com/Tradoooo/gammes/actions/runs/43221963521) · `.github/inferhub/` | `python3 .github/inferhub/test_conflict_agent.py` |
+| 2 | **Socle UI Kit 2** : une ressource pour six modules, route pure, trois groupes d'actions | [PR #14](https://github.com/Tradoooo/gammes/pull/14) · [run `ci`](https://github.com/Tradoooo/gammes/actions/runs/43223964802) | `npx vitest run test/surfaces/route.test.ts test/surfaces/action-keys.test.ts` |
+| 3 | **Balayeur de file** : une PR verte part en file, une seule commande par tête | [PR #18](https://github.com/Tradoooo/gammes/pull/18) · [PR #21](https://github.com/Tradoooo/gammes/pull/21) · [run `ci`](https://github.com/Tradoooo/gammes/actions/runs/43229987053) | `.github/workflows/file-de-merge.yml` — lire ses logs sur un `workflow_run` |
+| 4 | **Schéma Forge 13.9.0** : la version de `@forge/manifest` qui connaît les modules Rovo | [PR #25](https://github.com/Tradoooo/gammes/pull/25) · [run `ci`](https://github.com/Tradoooo/gammes/actions/runs/43233717806) | `node tools/check-manifest.mjs` |
+| 5 | **GA-25** : le validateur de transition exige une trace close liée au ticket | [PR #26](https://github.com/Tradoooo/gammes/pull/26) · [run `ci`](https://github.com/Tradoooo/gammes/actions/runs/43235995645) | `npx vitest run test/surfaces/jira-trace-gate.test.ts` |
+| 6 | **Manifeste déployable** : 12 modules corrigés, point d'entrée créé, garde en CI | [PR #28](https://github.com/Tradoooo/gammes/pull/28) · [run `ci`](https://github.com/Tradoooo/gammes/actions/runs/43238971170) | `node tools/check-manifest.mjs` → « ✔ manifeste conforme » |
+| 7 | **GA-16** : l'encart Jira — gamme applicable, démarrage lié au ticket, traces | [PR #30](https://github.com/Tradoooo/gammes/pull/30) · [run `ci`](https://github.com/Tradoooo/gammes/actions/runs/43241975889) | `npx vitest run test/surfaces/issue-panel.test.ts` |
+| 8 | **GA-17** : la macro Confluence — les trois situations du § 10, l'âge de l'écart | [PR #32](https://github.com/Tradoooo/gammes/pull/32) · [run `ci`](https://github.com/Tradoooo/gammes/actions/runs/43243053935) | `npx vitest run test/surfaces/macro.test.ts` |
 | 9 | **Une preuve par étape** : la démo et l'encart montrent la preuve attendue et la preuve laissée | ce PR · `test/seed/preuves.test.ts` | `npx vitest run test/seed/preuves.test.ts` |
 | 10 | **La preuve à l'écran de la démo** : chaque étape affiche sa carte de preuve (à regarder / constaté) et met en avant l'élément qui la prouve | ce PR · `web/proof.ts` · `web/tour.ts` | `npm run demo` puis lire l'encart, ou `npx vitest run test/demo/preuve.test.ts` |
 | 11 | **GA-30 — publication inter-espaces** : instantané d'une version immuable vers un autre espace/org, acte humain daté, réversible sans suppression | ce lot · `src/core/publish/publish.ts` | `npx vitest run test/publication/publication.test.ts` |
@@ -51,13 +51,13 @@ Les 1169 idées sont dans [`IDEES-1000.md`](IDEES-1000.md) ; voici ce qui a ét�
 Le 2026-11-12, deux branches ont réécrit **le même paragraphe** de
 `CONTRIBUTING.md` avec deux intentions différentes :
 
-- [PR #19](https://github.com/BaptisteFaisy/gammes/pull/19) — « quels workflows
+- [PR #19](https://github.com/Tradoooo/gammes/pull/19) — « quels workflows
   gardent le dépôt » ;
-- [PR #20](https://github.com/BaptisteFaisy/gammes/pull/20) — « la règle des
+- [PR #20](https://github.com/Tradoooo/gammes/pull/20) — « la règle des
   5 minutes d'abord ».
 
 La première a été mergée, la seconde est passée `CONFLICTING`. Le balayeur
-[`conflict-resolver.yml`](https://github.com/BaptisteFaisy/gammes/blob/main/.github/workflows/conflict-resolver.yml)
+[`conflict-resolver.yml`](https://github.com/Tradoooo/gammes/blob/main/.github/workflows/conflict-resolver.yml)
 s'est réveillé tout seul et a rendu, en 23 secondes :
 
 ```
@@ -109,11 +109,11 @@ qu'une étape franchie montre la preuve laissée (et qu'une étape en attente, n
 
 | Élément | Où le vérifier |
 |---|---|
-| le runner | `gh api repos/BaptisteFaisy/gammes/actions/runners` → `r630-gammes-01`, `online` |
-| la file Mergify | https://dashboard.mergify.com/orgs/BaptisteFaisy/repos/gammes/queues/status |
-| le ruleset | `gh api repos/BaptisteFaisy/gammes/rulesets` → `main — PR obligatoire, checks requis (ci, ci-budget, couche0)` |
-| les secrets | `gh secret list -R BaptisteFaisy/gammes` → `AUTOMERGE_PAT`, `INFERHUB_API_KEY` (jamais affichés) |
-| la démo publique | https://baptistefaisy.github.io/gammes/ — et l'icône `…/icon.png` |
+| le runner | `gh api repos/Tradoooo/gammes/actions/runners` → `r630-gammes-01`, `online` |
+| la file Mergify | https://dashboard.mergify.com/orgs/Tradoooo/repos/gammes/queues/status |
+| le ruleset | `gh api repos/Tradoooo/gammes/rulesets` → `main — PR obligatoire, checks requis (ci, ci-budget, couche0)` |
+| les secrets | `gh secret list -R Tradoooo/gammes` → `AUTOMERGE_PAT`, `INFERHUB_API_KEY` (jamais affichés) |
+| la démo publique | https://tradoooo.github.io/gammes/ — et l'icône `…/icon.png` |
 | le garde de manifeste | `node tools/check-manifest.mjs` |
 | l'agent de conflits | `.github/inferhub/README.md` — comment le rejouer : `gh workflow run conflict-resolver.yml -f pr=<n>` |
 

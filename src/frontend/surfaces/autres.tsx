@@ -15,7 +15,7 @@ const TITRES: Readonly<Record<string, string>> = {
   inconnue: "Gammes — surface non reconnue",
 };
 
-export const DEMO_URL = "https://baptistefaisy.github.io/gammes/";
+export const DEMO_URL = "https://tradoooo.github.io/gammes/";
 
 const Surface = ({ surface }: { readonly surface: SurfaceKey }) => (
   <Box padding="space.200">
