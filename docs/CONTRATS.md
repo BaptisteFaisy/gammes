@@ -346,7 +346,7 @@ hors `@forge/*` » tient. `@forge/manifest`, `ajv` et `ajv-formats` sont en
 | `src/resolver/panel.ts` | actions de l'encart (`issuePanel`, `issuePanelTraces`) | **lot K** |
 | `src/resolver/macro.ts` | actions de la macro (`macroState`, `macroFreshness`) | **lot L** |
 | `src/resolver/jira.ts` | actions Jira hors encart (`issueTraces`) | **lot M** |
-| `static/main/index.html` | ressource unique des six modules | personne (gelé) |
+| `static/main` | ressource unique des six modules | personne (gelé) |
 
 Règle d'or des trois lots : **une clé d'action nouvelle se déclare dans son propre
 module** (`panel.ts`, `macro.ts`, `jira.ts`). Ajouter une clé au resolver exige

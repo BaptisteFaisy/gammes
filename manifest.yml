@@ -7,8 +7,12 @@
 #   - les modules Rovo passent par des modules `action` (une action par outil
 #     MCP du § 18) ; `rovo:mcp.tools` et `rovo:agent.actions` y renvoient par
 #     clé — une seule source de vérité, la base ;
-#   - les surfaces partagent UNE ressource (`static/main/index.html`) et se
-#     distinguent par leur clé de module ; le rendu est en UI Kit 2 ;
+#   - les surfaces partagent UNE ressource (le dossier `static/main`, point
+#     d'entrée `static/main/index.html`) et se distinguent par leur clé de
+#     module ; le rendu est en UI Kit 2 ;
+#   - les portées sont celles du catalogue Forge (CLI 14.2) : un nom hors
+#     catalogue est refusé par `forge lint`. Il n'y a pas de module `resolver`
+#     (ni `remote`) : le `function` du manifeste est l'unique point d'entrée.
 #   - `jira:workflowValidator` est une **fonction** (le validateur exige une
 #     trace d'exécution close liée au ticket), pas une expression.
 
@@ -19,10 +23,6 @@ modules:
       handler: index.handler
     - key: gammes-validator-fn
       handler: validator.handler
-
-  remote:
-    - key: gammes-resolver
-      function: gammes-fn
 
   # --- Outils MCP : une action par outil du § 18 ---
   action:
@@ -260,7 +260,7 @@ resources:
     path: static/main
 
 app:
-  id: ari:cloud:ecosystem::app/0af99e1d-b8f8-494e-85c2-e51cd20cad4a
+  id: ari:cloud:ecosystem::app/22debf64-74af-4b39-a652-206d747b69c3
   runtime:
     name: nodejs22.x
 
@@ -275,8 +275,9 @@ permissions:
     - read:confluence-content.permission
     - storage:app
     - read:attachment:confluence
-    - read:graph:page:confluence
-    - read:graph:project:atlassian
+    - read:graph:document:external
+    - read:graph:project:jira
+    - read:graph:service:external
     - read:issue-details:jira
     - read:jira-work
     - write:jira-work

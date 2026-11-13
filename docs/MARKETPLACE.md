@@ -65,13 +65,19 @@ size.
 |---|---|
 | `read:confluence-content.all` | read procedure pages to compile |
 | `write:confluence-content` | propose (never auto-apply) page edits from amendments |
+| `read:confluence-props`, `write:confluence-props` | page properties, versions, amendments |
+| `read:confluence-content.permission` | who may read a page before compiling it |
 | `read:space:confluence`, `read:confluence-user` | scope, ownership, attribution |
 | `storage:app` | store gammes, versions, runs, traces, findings |
 | `read:attachment:confluence` | evidence references |
 | `read:issue-details:jira`, `write:issue:jira`, `read:jira-work`, `write:jira-work` | the Jira issue panel, ghost detection from ticket history, workflow validator |
-| `read:graph:page:confluence`, `read:graph:project:atlassian` | scope and owner from the Teamwork Graph |
-| `execute:rovo:actions` *(demandé, non accordé sur le site de dev)* | the MCP tools |
-| `llm:public-models` *(demandé, non accordé sur le site de dev)* | extraction of ambiguous prose, qualification, conciliation — cached by content fingerprint |
+| `manage:jira-configuration` | read the workflow before the validator refuses a transition |
+| `read:graph:document:external`, `read:graph:project:jira`, `read:graph:service:external` | scope, owner and software service from the Teamwork Graph |
+
+These are the exact scopes installed on `one-atlas-cndz.atlassian.net` (development
+environment, app `ari:cloud:ecosystem::app/22debf64-74af-4b39-a652-206d747b69c3`).
+The 16 MCP tools and the `claude` model family need **no** extra scope: the `rovo:agent`
+and `rovo:mcp` modules grant the actions, and the `llm` module declares the model.
 
 External fetch: `api.inferhub.dev` (optional off-platform LLM for the local harness / conciliator).
 
