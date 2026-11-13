@@ -200,7 +200,7 @@ modules:
   jira:issuePanel:
     - key: gammes-issue-panel
       title: Gammes
-      icon: https://baptistefaisy.github.io/gammes/icon.png
+      icon: https://tradoooo.github.io/gammes/icon.png
       resource: main
   jira:globalPage:
     - key: gammes-registre-jira

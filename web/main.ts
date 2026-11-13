@@ -123,7 +123,7 @@ const header = (): HTMLElement => {
       " · modèle scripté ou ",
       h("a", { href: "#", onclick: (e: Event) => { e.preventDefault(); goTo("modele"); } }, "un vrai modèle"),
       " · ",
-      h("a", { href: "https://github.com/BaptisteFaisy/gammes" }, "code source"),
+      h("a", { href: "https://github.com/Tradoooo/gammes" }, "code source"),
     ),
     engineNode,
   );

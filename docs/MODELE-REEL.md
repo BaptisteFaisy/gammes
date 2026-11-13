@@ -1,6 +1,6 @@
 # Brancher un vrai modèle et de vraies données sur le site public
 
-Le site ([https://baptistefaisy.github.io/gammes/](https://baptistefaisy.github.io/gammes/)) est
+Le site ([https://tradoooo.github.io/gammes/](https://tradoooo.github.io/gammes/)) est
 **statique** : il tourne dans le navigateur, sans backend propre. Deux conséquences mesurées, et
 deux réponses.
 
@@ -40,7 +40,7 @@ Garde-fous intégrés (stdlib Python, aucune dépendance) :
 
 | Garde-fou | Valeur par défaut | Variable |
 |---|---|---|
-| Origines autorisées (tout le reste ⇒ 403) | `https://baptistefaisy.github.io`, `127.0.0.1`, `localhost` | `GAMMES_ALLOWED_ORIGINS` |
+| Origines autorisées (tout le reste ⇒ 403) | `https://tradoooo.github.io`, `127.0.0.1`, `localhost` | `GAMMES_ALLOWED_ORIGINS` |
 | Débit par client | 20 requêtes/minute | `GAMMES_LLM_RATE_PER_MIN` |
 | Plafond de jetons par appel | 2 048 | `GAMMES_LLM_MAX_TOKENS` |
 | Journal | méthode, statut, modèle — **jamais la clé, jamais le corps** | — |
@@ -169,7 +169,7 @@ exposé publiquement pour l'instant. Deux conséquences assumées :
 
 - le site public fonctionne **en direct avec InferHub ou OpenRouter** (CORS ouvert) dès que le
   visiteur colle sa propre clé — vérifié en conditions réelles depuis
-  `https://baptistefaisy.github.io/gammes/` : test de connexion « Connexion établie. Réponse : « ok »
+  `https://tradoooo.github.io/gammes/` : test de connexion « Connexion établie. Réponse : « ok »
   (modèle annoncé : ali/qwen3.8-max-0902) » ;
 - dès qu'un proxy est joignable sur l'une des adresses de `PROXY_CANDIDATES` (`web/llm.ts`), le site
   passe **tout seul** sur le modèle réel, sans rien demander au visiteur. La commande manquante :

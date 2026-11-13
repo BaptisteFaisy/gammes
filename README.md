@@ -5,7 +5,7 @@
 
 ## 🔗 Démo en ligne (accessible à tous)
 
-**https://baptistefaisy.github.io/gammes/** — le produit complet qui tourne dans le navigateur,
+**https://tradoooo.github.io/gammes/** — le produit complet qui tourne dans le navigateur,
 en **20 écrans** : vue d'ensemble de l'atelier, détection des candidates (scores et raisons),
 compilation (étapes citant leur passage source, verrous, secrets écartés, étapes non falsifiables,
 diff), fiche de gamme (toute la structure du § 7, versions immuables, cycle de vie, effet réel des
