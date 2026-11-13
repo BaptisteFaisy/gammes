@@ -10,7 +10,7 @@
  * enveloppés par `assumeTrustedRoute` (constantes internes, aucune saisie utilisateur).
  */
 
-import { asUser, assumeTrustedRoute } from "@forge/api";
+import { asApp, asUser, assumeTrustedRoute, requestConfluence } from "@forge/api";
 import type { ConfluencePort, GraphPort, JiraPort } from "../../core/ports";
 import type { IssueDigest, PageDigest } from "../../core/types";
 
@@ -25,6 +25,34 @@ const arr = (v: unknown): readonly unknown[] => (Array.isArray(v) ? v : []);
 const obj = (v: unknown): Json => (v && typeof v === "object" ? (v as Json) : {});
 const pageIdOf = (ari: string): string => ari.split("/").pop() ?? ari;
 
+/**
+ * Lit une page au nom de l'utilisateur connecté, et **au nom de l'app** quand il n'y en a
+ * pas. Un déclencheur (`avi:confluence:…`) n'a pas d'utilisateur : `asUser()` y échoue, la
+ * page restait « injoignable », et l'app ne compilait donc jamais une page créée dans le
+ * tenant — silencieusement. L'app a `read:confluence-content.all`, elle peut lire seule.
+ */
+const lirePageConfluence = async (chemin: string): Promise<Json | undefined> => {
+  try {
+    const parUtilisateur = await asJson(await asUser().requestConfluence(assumeTrustedRoute(chemin)));
+    if (parUtilisateur) return parUtilisateur;
+  } catch {
+    // Pas d'utilisateur connecté (déclencheur, consommateur) : on continue au nom de l'app.
+  }
+  try {
+    const parApp = await asJson(await asApp().requestConfluence(assumeTrustedRoute(chemin)));
+    if (parApp) return parApp;
+  } catch {
+    // Ni l'utilisateur ni le mode app n'ont de jeton : on continue au jeton par défaut.
+  }
+  // Ni l'utilisateur ni le mode « asApp » n'ont de jeton dans un déclencheur : la
+  // requête part alors avec le jeton de l'app par défaut.
+  try {
+    return await asJson(await requestConfluence(assumeTrustedRoute(chemin)));
+  } catch {
+    return undefined;
+  }
+};
+
 const EMPTY_PAGE = (ari: string, id: string): PageDigest => ({
   ari, id, spaceKey: "", title: "", storageBody: "", labels: [], lastModifiedAt: "", pageVersion: 0, wordCount: 0, reachable: false,
 });
@@ -33,7 +61,7 @@ const EMPTY_PAGE = (ari: string, id: string): PageDigest => ({
 export const confluencePort = (): ConfluencePort => ({
   getPage: async (ari): Promise<PageDigest> => {
     const id = pageIdOf(ari);
-    const body = await asJson(await asUser().requestConfluence(assumeTrustedRoute(`/wiki/api/v2/pages/${id}?body-format=storage`)));
+    const body = await lirePageConfluence(`/wiki/api/v2/pages/${id}?body-format=storage`);
     if (!body) return EMPTY_PAGE(ari, id);
     const storage = str(obj(obj(body.body).storage).value);
     const version = obj(body.version);
@@ -51,7 +79,7 @@ export const confluencePort = (): ConfluencePort => ({
     };
   },
   listPages: async (spaceKey): Promise<readonly PageDigest[]> => {
-    const body = await asJson(await asUser().requestConfluence(assumeTrustedRoute(`/wiki/api/v2/spaces/${spaceKey}/pages?limit=100`)));
+    const body = await lirePageConfluence(`/wiki/api/v2/spaces/${spaceKey}/pages?limit=100`);
     return arr(body?.results).map((r) => {
       const page = obj(r);
       return { ...EMPTY_PAGE(str(page.ari), str(page.id)), spaceKey, title: str(page.title), reachable: true };
