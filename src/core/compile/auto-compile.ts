@@ -47,11 +47,11 @@ export const compileIfProcedure = async (
   deps: Deps,
   args: { readonly page: PageDigest; readonly confirmedBy: ActorRef },
 ): Promise<Result<AutoCompileOutcome>> => {
-  if (!annonceUneProcedure(args.page.title)) {
-    return ok({ compiled: false, reason: "le titre n'annonce pas une procédure" });
-  }
   if (!args.page.reachable) {
     return ok({ compiled: false, reason: "page inaccessible" });
+  }
+  if (!annonceUneProcedure(args.page.title)) {
+    return ok({ compiled: false, reason: "le titre n'annonce pas une procédure" });
   }
   const outcome = await compilePage(deps, { page: args.page, confirmedBy: args.confirmedBy });
   if (!outcome.ok) return outcome;

@@ -23,6 +23,11 @@ modules:
       handler: index.handler
     - key: gammes-validator-fn
       handler: validator.handler
+    # Les événements produit ne passent **pas** par le resolver : la plateforme
+    # appelle la fonction avec l'événement brut. Un déclencheur câblé sur la
+    # fonction du resolver échoue à chaque appel (« reading 'functionKey' »).
+    - key: gammes-events-fn
+      handler: triggers/entry.handler
 
   # --- Outils MCP : une action par outil du § 18 ---
   action:
@@ -236,33 +241,33 @@ modules:
   # --- Événements, planifications, traitements longs, entrée externe signée ---
   trigger:
     - key: gammes-page-events
-      function: gammes-fn
+      function: gammes-events-fn
       events:
-        - avi:confluence:page:added
-        - avi:confluence:page:updated
-        - avi:confluence:page:deleted
-        - avi:jira:issue:commented
-        - avi:jira:issue:linked
+        - avi:confluence:created:page
+        - avi:confluence:updated:page
+        - avi:confluence:deleted:page
+        - avi:jira:commented:issue
+        - avi:jira:created:issuelink
   scheduledTrigger:
     - key: gammes-nightly
-      function: gammes-fn
+      function: gammes-events-fn
       interval: day
   consumer:
     - key: gammes-consumer-compile
       queue: gammes-compile
-      function: gammes-fn
+      function: gammes-events-fn
     - key: gammes-consumer-stats
       queue: gammes-recompute-stats
-      function: gammes-fn
+      function: gammes-events-fn
     - key: gammes-consumer-ghosts
       queue: gammes-detect-ghosts
-      function: gammes-fn
+      function: gammes-events-fn
     - key: gammes-consumer-conflicts
       queue: gammes-detect-conflicts
-      function: gammes-fn
+      function: gammes-events-fn
   webtrigger:
     - key: gammes-hook
-      function: gammes-fn
+      function: gammes-events-fn
 
   sql:
     - key: gammes-sql
@@ -288,6 +293,7 @@ app:
 permissions:
   scopes:
     - read:confluence-content.all
+    - read:confluence-content.summary
     - write:confluence-content
     - read:confluence-props
     - read:space:confluence
