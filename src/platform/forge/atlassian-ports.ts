@@ -31,6 +31,12 @@ const pageIdOf = (ari: string): string => ari.split("/").pop() ?? ari;
  * page restait « injoignable », et l'app ne compilait donc jamais une page créée dans le
  * tenant — silencieusement. L'app a `read:confluence-content.all`, elle peut lire seule.
  */
+/** Les deux lectures possibles d'une page : l'API v2 (body-format) et l'API REST v1. */
+const CHEMINS_PAGE = (id: string): readonly string[] => [
+  `/wiki/api/v2/pages/${id}?body-format=storage`,
+  `/wiki/rest/api/content/${id}?expand=body.storage,version,space`,
+];
+
 const lirePageConfluence = async (chemin: string): Promise<Json | undefined> => {
   try {
     const parUtilisateur = await asJson(await asUser().requestConfluence(assumeTrustedRoute(chemin)));
@@ -61,14 +67,18 @@ const EMPTY_PAGE = (ari: string, id: string): PageDigest => ({
 export const confluencePort = (): ConfluencePort => ({
   getPage: async (ari): Promise<PageDigest> => {
     const id = pageIdOf(ari);
-    const body = await lirePageConfluence(`/wiki/api/v2/pages/${id}?body-format=storage`);
+    let body: Json | undefined;
+    for (const chemin of CHEMINS_PAGE(id)) {
+      body = await lirePageConfluence(chemin);
+      if (body) break;
+    }
     if (!body) return EMPTY_PAGE(ari, id);
     const storage = str(obj(obj(body.body).storage).value);
     const version = obj(body.version);
     return {
       ari: str(body.ari, ari),
       id,
-      spaceKey: str(obj(body.space).key) || str(body.spaceId),
+      spaceKey: str(obj(body.space).key) || str(body.spaceId) || str(obj(obj(body.space).key)),
       title: str(body.title),
       storageBody: storage,
       labels: arr(body.labels).map((l) => str(obj(l).name)),
