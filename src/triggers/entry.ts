@@ -13,30 +13,20 @@
  * handlers du domaine.
  */
 
-import { createSignedHook } from "../platform/webtrigger";
-import { consumerHandler, nightlyHandler, pageEventHandler, triggerDeps } from "./index";
+import { consumerHandler, nightlyHandler, pageEventHandler } from "./index";
 import { payloadDe, type PlatformEvent } from "./entry-shape";
 
 export { ariDePage, auteurDe, natureDe, payloadDe } from "./entry-shape";
 
-/** La signature d'un appel externe : en en-tête, ou dans le corps. */
-const signatureDe = (event: PlatformEvent): string => {
-  const entetes = (event.headers ?? {}) as Readonly<Record<string, unknown>>;
-  const enTete = entetes["x-gammes-signature"] ?? entetes["X-Gammes-Signature"];
-  if (typeof enTete === "string") return enTete;
-  return typeof event.signature === "string" ? event.signature : "";
-};
-
-/** Le point d'entrée des événements, déclaré au manifeste (`handler: triggers/entry.handler`). */
+/**
+ * Le point d'entrée des événements, déclaré au manifeste (`handler: triggers/entry.handler`).
+ *
+ * Il ne traite **que** les événements produit, le planifié et les consommateurs :
+ * l'appel externe signé a sa propre fonction (`triggers/hook.handler`), parce que le
+ * contrat d'un web trigger n'est pas celui d'un événement.
+ */
 export const handler = async (event: PlatformEvent): Promise<unknown> => {
   const brut = (event && typeof event === "object" ? event : {}) as PlatformEvent;
-  // Le point d'entrée externe : corps signé, vérifié puis traité comme `check-before-acting`.
-  if (typeof brut.body === "string") {
-    return createSignedHook(await triggerDeps(), { secret: process.env.GAMMES_HOOK_SECRET })({
-      body: brut.body,
-      signature: signatureDe(brut),
-    });
-  }
   const charge = payloadDe(brut);
   const type = typeof brut.eventType === "string" ? brut.eventType : "";
   if (type.includes(":nightly:") || type === "scheduled") return nightlyHandler();

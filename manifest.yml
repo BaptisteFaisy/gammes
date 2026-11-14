@@ -28,6 +28,11 @@ modules:
     # fonction du resolver échoue à chaque appel (« reading 'functionKey' »).
     - key: gammes-events-fn
       handler: triggers/entry.handler
+    # Le point d'entrée externe signé a SA fonction : un web trigger reçoit
+    # `(payload, context)` et doit rendre `{ statusCode, headers, body }`, ce qui
+    # n'est ni l'enveloppe du resolver ni la forme d'un événement produit.
+    - key: gammes-hook-fn
+      handler: triggers/hook-entry.handler
 
   # --- Outils MCP : une action par outil du § 18 ---
   action:
@@ -267,7 +272,14 @@ modules:
       function: gammes-events-fn
   webtrigger:
     - key: gammes-hook
-      function: gammes-events-fn
+      function: gammes-hook-fn
+      # Contrat web trigger v2 : la fonction reçoit `(payload, context)` et rend
+      # `{ statusCode, headers, body }`. En v1, ou avec un objet `Response`, la
+      # plateforme répond « 424 Failed Dependency » **sans appeler la fonction** —
+      # ni log, ni verdict : c'est le silence qui a masqué le bug en production.
+      urlFormat: v2
+      response:
+        type: dynamic
 
   sql:
     - key: gammes-sql

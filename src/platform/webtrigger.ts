@@ -27,7 +27,8 @@ export type HookOptions = {
   readonly verify?: (body: string, signature: string, secret: string) => boolean;
 };
 
-const hmacVerify = (body: string, signature: string, secret: string): boolean => {
+/** HMAC-SHA256 du corps, comparé en temps constant : une seule implémentation, partagée. */
+export const signatureValide = (body: string, signature: string, secret: string): boolean => {
   const expected = createHmac("sha256", secret).update(body).digest("hex");
   const a = Buffer.from(expected, "utf8");
   const b = Buffer.from(signature ?? "", "utf8");
@@ -50,7 +51,7 @@ const parseBody = (body: string): ParsedHookBody | undefined => {
 
 /** Crée le gestionnaire signé : vérifie la signature, puis répond comme `check-before-acting`. */
 export const createSignedHook = (deps: Deps, options: HookOptions = {}) => {
-  const verify = options.verify ?? hmacVerify;
+  const verify = options.verify ?? signatureValide;
   return async (request: SignedRequest): Promise<Result<BeforeActingVerdict>> => {
     if (!options.secret) {
       return fail("conciliator_unavailable", "Point d'entrée non configuré : aucun secret de signature.", "Unsigned hook: no shared secret configured.", {});
