@@ -31,8 +31,12 @@ const pageIdOf = (ari: string): string => ari.split("/").pop() ?? ari;
  * page restait « injoignable », et l'app ne compilait donc jamais une page créée dans le
  * tenant — silencieusement. L'app a `read:confluence-content.all`, elle peut lire seule.
  */
-/** Les deux lectures possibles d'une page : l'API v2 (body-format) et l'API REST v1. */
+/** Les lectures possibles d'une page : l'API v2 (sans puis avec query), puis l'API REST v1. */
 const CHEMINS_PAGE = (id: string): readonly string[] => [
+  // Sans chaîne de requête d'abord : `assumeTrustedRoute` et une query string ne font
+  // pas bon ménage (404 côté plateforme). Le format de corps par défaut de l'API v2
+  // est déjà « storage », le paramètre est donc redondant.
+  `/wiki/api/v2/pages/${id}`,
   `/wiki/api/v2/pages/${id}?body-format=storage`,
   `/wiki/rest/api/content/${id}?expand=body.storage,version,space`,
 ];
